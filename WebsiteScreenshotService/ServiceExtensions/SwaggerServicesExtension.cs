@@ -16,7 +16,6 @@ public static class SwaggerServicesExtension
                     Version = "v1",
                     Title = "Screenshot API",
                     Description = "Api for making screenshot of a website",
-                    TermsOfService = new Uri("https://example.com/terms"),
                     Contact = new OpenApiContact
                     {
                         Name = "Ivan Pohoidash",
@@ -25,7 +24,7 @@ public static class SwaggerServicesExtension
                     License = new OpenApiLicense
                     {
                         Name = "Licence",
-                        Url = new Uri("https://example.com/license")
+                        Url = new Uri("https://github.com/haveve/WebstoreScreenshotService/blob/main/LICENSE")
                     }
                 });
 

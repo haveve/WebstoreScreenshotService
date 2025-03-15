@@ -1,0 +1,464 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Screenshot API",
+    "description": "Api for making screenshot of a website",
+    "contact": {
+      "name": "Ivan Pohoidash",
+      "url": "https://github.com/haveve"
+    },
+    "license": {
+      "name": "Licence",
+      "url": "https://github.com/haveve/WebstoreScreenshotService/blob/main/LICENSE"
+    },
+    "version": "v1"
+  },
+  "paths": {
+    "/Identity/Login": {
+      "post": {
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Logs in a user using their email and password.",
+        "requestBody": {
+          "description": "The login details containing email and password.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the UserModel if login is successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "User doesn't exist or invalid credentials or Input data is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "Validation Error": {
+                    "value": "{\"type\":\"https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request\",\"title\":\"One or more model validation errors occurred.\",\"status\":400,\"detail\":\"See the errors property for details\",\"instance\":\"Identity/Login\",\"errors\":{},\"traceId\":\"940ae282-2d8a-4482-be44-f734d10227b3\"}"
+                  },
+                  "User doesn't exist": {
+                    "value": "User doesn't exist"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Identity/Register": {
+      "post": {
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Registers a new user with the provided registration details.",
+        "requestBody": {
+          "description": "The registration details containing email, password, etc.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful registration of the user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "User with that email already exists or Input data is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "Validation Error": {
+                    "value": "{\"type\":\"https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request\",\"title\":\"One or more model validation errors occurred.\",\"status\":400,\"detail\":\"See the errors property for details\",\"instance\":\"Identity/Register\",\"errors\":{},\"traceId\":\"b5e41758-1250-4f80-b883-f736c9e1890f\"}"
+                  },
+                  "User already exists": {
+                    "value": "User with that email already exist"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Identity/Logout": {
+      "get": {
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Logs out the current user by signing them out of the system.",
+        "responses": {
+          "200": {
+            "description": "Successful logout."
+          }
+        }
+      }
+    },
+    "/MakeScreenshot": {
+      "post": {
+        "tags": [
+          "ScreenshotContoller"
+        ],
+        "summary": "Captures a screenshot based on the specified options and returns the image file.",
+        "requestBody": {
+          "description": "The options for the screenshot such as the URL, dimensions, etc.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScreenshotOptionsModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScreenshotOptionsModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScreenshotOptionsModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the screenshot image file.",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "User does not exist or has exceeded their available screenshots limit or Input data is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                },
+                "examples": {
+                  "Validation Error": {
+                    "value": "{\"type\":\"https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request\",\"title\":\"One or more model validation errors occurred.\",\"status\":400,\"detail\":\"See the errors property for details\",\"instance\":\"/MakeScreenshot\",\"errors\":{},\"traceId\":\"0d449c70-38bb-43fe-b8b3-7b3c8e229a37\"}"
+                  },
+                  "User doesn't exist": {
+                    "value": "User doesn't exist"
+                  },
+                  "Limit of available screenshots exceeded": {
+                    "value": "You cannot make screenshot any more because you ran out of avaialbe screenshots"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Clip": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number",
+            "format": "double"
+          },
+          "y": {
+            "type": "number",
+            "format": "double"
+          },
+          "width": {
+            "type": "number",
+            "format": "double"
+          },
+          "height": {
+            "type": "number",
+            "format": "double"
+          },
+          "scale": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LoginModel": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Gets or sets the email address of the user.",
+            "format": "email"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Gets or sets the password of the user."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the model for user login."
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": {
+
+        }
+      },
+      "RegisterModel": {
+        "required": [
+          "email",
+          "name",
+          "password",
+          "surname"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Gets or sets the email address of the user.",
+            "format": "email"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Gets or sets the password of the user."
+          },
+          "surname": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Gets or sets the surname of the user."
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Gets or sets the first name of the user."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the model for user registration."
+      },
+      "ScreenshotOptionsModel": {
+        "required": [
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "url": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Gets or sets the URL of the webpage to capture.",
+            "format": "uri"
+          },
+          "screenshotType": {
+            "$ref": "#/components/schemas/ScreenshotType"
+          },
+          "quality": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer",
+            "description": "Gets or sets the quality of the screenshot if the type is JPEG. Ignored for PNG.",
+            "format": "int32",
+            "nullable": true
+          },
+          "fullSreen": {
+            "type": "boolean",
+            "description": "Gets or sets a value indicating whether to capture the full screen. Cannot be specified with Clip.",
+            "nullable": true
+          },
+          "clip": {
+            "$ref": "#/components/schemas/Clip"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the options for taking a screenshot."
+      },
+      "ScreenshotType": {
+        "enum": [
+          "Jpeg",
+          "Png",
+          "Webp"
+        ],
+        "type": "string"
+      },
+      "SubscriptionPlan": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/SubscriptionType"
+          },
+          "screenshotLeft": {
+            "type": "integer",
+            "description": "Gets the number of screenshots left in the subscription plan.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a subscription plan with a type and the number of screenshots left."
+      },
+      "SubscriptionType": {
+        "enum": [ 0 ],
+        "type": "integer",
+        "description": "Defines the types of subscription plans.",
+        "format": "int32"
+      },
+      "UserModel": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The first name of the user.",
+            "nullable": true
+          },
+          "surname": {
+            "type": "string",
+            "description": "The surname of the user.",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "The email address of the user.",
+            "nullable": true
+          },
+          "subscriptionPlan": {
+            "$ref": "#/components/schemas/SubscriptionPlan"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a user model with basic user information and subscription plan details."
+      },
+      "ValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": {
+
+        }
+      }
+    }
+  }
+}
