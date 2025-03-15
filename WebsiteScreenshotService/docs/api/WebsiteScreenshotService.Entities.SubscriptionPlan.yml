@@ -1,0 +1,606 @@
+### YamlMime:ManagedReference
+items:
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan
+  commentId: T:WebsiteScreenshotService.Entities.SubscriptionPlan
+  id: SubscriptionPlan
+  parent: WebsiteScreenshotService.Entities
+  children:
+  - WebsiteScreenshotService.Entities.SubscriptionPlan.#ctor(WebsiteScreenshotService.Entities.SubscriptionType,System.Int32)
+  - WebsiteScreenshotService.Entities.SubscriptionPlan.CanMakeScreenshot
+  - WebsiteScreenshotService.Entities.SubscriptionPlan.GetRegularSubscriptionPlan
+  - WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotLeft
+  - WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotWasMade
+  - WebsiteScreenshotService.Entities.SubscriptionPlan.Type
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionPlan
+  nameWithType: SubscriptionPlan
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan
+  type: Class
+  source:
+    id: SubscriptionPlan
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Entities\SubscriptionPlan.cs
+    startLine: 7
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Entities
+  summary: Represents a subscription plan with a type and the number of screenshots left.
+  example: []
+  syntax:
+    content: 'public record SubscriptionPlan : IEquatable<SubscriptionPlan>'
+    content.vb: Public Class SubscriptionPlan Implements IEquatable(Of SubscriptionPlan)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{WebsiteScreenshotService.Entities.SubscriptionPlan}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan.#ctor(WebsiteScreenshotService.Entities.SubscriptionType,System.Int32)
+  commentId: M:WebsiteScreenshotService.Entities.SubscriptionPlan.#ctor(WebsiteScreenshotService.Entities.SubscriptionType,System.Int32)
+  id: '#ctor(WebsiteScreenshotService.Entities.SubscriptionType,System.Int32)'
+  parent: WebsiteScreenshotService.Entities.SubscriptionPlan
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionPlan(SubscriptionType, int)
+  nameWithType: SubscriptionPlan.SubscriptionPlan(SubscriptionType, int)
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan.SubscriptionPlan(WebsiteScreenshotService.Entities.SubscriptionType, int)
+  type: Constructor
+  source:
+    id: .ctor
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Entities\SubscriptionPlan.cs
+    startLine: 7
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Entities
+  summary: Represents a subscription plan with a type and the number of screenshots left.
+  example: []
+  syntax:
+    content: public SubscriptionPlan(SubscriptionType Type, int ScreenshotLeft)
+    parameters:
+    - id: Type
+      type: WebsiteScreenshotService.Entities.SubscriptionType
+      description: The type of the subscription plan.
+    - id: ScreenshotLeft
+      type: System.Int32
+      description: The number of screenshots left in the subscription plan.
+    content.vb: Public Sub New(Type As SubscriptionType, ScreenshotLeft As Integer)
+  overload: WebsiteScreenshotService.Entities.SubscriptionPlan.#ctor*
+  nameWithType.vb: SubscriptionPlan.New(SubscriptionType, Integer)
+  fullName.vb: WebsiteScreenshotService.Entities.SubscriptionPlan.New(WebsiteScreenshotService.Entities.SubscriptionType, Integer)
+  name.vb: New(SubscriptionType, Integer)
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan.Type
+  commentId: P:WebsiteScreenshotService.Entities.SubscriptionPlan.Type
+  id: Type
+  parent: WebsiteScreenshotService.Entities.SubscriptionPlan
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: SubscriptionPlan.Type
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan.Type
+  type: Property
+  source:
+    id: Type
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Entities\SubscriptionPlan.cs
+    startLine: 7
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Entities
+  summary: The type of the subscription plan.
+  example: []
+  syntax:
+    content: public SubscriptionType Type { get; init; }
+    parameters: []
+    return:
+      type: WebsiteScreenshotService.Entities.SubscriptionType
+    content.vb: Public Property Type As SubscriptionType
+  overload: WebsiteScreenshotService.Entities.SubscriptionPlan.Type*
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotLeft
+  commentId: P:WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotLeft
+  id: ScreenshotLeft
+  parent: WebsiteScreenshotService.Entities.SubscriptionPlan
+  langs:
+  - csharp
+  - vb
+  name: ScreenshotLeft
+  nameWithType: SubscriptionPlan.ScreenshotLeft
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotLeft
+  type: Property
+  source:
+    id: ScreenshotLeft
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Entities\SubscriptionPlan.cs
+    startLine: 12
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Entities
+  summary: Gets the number of screenshots left in the subscription plan.
+  example: []
+  syntax:
+    content: public int ScreenshotLeft { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ScreenshotLeft As Integer
+  overload: WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotLeft*
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan.GetRegularSubscriptionPlan
+  commentId: M:WebsiteScreenshotService.Entities.SubscriptionPlan.GetRegularSubscriptionPlan
+  id: GetRegularSubscriptionPlan
+  parent: WebsiteScreenshotService.Entities.SubscriptionPlan
+  langs:
+  - csharp
+  - vb
+  name: GetRegularSubscriptionPlan()
+  nameWithType: SubscriptionPlan.GetRegularSubscriptionPlan()
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan.GetRegularSubscriptionPlan()
+  type: Method
+  source:
+    id: GetRegularSubscriptionPlan
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Entities\SubscriptionPlan.cs
+    startLine: 18
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Entities
+  summary: Gets a regular subscription plan with a default number of screenshots.
+  example: []
+  syntax:
+    content: public static SubscriptionPlan GetRegularSubscriptionPlan()
+    return:
+      type: WebsiteScreenshotService.Entities.SubscriptionPlan
+      description: A regular subscription plan.
+    content.vb: Public Shared Function GetRegularSubscriptionPlan() As SubscriptionPlan
+  overload: WebsiteScreenshotService.Entities.SubscriptionPlan.GetRegularSubscriptionPlan*
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan.CanMakeScreenshot
+  commentId: M:WebsiteScreenshotService.Entities.SubscriptionPlan.CanMakeScreenshot
+  id: CanMakeScreenshot
+  parent: WebsiteScreenshotService.Entities.SubscriptionPlan
+  langs:
+  - csharp
+  - vb
+  name: CanMakeScreenshot()
+  nameWithType: SubscriptionPlan.CanMakeScreenshot()
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan.CanMakeScreenshot()
+  type: Method
+  source:
+    id: CanMakeScreenshot
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Entities\SubscriptionPlan.cs
+    startLine: 25
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Entities
+  summary: Determines whether the user can make a screenshot based on the remaining screenshots.
+  example: []
+  syntax:
+    content: public bool CanMakeScreenshot()
+    return:
+      type: System.Boolean
+      description: <code>true</code> if the user can make a screenshot; otherwise, <code>false</code>.
+    content.vb: Public Function CanMakeScreenshot() As Boolean
+  overload: WebsiteScreenshotService.Entities.SubscriptionPlan.CanMakeScreenshot*
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotWasMade
+  commentId: M:WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotWasMade
+  id: ScreenshotWasMade
+  parent: WebsiteScreenshotService.Entities.SubscriptionPlan
+  langs:
+  - csharp
+  - vb
+  name: ScreenshotWasMade()
+  nameWithType: SubscriptionPlan.ScreenshotWasMade()
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotWasMade()
+  type: Method
+  source:
+    id: ScreenshotWasMade
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Entities\SubscriptionPlan.cs
+    startLine: 30
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Entities
+  summary: Decrements the number of screenshots left by one.
+  example: []
+  syntax:
+    content: public void ScreenshotWasMade()
+    content.vb: Public Sub ScreenshotWasMade()
+  overload: WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotWasMade*
+references:
+- uid: WebsiteScreenshotService.Entities
+  commentId: N:WebsiteScreenshotService.Entities
+  href: WebsiteScreenshotService.html
+  name: WebsiteScreenshotService.Entities
+  nameWithType: WebsiteScreenshotService.Entities
+  fullName: WebsiteScreenshotService.Entities
+  spec.csharp:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Entities
+    name: Entities
+    href: WebsiteScreenshotService.Entities.html
+  spec.vb:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Entities
+    name: Entities
+    href: WebsiteScreenshotService.Entities.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{WebsiteScreenshotService.Entities.SubscriptionPlan}
+  commentId: T:System.IEquatable{WebsiteScreenshotService.Entities.SubscriptionPlan}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SubscriptionPlan>
+  nameWithType: IEquatable<SubscriptionPlan>
+  fullName: System.IEquatable<WebsiteScreenshotService.Entities.SubscriptionPlan>
+  nameWithType.vb: IEquatable(Of SubscriptionPlan)
+  fullName.vb: System.IEquatable(Of WebsiteScreenshotService.Entities.SubscriptionPlan)
+  name.vb: IEquatable(Of SubscriptionPlan)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: WebsiteScreenshotService.Entities.SubscriptionPlan
+    name: SubscriptionPlan
+    href: WebsiteScreenshotService.Entities.SubscriptionPlan.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: WebsiteScreenshotService.Entities.SubscriptionPlan
+    name: SubscriptionPlan
+    href: WebsiteScreenshotService.Entities.SubscriptionPlan.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan.#ctor*
+  commentId: Overload:WebsiteScreenshotService.Entities.SubscriptionPlan.#ctor
+  href: WebsiteScreenshotService.Entities.SubscriptionPlan.html#WebsiteScreenshotService_Entities_SubscriptionPlan__ctor_WebsiteScreenshotService_Entities_SubscriptionType_System_Int32_
+  name: SubscriptionPlan
+  nameWithType: SubscriptionPlan.SubscriptionPlan
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan.SubscriptionPlan
+  nameWithType.vb: SubscriptionPlan.New
+  fullName.vb: WebsiteScreenshotService.Entities.SubscriptionPlan.New
+  name.vb: New
+- uid: WebsiteScreenshotService.Entities.SubscriptionType
+  commentId: T:WebsiteScreenshotService.Entities.SubscriptionType
+  parent: WebsiteScreenshotService.Entities
+  href: WebsiteScreenshotService.Entities.SubscriptionType.html
+  name: SubscriptionType
+  nameWithType: SubscriptionType
+  fullName: WebsiteScreenshotService.Entities.SubscriptionType
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan.Type*
+  commentId: Overload:WebsiteScreenshotService.Entities.SubscriptionPlan.Type
+  href: WebsiteScreenshotService.Entities.SubscriptionPlan.html#WebsiteScreenshotService_Entities_SubscriptionPlan_Type
+  name: Type
+  nameWithType: SubscriptionPlan.Type
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan.Type
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotLeft*
+  commentId: Overload:WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotLeft
+  href: WebsiteScreenshotService.Entities.SubscriptionPlan.html#WebsiteScreenshotService_Entities_SubscriptionPlan_ScreenshotLeft
+  name: ScreenshotLeft
+  nameWithType: SubscriptionPlan.ScreenshotLeft
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotLeft
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan.GetRegularSubscriptionPlan*
+  commentId: Overload:WebsiteScreenshotService.Entities.SubscriptionPlan.GetRegularSubscriptionPlan
+  href: WebsiteScreenshotService.Entities.SubscriptionPlan.html#WebsiteScreenshotService_Entities_SubscriptionPlan_GetRegularSubscriptionPlan
+  name: GetRegularSubscriptionPlan
+  nameWithType: SubscriptionPlan.GetRegularSubscriptionPlan
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan.GetRegularSubscriptionPlan
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan
+  commentId: T:WebsiteScreenshotService.Entities.SubscriptionPlan
+  parent: WebsiteScreenshotService.Entities
+  href: WebsiteScreenshotService.Entities.SubscriptionPlan.html
+  name: SubscriptionPlan
+  nameWithType: SubscriptionPlan
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan.CanMakeScreenshot*
+  commentId: Overload:WebsiteScreenshotService.Entities.SubscriptionPlan.CanMakeScreenshot
+  href: WebsiteScreenshotService.Entities.SubscriptionPlan.html#WebsiteScreenshotService_Entities_SubscriptionPlan_CanMakeScreenshot
+  name: CanMakeScreenshot
+  nameWithType: SubscriptionPlan.CanMakeScreenshot
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan.CanMakeScreenshot
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotWasMade*
+  commentId: Overload:WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotWasMade
+  href: WebsiteScreenshotService.Entities.SubscriptionPlan.html#WebsiteScreenshotService_Entities_SubscriptionPlan_ScreenshotWasMade
+  name: ScreenshotWasMade
+  nameWithType: SubscriptionPlan.ScreenshotWasMade
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan.ScreenshotWasMade

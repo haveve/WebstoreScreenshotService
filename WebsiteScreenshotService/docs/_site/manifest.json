@@ -1,0 +1,564 @@
+{
+  "source_base_path": "C:/Users/MyPC/Desktop/WebsiteScreenshotService/WebsiteScreenshotService/docs",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      }
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Controllers.Examples.Indentity.LoginResponseExample.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Controllers.Examples.Indentity.LoginResponseExample.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Controllers.Examples.Indentity.LoginResponseExample",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Controllers.Examples.Indentity.MakeScreenshotResponseExample.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Controllers.Examples.Indentity.MakeScreenshotResponseExample.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Controllers.Examples.Indentity.MakeScreenshotResponseExample",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Controllers.Examples.Indentity.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Controllers.Examples.Indentity.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Controllers.Examples.Indentity",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Controllers.IdentityController.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Controllers.IdentityController.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Controllers.IdentityController",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Controllers.ScreenshotContoller.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Controllers.ScreenshotContoller.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Controllers.ScreenshotContoller",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Controllers.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Controllers.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Controllers",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Entities.SubscriptionPlan.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Entities.SubscriptionPlan.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Entities.SubscriptionPlan",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Entities.SubscriptionPlan.yml\" sourcestartlinenumber=\"1\">Represents a subscription plan with a type and the number of screenshots left.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Entities.SubscriptionType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Entities.SubscriptionType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Entities.SubscriptionType",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Entities.SubscriptionType.yml\" sourcestartlinenumber=\"1\">Defines the types of subscription plans.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Entities.User.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Entities.User.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Entities.User",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Entities.User.yml\" sourcestartlinenumber=\"1\">Represents a user entity with basic user information and subscription plan details.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Entities.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Entities.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Entities",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Extensions.PrincipalExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Extensions.PrincipalExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Extensions.PrincipalExtensions",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Extensions.PrincipalExtensions.yml\" sourcestartlinenumber=\"1\">Provides extension methods for the <xref href=\"System.Security.Claims.ClaimsPrincipal\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Microsoft.AspNetCore.Http.HttpContext\" data-throw-if-not-resolved=\"false\"></xref> classes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Extensions.UserExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Extensions.UserExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Extensions.UserExtensions",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Extensions.UserExtensions.yml\" sourcestartlinenumber=\"1\">Provides extension methods for the <xref href=\"WebsiteScreenshotService.Entities.User\" data-throw-if-not-resolved=\"false\"></xref> class.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Extensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Extensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Extensions",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Model.LoginModel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Model.LoginModel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Model.LoginModel",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Model.LoginModel.yml\" sourcestartlinenumber=\"1\">Represents the model for user login.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Model.RegisterModel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Model.RegisterModel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Model.RegisterModel",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Model.RegisterModel.yml\" sourcestartlinenumber=\"1\">Represents the model for user registration.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Model.ScreenshotOptionsModel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Model.ScreenshotOptionsModel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Model.ScreenshotOptionsModel",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Model.ScreenshotOptionsModel.yml\" sourcestartlinenumber=\"1\">Represents the options for taking a screenshot.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Model.UserModel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Model.UserModel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Model.UserModel",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Model.UserModel.yml\" sourcestartlinenumber=\"1\">Represents a user model with basic user information and subscription plan details.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Model.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Model.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Model",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Repositories.IUserRepository.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Repositories.IUserRepository.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Repositories.IUserRepository",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Repositories.IUserRepository.yml\" sourcestartlinenumber=\"1\">Defines the contract for user repository operations, including user retrieval, creation, and subscription management.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Repositories.InMemoryUserRepository.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Repositories.InMemoryUserRepository.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Repositories.InMemoryUserRepository",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Repositories.InMemoryUserRepository.yml\" sourcestartlinenumber=\"1\">Provides an in-memory implementation of the <xref href=\"WebsiteScreenshotService.Repositories.IUserRepository\" data-throw-if-not-resolved=\"false\"></xref> interface for managing users and their subscriptions.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Repositories.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Repositories.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Repositories",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.ServiceExtensions.ControllerSevicesExtension.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.ServiceExtensions.ControllerSevicesExtension.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.ServiceExtensions.ControllerSevicesExtension",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.ServiceExtensions.SwaggerServicesExtension.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.ServiceExtensions.SwaggerServicesExtension.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.ServiceExtensions.SwaggerServicesExtension",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.ServiceExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.ServiceExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.ServiceExtensions",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Services.BrowserService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Services.BrowserService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Services.BrowserService",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Services.BrowserService.yml\" sourcestartlinenumber=\"1\">Provides services for browser operations, including taking screenshots.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Services.IBrowserService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Services.IBrowserService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Services.IBrowserService",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Services.IBrowserService.yml\" sourcestartlinenumber=\"1\">Defines the contract for browser services, including operations for taking screenshots.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Services.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Services.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Services",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Utils.Attributes.EmptyIfAttribute-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Utils.Attributes.EmptyIfAttribute-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Utils.Attributes.EmptyIfAttribute<T>",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Utils.Attributes.EmptyIfAttribute-1.yml\" sourcestartlinenumber=\"1\">Validation attribute that enforces a property to be empty if another property has a specified value.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Utils.Attributes.OnlyOneSpecifiedAttribute.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Utils.Attributes.OnlyOneSpecifiedAttribute.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Utils.Attributes.OnlyOneSpecifiedAttribute",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Utils.Attributes.OnlyOneSpecifiedAttribute.yml\" sourcestartlinenumber=\"1\">Validation attribute that ensures only one of the specified properties is set.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Utils.Attributes.ValidationAttributeHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Utils.Attributes.ValidationAttributeHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Utils.Attributes.ValidationAttributeHelper",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Utils.Attributes.ValidationAttributeHelper.yml\" sourcestartlinenumber=\"1\">Provides helper methods for validation attributes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Utils.Attributes.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Utils.Attributes.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Utils.Attributes",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Utils.LazyAsync-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Utils.LazyAsync-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Utils.LazyAsync<T>",
+      "Summary": "<p sourcefile=\"api/WebsiteScreenshotService.Utils.LazyAsync-1.yml\" sourcestartlinenumber=\"1\">Provides a mechanism for lazy asynchronous initialization of a value.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/WebsiteScreenshotService.Utils.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/WebsiteScreenshotService.Utils.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "WebsiteScreenshotService.Utils",
+      "Summary": null
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/code-practices.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/code-practices.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/create-a-new-endpoint.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/create-a-new-endpoint.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "docs/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "docs/toc.html"
+        },
+        ".json": {
+          "relative_path": "docs/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}

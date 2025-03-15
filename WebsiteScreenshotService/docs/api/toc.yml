@@ -1,0 +1,115 @@
+### YamlMime:TableOfContent
+items:
+- uid: WebsiteScreenshotService.Controllers
+  name: WebsiteScreenshotService.Controllers
+  type: Namespace
+  items:
+  - uid: WebsiteScreenshotService.Controllers.IdentityController
+    name: IdentityController
+    type: Class
+  - uid: WebsiteScreenshotService.Controllers.ScreenshotContoller
+    name: ScreenshotContoller
+    type: Class
+- uid: WebsiteScreenshotService.Controllers.Examples.Indentity
+  name: WebsiteScreenshotService.Controllers.Examples.Indentity
+  type: Namespace
+  items:
+  - uid: WebsiteScreenshotService.Controllers.Examples.Indentity.LoginResponseExample
+    name: LoginResponseExample
+    type: Class
+  - uid: WebsiteScreenshotService.Controllers.Examples.Indentity.MakeScreenshotResponseExample
+    name: MakeScreenshotResponseExample
+    type: Class
+  - uid: WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample
+    name: RegisterResponseExample
+    type: Class
+- uid: WebsiteScreenshotService.Entities
+  name: WebsiteScreenshotService.Entities
+  type: Namespace
+  items:
+  - uid: WebsiteScreenshotService.Entities.SubscriptionPlan
+    name: SubscriptionPlan
+    type: Class
+  - uid: WebsiteScreenshotService.Entities.SubscriptionType
+    name: SubscriptionType
+    type: Enum
+  - uid: WebsiteScreenshotService.Entities.User
+    name: User
+    type: Class
+- uid: WebsiteScreenshotService.Extensions
+  name: WebsiteScreenshotService.Extensions
+  type: Namespace
+  items:
+  - uid: WebsiteScreenshotService.Extensions.PrincipalExtensions
+    name: PrincipalExtensions
+    type: Class
+  - uid: WebsiteScreenshotService.Extensions.UserExtensions
+    name: UserExtensions
+    type: Class
+- uid: WebsiteScreenshotService.Model
+  name: WebsiteScreenshotService.Model
+  type: Namespace
+  items:
+  - uid: WebsiteScreenshotService.Model.LoginModel
+    name: LoginModel
+    type: Class
+  - uid: WebsiteScreenshotService.Model.RegisterModel
+    name: RegisterModel
+    type: Class
+  - uid: WebsiteScreenshotService.Model.ScreenshotOptionsModel
+    name: ScreenshotOptionsModel
+    type: Class
+  - uid: WebsiteScreenshotService.Model.UserModel
+    name: UserModel
+    type: Class
+- uid: WebsiteScreenshotService.Repositories
+  name: WebsiteScreenshotService.Repositories
+  type: Namespace
+  items:
+  - uid: WebsiteScreenshotService.Repositories.IUserRepository
+    name: IUserRepository
+    type: Interface
+  - uid: WebsiteScreenshotService.Repositories.InMemoryUserRepository
+    name: InMemoryUserRepository
+    type: Class
+- uid: WebsiteScreenshotService.ServiceExtensions
+  name: WebsiteScreenshotService.ServiceExtensions
+  type: Namespace
+  items:
+  - uid: WebsiteScreenshotService.ServiceExtensions.ControllerSevicesExtension
+    name: ControllerSevicesExtension
+    type: Class
+  - uid: WebsiteScreenshotService.ServiceExtensions.SwaggerServicesExtension
+    name: SwaggerServicesExtension
+    type: Class
+- uid: WebsiteScreenshotService.Services
+  name: WebsiteScreenshotService.Services
+  type: Namespace
+  items:
+  - uid: WebsiteScreenshotService.Services.BrowserService
+    name: BrowserService
+    type: Class
+  - uid: WebsiteScreenshotService.Services.IBrowserService
+    name: IBrowserService
+    type: Interface
+- uid: WebsiteScreenshotService.Utils
+  name: WebsiteScreenshotService.Utils
+  type: Namespace
+  items:
+  - uid: WebsiteScreenshotService.Utils.LazyAsync`1
+    name: LazyAsync<T>
+    type: Class
+- uid: WebsiteScreenshotService.Utils.Attributes
+  name: WebsiteScreenshotService.Utils.Attributes
+  type: Namespace
+  items:
+  - uid: WebsiteScreenshotService.Utils.Attributes.EmptyIfAttribute`1
+    name: EmptyIfAttribute<T>
+    type: Class
+  - uid: WebsiteScreenshotService.Utils.Attributes.OnlyOneSpecifiedAttribute
+    name: OnlyOneSpecifiedAttribute
+    type: Class
+  - uid: WebsiteScreenshotService.Utils.Attributes.ValidationAttributeHelper
+    name: ValidationAttributeHelper
+    type: Class
+memberLayout: SamePage

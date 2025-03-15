@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>How to Add a New Endpoint | Screenshot service </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="How to Add a New Endpoint | Screenshot service ">
+      
+      
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="Screenshot service">
+            Screenshot service
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="how-to-add-a-new-endpoint">How to Add a New Endpoint</h1>
+
+<p>This guide provides step-by-step instructions on how to add a new endpoint to the Website Screenshot Service.</p>
+<h2 id="step-1-create-a-new-controller-if-needed">Step 1: Create a New Controller (if needed)</h2>
+<p>If your new endpoint belongs to a new category of functionality, you may need to create a new controller. Otherwise, you can add the endpoint to an existing controller.</p>
+<ol>
+<li><strong>Create a new controller file</strong> in the <code>Controllers</code> directory. For example, <code>NewFeatureController.cs</code>.</li>
+</ol>
+<pre><code class="lang-csharp">1. using Microsoft.AspNetCore.Mvc;
+
+namespace WebsiteScreenshotService.Controllers
+{
+    /// &lt;summary&gt;
+    /// Controller for handling new feature endpoints.
+    /// &lt;/summary&gt;
+    [ApiController]
+    [Route(&quot;api/[controller]&quot;)]
+    public class NewFeatureController : ControllerBase
+    {
+        // Add your endpoint methods here
+    }
+}
+</code></pre>
+<h2 id="step-2-define-the-endpoint-method">Step 2: Define the Endpoint Method</h2>
+<p>Add a new method to your controller to handle the endpoint. Use attributes to specify the HTTP method and route.</p>
+<pre><code class="lang-csharp">using Microsoft.AspNetCore.Mvc;
+
+namespace WebsiteScreenshotService.Controllers
+{
+    /// &lt;summary&gt;
+    /// Controller for handling new feature endpoints.
+    /// &lt;/summary&gt;
+    [ApiController]
+    [Route(&quot;api/[controller]&quot;)]
+    public class NewFeatureController : ControllerBase
+    {
+        /// &lt;summary&gt;
+        /// Gets the new feature.
+        /// &lt;/summary&gt;
+        /// &lt;returns&gt;A response with the new feature.&lt;/returns&gt;
+        [HttpGet(&quot;new-endpoint&quot;)]
+        public IActionResult GetNewFeature()
+        {
+            // Implement your logic here
+            return Ok(&quot;New feature response&quot;);
+        }
+    }
+}
+</code></pre>
+<h2 id="step-3-add-any-required-models">Step 3: Add Any Required Models</h2>
+<p>If your endpoint requires input or output models, define them in the <code>Model</code> directory.</p>
+<pre><code class="lang-csharp">namespace WebsiteScreenshotService.Model
+{
+    /// &lt;summary&gt;
+    /// Model for the new feature.
+    /// &lt;/summary&gt;
+    public class NewFeatureModel
+    {
+        /// &lt;summary&gt;
+        /// Gets or sets the first property.
+        /// &lt;/summary&gt;
+        public string Property1 { get; set; }
+
+        /// &lt;summary&gt;
+        /// Gets or sets the second property.
+        /// &lt;/summary&gt;
+        public int Property2 { get; set; }
+    }
+}
+</code></pre>
+<h2 id="step-4-implement-business-logic-in-services">Step 4: Implement Business Logic in Services</h2>
+<p>If your endpoint requires business logic, implement it in a service class in the <code>Services</code> directory. Define an interface for the service if needed.</p>
+<pre><code class="lang-csharp">namespace WebsiteScreenshotService.Services
+{
+    /// &lt;summary&gt;
+    /// Interface for the new feature service.
+    /// &lt;/summary&gt;
+    public interface INewFeatureService
+    {
+        /// &lt;summary&gt;
+        /// Gets the new feature asynchronously.
+        /// &lt;/summary&gt;
+        /// &lt;returns&gt;
+        /// A task that represents the asynchronous operation. 
+        /// The task result contains the new feature response.
+        /// &lt;/returns&gt;
+        Task&lt;string&gt; GetNewFeatureAsync();
+    }
+
+    /// &lt;summary&gt;
+    /// Service for handling new feature business logic.
+    /// &lt;/summary&gt;
+    public class NewFeatureService : INewFeatureService
+    {
+        /// &lt;summary&gt;
+        /// Gets the new feature asynchronously.
+        /// &lt;/summary&gt;
+        /// &lt;returns&gt;
+        /// A task that represents the asynchronous operation. 
+        /// The task result contains the new feature response.
+        /// &lt;/returns&gt;
+        public async Task&lt;string&gt; GetNewFeatureAsync()
+        {
+            // Implement your business logic here
+            return await Task.FromResult(&quot;New feature response&quot;);
+        }
+    }
+}
+</code></pre>
+<h2 id="step-5-register-the-service">Step 5: Register the Service</h2>
+<p>Register your new service in the <code>ControllerServicesExtension.cs</code> file.</p>
+<pre><code class="lang-csharp">using Microsoft.Extensions.DependencyInjection;
+using WebsiteScreenshotService.Services;
+
+namespace WebsiteScreenshotService.ServiceExtensions
+{
+    /// &lt;summary&gt;
+    /// Extension methods for configuring controller services.
+    /// &lt;/summary&gt;
+    public static class ControllerServicesExtension
+    {
+        /// &lt;summary&gt;
+        /// Adds controller services to the specified service collection.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;services&quot;&gt;The service collection to add services to.&lt;/param&gt;
+        public static void AddControllerServices(this IServiceCollection services)
+        {
+            // Register your new service here
+            services.AddScoped&lt;INewFeatureService, NewFeatureService&gt;();
+        }
+    }
+}
+</code></pre>
+<h2 id="step-6-update-the-controller-to-use-the-service">Step 6: Update the Controller to Use the Service</h2>
+<p>Inject the service into your controller and use it in your endpoint method.</p>
+<pre><code class="lang-csharp">using Microsoft.AspNetCore.Mvc;
+using WebsiteScreenshotService.Services;
+
+namespace WebsiteScreenshotService.Controllers
+{
+    /// &lt;summary&gt;
+    /// Controller for handling new feature endpoints.
+    /// &lt;/summary&gt;
+    [ApiController]
+    [Route(&quot;api/[controller]&quot;)]
+    public class NewFeatureController : ControllerBase
+    {
+        private readonly INewFeatureService _newFeatureService;
+
+        /// &lt;summary&gt;
+        /// Initializes a new instance of the &lt;see cref=&quot;NewFeatureController&quot;/&gt; class.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;newFeatureService&quot;&gt;The new feature service.&lt;/param&gt;
+        public NewFeatureController(INewFeatureService newFeatureService)
+        {
+            _newFeatureService = newFeatureService;
+        }
+
+        /// &lt;summary&gt;
+        /// Gets the new feature.
+        /// &lt;/summary&gt;
+        /// &lt;returns&gt;A response with the new feature.&lt;/returns&gt;
+        [HttpGet(&quot;new-endpoint&quot;)]
+        public async Task&lt;IActionResult&gt; GetNewFeature()
+        {
+            var result = await _newFeatureService.GetNewFeatureAsync();
+            return Ok(result);
+        }
+    }
+}
+</code></pre>
+<h2 id="step-7-test-the-endpoint">Step 7: Test the Endpoint</h2>
+<ul>
+<li>Run the application(see <a href="../index.html#distribution">distribution</a>)</li>
+<li>Open your web browser and navigate to http://localhost:5000/swagger (or the appropriate URL for your application). This will open the Swagger UI.</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>You have successfully added a new endpoint to the Website Screenshot Service. Follow these steps for any additional endpoints you need to create.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

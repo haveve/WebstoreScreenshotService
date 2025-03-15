@@ -1,0 +1,53 @@
+### YamlMime:ManagedReference
+items:
+- uid: WebsiteScreenshotService.Repositories
+  commentId: N:WebsiteScreenshotService.Repositories
+  id: WebsiteScreenshotService.Repositories
+  children:
+  - WebsiteScreenshotService.Repositories.IUserRepository
+  - WebsiteScreenshotService.Repositories.InMemoryUserRepository
+  langs:
+  - csharp
+  - vb
+  name: WebsiteScreenshotService.Repositories
+  nameWithType: WebsiteScreenshotService.Repositories
+  fullName: WebsiteScreenshotService.Repositories
+  type: Namespace
+  assemblies:
+  - WebsiteScreenshotService
+references:
+- uid: WebsiteScreenshotService.Repositories.InMemoryUserRepository
+  commentId: T:WebsiteScreenshotService.Repositories.InMemoryUserRepository
+  href: WebsiteScreenshotService.Repositories.InMemoryUserRepository.html
+  name: InMemoryUserRepository
+  nameWithType: InMemoryUserRepository
+  fullName: WebsiteScreenshotService.Repositories.InMemoryUserRepository
+- uid: WebsiteScreenshotService.Repositories.IUserRepository
+  commentId: T:WebsiteScreenshotService.Repositories.IUserRepository
+  parent: WebsiteScreenshotService.Repositories
+  href: WebsiteScreenshotService.Repositories.IUserRepository.html
+  name: IUserRepository
+  nameWithType: IUserRepository
+  fullName: WebsiteScreenshotService.Repositories.IUserRepository
+- uid: WebsiteScreenshotService.Repositories
+  commentId: N:WebsiteScreenshotService.Repositories
+  href: WebsiteScreenshotService.html
+  name: WebsiteScreenshotService.Repositories
+  nameWithType: WebsiteScreenshotService.Repositories
+  fullName: WebsiteScreenshotService.Repositories
+  spec.csharp:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Repositories
+    name: Repositories
+    href: WebsiteScreenshotService.Repositories.html
+  spec.vb:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Repositories
+    name: Repositories
+    href: WebsiteScreenshotService.Repositories.html

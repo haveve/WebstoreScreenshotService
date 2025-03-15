@@ -1,0 +1,587 @@
+### YamlMime:ManagedReference
+items:
+- uid: WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample
+  commentId: T:WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample
+  id: RegisterResponseExample
+  parent: WebsiteScreenshotService.Controllers.Examples.Indentity
+  children:
+  - WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample.GetExamples
+  langs:
+  - csharp
+  - vb
+  name: RegisterResponseExample
+  nameWithType: RegisterResponseExample
+  fullName: WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample
+  type: Class
+  source:
+    id: RegisterResponseExample
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Controllers\Examples\Indentity\LoginResponseExample.cs
+    startLine: 6
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Controllers.Examples.Indentity
+  syntax:
+    content: 'public class RegisterResponseExample : IMultipleExamplesProvider<string>'
+    content.vb: Public Class RegisterResponseExample Implements IMultipleExamplesProvider(Of String)
+  inheritance:
+  - System.Object
+  implements:
+  - Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider{System.String}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample.GetExamples
+  commentId: M:WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample.GetExamples
+  id: GetExamples
+  parent: WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample
+  langs:
+  - csharp
+  - vb
+  name: GetExamples()
+  nameWithType: RegisterResponseExample.GetExamples()
+  fullName: WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample.GetExamples()
+  type: Method
+  source:
+    id: GetExamples
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Controllers\Examples\Indentity\LoginResponseExample.cs
+    startLine: 8
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Controllers.Examples.Indentity
+  example: []
+  syntax:
+    content: public IEnumerable<SwaggerExample<string>> GetExamples()
+    return:
+      type: System.Collections.Generic.IEnumerable{Swashbuckle.AspNetCore.Filters.SwaggerExample{System.String}}
+    content.vb: Public Function GetExamples() As IEnumerable(Of SwaggerExample(Of String))
+  overload: WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample.GetExamples*
+  implements:
+  - Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider{System.String}.GetExamples
+references:
+- uid: WebsiteScreenshotService.Controllers.Examples.Indentity
+  commentId: N:WebsiteScreenshotService.Controllers.Examples.Indentity
+  href: WebsiteScreenshotService.html
+  name: WebsiteScreenshotService.Controllers.Examples.Indentity
+  nameWithType: WebsiteScreenshotService.Controllers.Examples.Indentity
+  fullName: WebsiteScreenshotService.Controllers.Examples.Indentity
+  spec.csharp:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Controllers
+    name: Controllers
+    href: WebsiteScreenshotService.Controllers.html
+  - name: .
+  - uid: WebsiteScreenshotService.Controllers.Examples
+    name: Examples
+    href: WebsiteScreenshotService.Controllers.Examples.html
+  - name: .
+  - uid: WebsiteScreenshotService.Controllers.Examples.Indentity
+    name: Indentity
+    href: WebsiteScreenshotService.Controllers.Examples.Indentity.html
+  spec.vb:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Controllers
+    name: Controllers
+    href: WebsiteScreenshotService.Controllers.html
+  - name: .
+  - uid: WebsiteScreenshotService.Controllers.Examples
+    name: Examples
+    href: WebsiteScreenshotService.Controllers.Examples.html
+  - name: .
+  - uid: WebsiteScreenshotService.Controllers.Examples.Indentity
+    name: Indentity
+    href: WebsiteScreenshotService.Controllers.Examples.Indentity.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider{System.String}
+  commentId: T:Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider{System.String}
+  parent: Swashbuckle.AspNetCore.Filters
+  definition: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider`1
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: IMultipleExamplesProvider<string>
+  nameWithType: IMultipleExamplesProvider<string>
+  fullName: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider<string>
+  nameWithType.vb: IMultipleExamplesProvider(Of String)
+  fullName.vb: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider(Of String)
+  name.vb: IMultipleExamplesProvider(Of String)
+  spec.csharp:
+  - uid: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider`1
+    name: IMultipleExamplesProvider
+    isExternal: true
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider`1
+    name: IMultipleExamplesProvider
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider`1
+  commentId: T:Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider`1
+  isExternal: true
+  name: IMultipleExamplesProvider<T>
+  nameWithType: IMultipleExamplesProvider<T>
+  fullName: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider<T>
+  nameWithType.vb: IMultipleExamplesProvider(Of T)
+  fullName.vb: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider(Of T)
+  name.vb: IMultipleExamplesProvider(Of T)
+  spec.csharp:
+  - uid: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider`1
+    name: IMultipleExamplesProvider
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider`1
+    name: IMultipleExamplesProvider
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Swashbuckle.AspNetCore.Filters
+  commentId: N:Swashbuckle.AspNetCore.Filters
+  isExternal: true
+  name: Swashbuckle.AspNetCore.Filters
+  nameWithType: Swashbuckle.AspNetCore.Filters
+  fullName: Swashbuckle.AspNetCore.Filters
+  spec.csharp:
+  - uid: Swashbuckle
+    name: Swashbuckle
+    isExternal: true
+  - name: .
+  - uid: Swashbuckle.AspNetCore
+    name: AspNetCore
+    isExternal: true
+  - name: .
+  - uid: Swashbuckle.AspNetCore.Filters
+    name: Filters
+    isExternal: true
+  spec.vb:
+  - uid: Swashbuckle
+    name: Swashbuckle
+    isExternal: true
+  - name: .
+  - uid: Swashbuckle.AspNetCore
+    name: AspNetCore
+    isExternal: true
+  - name: .
+  - uid: Swashbuckle.AspNetCore.Filters
+    name: Filters
+    isExternal: true
+- uid: WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample.GetExamples*
+  commentId: Overload:WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample.GetExamples
+  href: WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample.html#WebsiteScreenshotService_Controllers_Examples_Indentity_RegisterResponseExample_GetExamples
+  name: GetExamples
+  nameWithType: RegisterResponseExample.GetExamples
+  fullName: WebsiteScreenshotService.Controllers.Examples.Indentity.RegisterResponseExample.GetExamples
+- uid: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider{System.String}.GetExamples
+  commentId: M:Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider{System.String}.GetExamples
+  parent: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider{System.String}
+  definition: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider`1.GetExamples
+  name: GetExamples()
+  nameWithType: IMultipleExamplesProvider<string>.GetExamples()
+  fullName: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider<string>.GetExamples()
+  nameWithType.vb: IMultipleExamplesProvider(Of String).GetExamples()
+  fullName.vb: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider(Of String).GetExamples()
+  spec.csharp:
+  - uid: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider{System.String}.GetExamples
+    name: GetExamples
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider{System.String}.GetExamples
+    name: GetExamples
+    isExternal: true
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IEnumerable{Swashbuckle.AspNetCore.Filters.SwaggerExample{System.String}}
+  commentId: T:System.Collections.Generic.IEnumerable{Swashbuckle.AspNetCore.Filters.SwaggerExample{System.String}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<SwaggerExample<string>>
+  nameWithType: IEnumerable<SwaggerExample<string>>
+  fullName: System.Collections.Generic.IEnumerable<Swashbuckle.AspNetCore.Filters.SwaggerExample<string>>
+  nameWithType.vb: IEnumerable(Of SwaggerExample(Of String))
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Swashbuckle.AspNetCore.Filters.SwaggerExample(Of String))
+  name.vb: IEnumerable(Of SwaggerExample(Of String))
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Swashbuckle.AspNetCore.Filters.SwaggerExample`1
+    name: SwaggerExample
+    isExternal: true
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Swashbuckle.AspNetCore.Filters.SwaggerExample`1
+    name: SwaggerExample
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider`1.GetExamples
+  commentId: M:Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider`1.GetExamples
+  isExternal: true
+  name: GetExamples()
+  nameWithType: IMultipleExamplesProvider<T>.GetExamples()
+  fullName: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider<T>.GetExamples()
+  nameWithType.vb: IMultipleExamplesProvider(Of T).GetExamples()
+  fullName.vb: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider(Of T).GetExamples()
+  spec.csharp:
+  - uid: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider`1.GetExamples
+    name: GetExamples
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider`1.GetExamples
+    name: GetExamples
+    isExternal: true
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

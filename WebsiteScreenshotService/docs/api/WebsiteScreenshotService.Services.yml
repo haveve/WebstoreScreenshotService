@@ -1,0 +1,53 @@
+### YamlMime:ManagedReference
+items:
+- uid: WebsiteScreenshotService.Services
+  commentId: N:WebsiteScreenshotService.Services
+  id: WebsiteScreenshotService.Services
+  children:
+  - WebsiteScreenshotService.Services.BrowserService
+  - WebsiteScreenshotService.Services.IBrowserService
+  langs:
+  - csharp
+  - vb
+  name: WebsiteScreenshotService.Services
+  nameWithType: WebsiteScreenshotService.Services
+  fullName: WebsiteScreenshotService.Services
+  type: Namespace
+  assemblies:
+  - WebsiteScreenshotService
+references:
+- uid: WebsiteScreenshotService.Services.BrowserService
+  commentId: T:WebsiteScreenshotService.Services.BrowserService
+  href: WebsiteScreenshotService.Services.BrowserService.html
+  name: BrowserService
+  nameWithType: BrowserService
+  fullName: WebsiteScreenshotService.Services.BrowserService
+- uid: WebsiteScreenshotService.Services.IBrowserService
+  commentId: T:WebsiteScreenshotService.Services.IBrowserService
+  parent: WebsiteScreenshotService.Services
+  href: WebsiteScreenshotService.Services.IBrowserService.html
+  name: IBrowserService
+  nameWithType: IBrowserService
+  fullName: WebsiteScreenshotService.Services.IBrowserService
+- uid: WebsiteScreenshotService.Services
+  commentId: N:WebsiteScreenshotService.Services
+  href: WebsiteScreenshotService.html
+  name: WebsiteScreenshotService.Services
+  nameWithType: WebsiteScreenshotService.Services
+  fullName: WebsiteScreenshotService.Services
+  spec.csharp:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Services
+    name: Services
+    href: WebsiteScreenshotService.Services.html
+  spec.vb:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Services
+    name: Services
+    href: WebsiteScreenshotService.Services.html

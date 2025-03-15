@@ -1,0 +1,53 @@
+### YamlMime:ManagedReference
+items:
+- uid: WebsiteScreenshotService.Extensions
+  commentId: N:WebsiteScreenshotService.Extensions
+  id: WebsiteScreenshotService.Extensions
+  children:
+  - WebsiteScreenshotService.Extensions.PrincipalExtensions
+  - WebsiteScreenshotService.Extensions.UserExtensions
+  langs:
+  - csharp
+  - vb
+  name: WebsiteScreenshotService.Extensions
+  nameWithType: WebsiteScreenshotService.Extensions
+  fullName: WebsiteScreenshotService.Extensions
+  type: Namespace
+  assemblies:
+  - WebsiteScreenshotService
+references:
+- uid: WebsiteScreenshotService.Extensions.PrincipalExtensions
+  commentId: T:WebsiteScreenshotService.Extensions.PrincipalExtensions
+  href: WebsiteScreenshotService.Extensions.PrincipalExtensions.html
+  name: PrincipalExtensions
+  nameWithType: PrincipalExtensions
+  fullName: WebsiteScreenshotService.Extensions.PrincipalExtensions
+- uid: WebsiteScreenshotService.Extensions.UserExtensions
+  commentId: T:WebsiteScreenshotService.Extensions.UserExtensions
+  parent: WebsiteScreenshotService.Extensions
+  href: WebsiteScreenshotService.Extensions.UserExtensions.html
+  name: UserExtensions
+  nameWithType: UserExtensions
+  fullName: WebsiteScreenshotService.Extensions.UserExtensions
+- uid: WebsiteScreenshotService.Extensions
+  commentId: N:WebsiteScreenshotService.Extensions
+  href: WebsiteScreenshotService.html
+  name: WebsiteScreenshotService.Extensions
+  nameWithType: WebsiteScreenshotService.Extensions
+  fullName: WebsiteScreenshotService.Extensions
+  spec.csharp:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Extensions
+    name: Extensions
+    href: WebsiteScreenshotService.Extensions.html
+  spec.vb:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Extensions
+    name: Extensions
+    href: WebsiteScreenshotService.Extensions.html

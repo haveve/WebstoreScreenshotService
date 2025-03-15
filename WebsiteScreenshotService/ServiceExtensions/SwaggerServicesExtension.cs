@@ -1,0 +1,40 @@
+﻿using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
+using System.Reflection;
+
+namespace WebsiteScreenshotService.ServiceExtensions;
+
+public static class SwaggerServicesExtension
+{
+    public static IServiceCollection AddSwaggerServices(this IServiceCollection services)
+    {
+        return services.AddEndpointsApiExplorer()
+            .AddSwaggerGen((options) =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "Screenshot API",
+                    Description = "Api for making screenshot of a website",
+                    TermsOfService = new Uri("https://example.com/terms"),
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Ivan Pohoidash",
+                        Url = new Uri("https://github.com/haveve")
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "Licence",
+                        Url = new Uri("https://example.com/license")
+                    }
+                });
+
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+
+                options.ExampleFilters();
+            })
+            .AddSwaggerExamplesFromAssemblies(Assembly.GetEntryAssembly());
+    }
+}
+

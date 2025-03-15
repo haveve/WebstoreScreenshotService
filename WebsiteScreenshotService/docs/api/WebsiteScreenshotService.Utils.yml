@@ -1,0 +1,42 @@
+### YamlMime:ManagedReference
+items:
+- uid: WebsiteScreenshotService.Utils
+  commentId: N:WebsiteScreenshotService.Utils
+  id: WebsiteScreenshotService.Utils
+  children:
+  - WebsiteScreenshotService.Utils.LazyAsync`1
+  langs:
+  - csharp
+  - vb
+  name: WebsiteScreenshotService.Utils
+  nameWithType: WebsiteScreenshotService.Utils
+  fullName: WebsiteScreenshotService.Utils
+  type: Namespace
+  assemblies:
+  - WebsiteScreenshotService
+references:
+- uid: WebsiteScreenshotService.Utils.LazyAsync`1
+  commentId: T:WebsiteScreenshotService.Utils.LazyAsync`1
+  href: WebsiteScreenshotService.Utils.LazyAsync-1.html
+  name: LazyAsync<T>
+  nameWithType: LazyAsync<T>
+  fullName: WebsiteScreenshotService.Utils.LazyAsync<T>
+  nameWithType.vb: LazyAsync(Of T)
+  fullName.vb: WebsiteScreenshotService.Utils.LazyAsync(Of T)
+  name.vb: LazyAsync(Of T)
+  spec.csharp:
+  - uid: WebsiteScreenshotService.Utils.LazyAsync`1
+    name: LazyAsync
+    href: WebsiteScreenshotService.Utils.LazyAsync-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: WebsiteScreenshotService.Utils.LazyAsync`1
+    name: LazyAsync
+    href: WebsiteScreenshotService.Utils.LazyAsync-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

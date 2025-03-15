@@ -1,0 +1,81 @@
+### YamlMime:ManagedReference
+items:
+- uid: WebsiteScreenshotService.Entities.SubscriptionType
+  commentId: T:WebsiteScreenshotService.Entities.SubscriptionType
+  id: SubscriptionType
+  parent: WebsiteScreenshotService.Entities
+  children:
+  - WebsiteScreenshotService.Entities.SubscriptionType.Regular
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionType
+  nameWithType: SubscriptionType
+  fullName: WebsiteScreenshotService.Entities.SubscriptionType
+  type: Enum
+  source:
+    id: SubscriptionType
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Entities\SubscriptionPlan.cs
+    startLine: 36
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Entities
+  summary: Defines the types of subscription plans.
+  example: []
+  syntax:
+    content: public enum SubscriptionType
+    content.vb: Public Enum SubscriptionType
+- uid: WebsiteScreenshotService.Entities.SubscriptionType.Regular
+  commentId: F:WebsiteScreenshotService.Entities.SubscriptionType.Regular
+  id: Regular
+  parent: WebsiteScreenshotService.Entities.SubscriptionType
+  langs:
+  - csharp
+  - vb
+  name: Regular
+  nameWithType: SubscriptionType.Regular
+  fullName: WebsiteScreenshotService.Entities.SubscriptionType.Regular
+  type: Field
+  source:
+    id: Regular
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Entities\SubscriptionPlan.cs
+    startLine: 41
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Entities
+  summary: Represents a regular subscription plan.
+  example: []
+  syntax:
+    content: Regular = 0
+    return:
+      type: WebsiteScreenshotService.Entities.SubscriptionType
+references:
+- uid: WebsiteScreenshotService.Entities
+  commentId: N:WebsiteScreenshotService.Entities
+  href: WebsiteScreenshotService.html
+  name: WebsiteScreenshotService.Entities
+  nameWithType: WebsiteScreenshotService.Entities
+  fullName: WebsiteScreenshotService.Entities
+  spec.csharp:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Entities
+    name: Entities
+    href: WebsiteScreenshotService.Entities.html
+  spec.vb:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Entities
+    name: Entities
+    href: WebsiteScreenshotService.Entities.html
+- uid: WebsiteScreenshotService.Entities.SubscriptionType
+  commentId: T:WebsiteScreenshotService.Entities.SubscriptionType
+  parent: WebsiteScreenshotService.Entities
+  href: WebsiteScreenshotService.Entities.SubscriptionType.html
+  name: SubscriptionType
+  nameWithType: SubscriptionType
+  fullName: WebsiteScreenshotService.Entities.SubscriptionType

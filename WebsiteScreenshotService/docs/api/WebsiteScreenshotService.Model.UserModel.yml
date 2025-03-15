@@ -1,0 +1,637 @@
+### YamlMime:ManagedReference
+items:
+- uid: WebsiteScreenshotService.Model.UserModel
+  commentId: T:WebsiteScreenshotService.Model.UserModel
+  id: UserModel
+  parent: WebsiteScreenshotService.Model
+  children:
+  - WebsiteScreenshotService.Model.UserModel.#ctor(System.String,System.String,System.String,WebsiteScreenshotService.Entities.SubscriptionPlan)
+  - WebsiteScreenshotService.Model.UserModel.Email
+  - WebsiteScreenshotService.Model.UserModel.GetModel(WebsiteScreenshotService.Entities.User)
+  - WebsiteScreenshotService.Model.UserModel.Name
+  - WebsiteScreenshotService.Model.UserModel.SubscriptionPlan
+  - WebsiteScreenshotService.Model.UserModel.Surname
+  langs:
+  - csharp
+  - vb
+  name: UserModel
+  nameWithType: UserModel
+  fullName: WebsiteScreenshotService.Model.UserModel
+  type: Class
+  source:
+    id: UserModel
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Model\UserModel.cs
+    startLine: 11
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Model
+  summary: Represents a user model with basic user information and subscription plan details.
+  example: []
+  syntax:
+    content: 'public record UserModel : IEquatable<UserModel>'
+    content.vb: Public Class UserModel Implements IEquatable(Of UserModel)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{WebsiteScreenshotService.Model.UserModel}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: WebsiteScreenshotService.Model.UserModel.#ctor(System.String,System.String,System.String,WebsiteScreenshotService.Entities.SubscriptionPlan)
+  commentId: M:WebsiteScreenshotService.Model.UserModel.#ctor(System.String,System.String,System.String,WebsiteScreenshotService.Entities.SubscriptionPlan)
+  id: '#ctor(System.String,System.String,System.String,WebsiteScreenshotService.Entities.SubscriptionPlan)'
+  parent: WebsiteScreenshotService.Model.UserModel
+  langs:
+  - csharp
+  - vb
+  name: UserModel(string, string, string, SubscriptionPlan)
+  nameWithType: UserModel.UserModel(string, string, string, SubscriptionPlan)
+  fullName: WebsiteScreenshotService.Model.UserModel.UserModel(string, string, string, WebsiteScreenshotService.Entities.SubscriptionPlan)
+  type: Constructor
+  source:
+    id: .ctor
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Model\UserModel.cs
+    startLine: 11
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Model
+  summary: Represents a user model with basic user information and subscription plan details.
+  example: []
+  syntax:
+    content: public UserModel(string Name, string Surname, string Email, SubscriptionPlan SubscriptionPlan)
+    parameters:
+    - id: Name
+      type: System.String
+      description: The first name of the user.
+    - id: Surname
+      type: System.String
+      description: The surname of the user.
+    - id: Email
+      type: System.String
+      description: The email address of the user.
+    - id: SubscriptionPlan
+      type: WebsiteScreenshotService.Entities.SubscriptionPlan
+      description: The subscription plan associated with the user.
+    content.vb: Public Sub New(Name As String, Surname As String, Email As String, SubscriptionPlan As SubscriptionPlan)
+  overload: WebsiteScreenshotService.Model.UserModel.#ctor*
+  nameWithType.vb: UserModel.New(String, String, String, SubscriptionPlan)
+  fullName.vb: WebsiteScreenshotService.Model.UserModel.New(String, String, String, WebsiteScreenshotService.Entities.SubscriptionPlan)
+  name.vb: New(String, String, String, SubscriptionPlan)
+- uid: WebsiteScreenshotService.Model.UserModel.Name
+  commentId: P:WebsiteScreenshotService.Model.UserModel.Name
+  id: Name
+  parent: WebsiteScreenshotService.Model.UserModel
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: UserModel.Name
+  fullName: WebsiteScreenshotService.Model.UserModel.Name
+  type: Property
+  source:
+    id: Name
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Model\UserModel.cs
+    startLine: 11
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Model
+  summary: The first name of the user.
+  example: []
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: WebsiteScreenshotService.Model.UserModel.Name*
+- uid: WebsiteScreenshotService.Model.UserModel.Surname
+  commentId: P:WebsiteScreenshotService.Model.UserModel.Surname
+  id: Surname
+  parent: WebsiteScreenshotService.Model.UserModel
+  langs:
+  - csharp
+  - vb
+  name: Surname
+  nameWithType: UserModel.Surname
+  fullName: WebsiteScreenshotService.Model.UserModel.Surname
+  type: Property
+  source:
+    id: Surname
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Model\UserModel.cs
+    startLine: 11
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Model
+  summary: The surname of the user.
+  example: []
+  syntax:
+    content: public string Surname { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Surname As String
+  overload: WebsiteScreenshotService.Model.UserModel.Surname*
+- uid: WebsiteScreenshotService.Model.UserModel.Email
+  commentId: P:WebsiteScreenshotService.Model.UserModel.Email
+  id: Email
+  parent: WebsiteScreenshotService.Model.UserModel
+  langs:
+  - csharp
+  - vb
+  name: Email
+  nameWithType: UserModel.Email
+  fullName: WebsiteScreenshotService.Model.UserModel.Email
+  type: Property
+  source:
+    id: Email
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Model\UserModel.cs
+    startLine: 11
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Model
+  summary: The email address of the user.
+  example: []
+  syntax:
+    content: public string Email { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Email As String
+  overload: WebsiteScreenshotService.Model.UserModel.Email*
+- uid: WebsiteScreenshotService.Model.UserModel.SubscriptionPlan
+  commentId: P:WebsiteScreenshotService.Model.UserModel.SubscriptionPlan
+  id: SubscriptionPlan
+  parent: WebsiteScreenshotService.Model.UserModel
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionPlan
+  nameWithType: UserModel.SubscriptionPlan
+  fullName: WebsiteScreenshotService.Model.UserModel.SubscriptionPlan
+  type: Property
+  source:
+    id: SubscriptionPlan
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Model\UserModel.cs
+    startLine: 11
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Model
+  summary: The subscription plan associated with the user.
+  example: []
+  syntax:
+    content: public SubscriptionPlan SubscriptionPlan { get; init; }
+    parameters: []
+    return:
+      type: WebsiteScreenshotService.Entities.SubscriptionPlan
+    content.vb: Public Property SubscriptionPlan As SubscriptionPlan
+  overload: WebsiteScreenshotService.Model.UserModel.SubscriptionPlan*
+- uid: WebsiteScreenshotService.Model.UserModel.GetModel(WebsiteScreenshotService.Entities.User)
+  commentId: M:WebsiteScreenshotService.Model.UserModel.GetModel(WebsiteScreenshotService.Entities.User)
+  id: GetModel(WebsiteScreenshotService.Entities.User)
+  parent: WebsiteScreenshotService.Model.UserModel
+  langs:
+  - csharp
+  - vb
+  name: GetModel(User)
+  nameWithType: UserModel.GetModel(User)
+  fullName: WebsiteScreenshotService.Model.UserModel.GetModel(WebsiteScreenshotService.Entities.User)
+  type: Method
+  source:
+    id: GetModel
+    path: C:\Users\MyPC\Desktop\WebsiteScreenshotService\WebsiteScreenshotService\Model\UserModel.cs
+    startLine: 18
+  assemblies:
+  - WebsiteScreenshotService
+  namespace: WebsiteScreenshotService.Model
+  summary: Creates a <xref href="WebsiteScreenshotService.Model.UserModel" data-throw-if-not-resolved="false"></xref> instance from a <xref href="WebsiteScreenshotService.Entities.User" data-throw-if-not-resolved="false"></xref> entity.
+  example: []
+  syntax:
+    content: public static UserModel GetModel(User user)
+    parameters:
+    - id: user
+      type: WebsiteScreenshotService.Entities.User
+      description: The user entity to convert.
+    return:
+      type: WebsiteScreenshotService.Model.UserModel
+      description: A new <xref href="WebsiteScreenshotService.Model.UserModel" data-throw-if-not-resolved="false"></xref> instance.
+    content.vb: Public Shared Function GetModel(user As User) As UserModel
+  overload: WebsiteScreenshotService.Model.UserModel.GetModel*
+references:
+- uid: WebsiteScreenshotService.Model
+  commentId: N:WebsiteScreenshotService.Model
+  href: WebsiteScreenshotService.html
+  name: WebsiteScreenshotService.Model
+  nameWithType: WebsiteScreenshotService.Model
+  fullName: WebsiteScreenshotService.Model
+  spec.csharp:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Model
+    name: Model
+    href: WebsiteScreenshotService.Model.html
+  spec.vb:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Model
+    name: Model
+    href: WebsiteScreenshotService.Model.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{WebsiteScreenshotService.Model.UserModel}
+  commentId: T:System.IEquatable{WebsiteScreenshotService.Model.UserModel}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<UserModel>
+  nameWithType: IEquatable<UserModel>
+  fullName: System.IEquatable<WebsiteScreenshotService.Model.UserModel>
+  nameWithType.vb: IEquatable(Of UserModel)
+  fullName.vb: System.IEquatable(Of WebsiteScreenshotService.Model.UserModel)
+  name.vb: IEquatable(Of UserModel)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: WebsiteScreenshotService.Model.UserModel
+    name: UserModel
+    href: WebsiteScreenshotService.Model.UserModel.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: WebsiteScreenshotService.Model.UserModel
+    name: UserModel
+    href: WebsiteScreenshotService.Model.UserModel.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: WebsiteScreenshotService.Model.UserModel.#ctor*
+  commentId: Overload:WebsiteScreenshotService.Model.UserModel.#ctor
+  href: WebsiteScreenshotService.Model.UserModel.html#WebsiteScreenshotService_Model_UserModel__ctor_System_String_System_String_System_String_WebsiteScreenshotService_Entities_SubscriptionPlan_
+  name: UserModel
+  nameWithType: UserModel.UserModel
+  fullName: WebsiteScreenshotService.Model.UserModel.UserModel
+  nameWithType.vb: UserModel.New
+  fullName.vb: WebsiteScreenshotService.Model.UserModel.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: WebsiteScreenshotService.Entities.SubscriptionPlan
+  commentId: T:WebsiteScreenshotService.Entities.SubscriptionPlan
+  parent: WebsiteScreenshotService.Entities
+  href: WebsiteScreenshotService.Entities.SubscriptionPlan.html
+  name: SubscriptionPlan
+  nameWithType: SubscriptionPlan
+  fullName: WebsiteScreenshotService.Entities.SubscriptionPlan
+- uid: WebsiteScreenshotService.Entities
+  commentId: N:WebsiteScreenshotService.Entities
+  href: WebsiteScreenshotService.html
+  name: WebsiteScreenshotService.Entities
+  nameWithType: WebsiteScreenshotService.Entities
+  fullName: WebsiteScreenshotService.Entities
+  spec.csharp:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Entities
+    name: Entities
+    href: WebsiteScreenshotService.Entities.html
+  spec.vb:
+  - uid: WebsiteScreenshotService
+    name: WebsiteScreenshotService
+    href: WebsiteScreenshotService.html
+  - name: .
+  - uid: WebsiteScreenshotService.Entities
+    name: Entities
+    href: WebsiteScreenshotService.Entities.html
+- uid: WebsiteScreenshotService.Model.UserModel.Name*
+  commentId: Overload:WebsiteScreenshotService.Model.UserModel.Name
+  href: WebsiteScreenshotService.Model.UserModel.html#WebsiteScreenshotService_Model_UserModel_Name
+  name: Name
+  nameWithType: UserModel.Name
+  fullName: WebsiteScreenshotService.Model.UserModel.Name
+- uid: WebsiteScreenshotService.Model.UserModel.Surname*
+  commentId: Overload:WebsiteScreenshotService.Model.UserModel.Surname
+  href: WebsiteScreenshotService.Model.UserModel.html#WebsiteScreenshotService_Model_UserModel_Surname
+  name: Surname
+  nameWithType: UserModel.Surname
+  fullName: WebsiteScreenshotService.Model.UserModel.Surname
+- uid: WebsiteScreenshotService.Model.UserModel.Email*
+  commentId: Overload:WebsiteScreenshotService.Model.UserModel.Email
+  href: WebsiteScreenshotService.Model.UserModel.html#WebsiteScreenshotService_Model_UserModel_Email
+  name: Email
+  nameWithType: UserModel.Email
+  fullName: WebsiteScreenshotService.Model.UserModel.Email
+- uid: WebsiteScreenshotService.Model.UserModel.SubscriptionPlan*
+  commentId: Overload:WebsiteScreenshotService.Model.UserModel.SubscriptionPlan
+  href: WebsiteScreenshotService.Model.UserModel.html#WebsiteScreenshotService_Model_UserModel_SubscriptionPlan
+  name: SubscriptionPlan
+  nameWithType: UserModel.SubscriptionPlan
+  fullName: WebsiteScreenshotService.Model.UserModel.SubscriptionPlan
+- uid: WebsiteScreenshotService.Model.UserModel
+  commentId: T:WebsiteScreenshotService.Model.UserModel
+  parent: WebsiteScreenshotService.Model
+  href: WebsiteScreenshotService.Model.UserModel.html
+  name: UserModel
+  nameWithType: UserModel
+  fullName: WebsiteScreenshotService.Model.UserModel
+- uid: WebsiteScreenshotService.Entities.User
+  commentId: T:WebsiteScreenshotService.Entities.User
+  parent: WebsiteScreenshotService.Entities
+  href: WebsiteScreenshotService.Entities.User.html
+  name: User
+  nameWithType: User
+  fullName: WebsiteScreenshotService.Entities.User
+- uid: WebsiteScreenshotService.Model.UserModel.GetModel*
+  commentId: Overload:WebsiteScreenshotService.Model.UserModel.GetModel
+  href: WebsiteScreenshotService.Model.UserModel.html#WebsiteScreenshotService_Model_UserModel_GetModel_WebsiteScreenshotService_Entities_User_
+  name: GetModel
+  nameWithType: UserModel.GetModel
+  fullName: WebsiteScreenshotService.Model.UserModel.GetModel
