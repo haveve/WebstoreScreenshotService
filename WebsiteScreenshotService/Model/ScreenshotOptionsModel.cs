@@ -35,11 +35,11 @@ public class ScreenshotOptionsModel
     /// Gets or sets a value indicating whether to capture the full screen. Cannot be specified with Clip.
     /// </summary>
     [OnlyOneSpecified(nameof(Clip))]
-    public bool? FullSreen { get; set; }
+    public bool? FullScreen { get; set; }
 
     /// <summary>
     /// Gets or sets the clipping region of the screenshot. Cannot be specified with FullScreen.
     /// </summary>
-    [OnlyOneSpecified(nameof(FullSreen))]
-    public Clip? Clip { get; set; }
+    [OnlyOneSpecified(nameof(FullScreen))]
+    public ClipModel? Clip { get; set; }
 }

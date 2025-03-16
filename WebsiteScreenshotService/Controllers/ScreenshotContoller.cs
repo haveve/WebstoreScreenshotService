@@ -27,6 +27,7 @@ namespace WebsiteScreenshotService.Controllers
         /// </returns>
         /// <response code="200">Returns the screenshot image file.</response>
         /// <response code="400">User does not exist or has exceeded their available screenshots limit or Input data is invalid.</response>
+        /// <response code="401">Unauthorized</response>
         [HttpPost]
         [ProducesResponseType<FileStream>(StatusCodes.Status200OK, "image/png", "image/webp", "image/jpeg")]
         [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, "application/json")]

@@ -17,7 +17,7 @@ public record SubscriptionPlan(SubscriptionType Type, int ScreenshotLeft)
     /// </summary>
     /// <returns>A regular subscription plan.</returns>
     public static SubscriptionPlan GetRegularSubscriptionPlan()
-        => new(Type: SubscriptionType.Regular, ScreenshotLeft: 10);
+        => new(Type: SubscriptionType.Regular, ScreenshotLeft: 50);
 
     /// <summary>
     /// Determines whether the user can make a screenshot based on the remaining screenshots.
@@ -39,5 +39,5 @@ public enum SubscriptionType
     /// <summary>
     /// Represents a regular subscription plan.
     /// </summary>
-    Regular
+    Regular = 1,
 }

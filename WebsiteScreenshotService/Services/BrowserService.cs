@@ -35,12 +35,12 @@ public class BrowserService : IBrowserService
     /// <param name="screenshotOptions">The screenshot options model.</param>
     /// <returns>The formatted screenshot options.</returns>
     private static ScreenshotOptions FormatScreenshotOptions(ScreenshotOptionsModel screenshotOptions)
-    => new()
-    {
-        Clip = screenshotOptions.Clip,
-        Quality = screenshotOptions.Quality,
-        FullPage = screenshotOptions.FullSreen ?? false,
-        Type = screenshotOptions.ScreenshotType,
-        CaptureBeyondViewport = true,
-    };
+        => new()
+        {
+            Clip = screenshotOptions.Clip?.ToPuppeteerClip(),
+            Quality = screenshotOptions.Quality,
+            FullPage = screenshotOptions.FullScreen ?? false,
+            Type = screenshotOptions.ScreenshotType,
+            CaptureBeyondViewport = true,
+        };
 }

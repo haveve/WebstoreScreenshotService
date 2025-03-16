@@ -11,6 +11,7 @@ public static class SwaggerServicesExtension
         return services.AddEndpointsApiExplorer()
             .AddSwaggerGen((options) =>
             {
+                options.UseInlineDefinitionsForEnums();
                 options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",

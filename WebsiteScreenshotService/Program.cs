@@ -1,12 +1,18 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using PuppeteerSharp;
+using System.Text.Json;
 using WebsiteScreenshotService.Repositories;
 using WebsiteScreenshotService.ServiceExtensions;
 using WebsiteScreenshotService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllerServices();
+builder.Services.AddControllerServices()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+    });
 
 if (builder.Environment.IsDevelopment())
     builder.Services.AddSwaggerServices();
@@ -17,6 +23,16 @@ builder.Services.AddSingleton<IBrowserService, BrowserService>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
+        options.Events = new CookieAuthenticationEvents
+        {
+            OnRedirectToLogin = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            }
+        };
+
+        options.SlidingExpiration = true;
         options.Cookie.SameSite = SameSiteMode.None;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });

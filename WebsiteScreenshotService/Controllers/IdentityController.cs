@@ -18,6 +18,32 @@ public class IdentityController(IUserRepository UserRepository) : ControllerBase
     private readonly IUserRepository _userRepository = UserRepository;
 
     /// <summary>
+    /// Retrieves the information of the currently authenticated user.
+    /// </summary>
+    /// <returns>
+    /// A UserModel with user details if the user is authenticated, or a BadRequest if the user does not exist.
+    /// </returns>
+    /// <response code="200">Returns the UserModel or null if used is not authorized or user does not exist.</response>
+    [HttpGet]
+    [Produces("application/json")]
+    [ProducesResponseType<UserModel>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUserInfo()
+    {
+        var userId = User.GetUserId();
+
+        if (!userId.HasValue)
+            return Ok();
+
+        var user = await _userRepository.GetUserById(userId.Value);
+        var userModel = (UserModel?)null;
+
+        if (user != null)
+            userModel = UserModel.GetModel(user);
+
+        return Ok(userModel);
+    }
+
+    /// <summary>
     /// Logs in a user using their email and password.
     /// </summary>
     /// <param name="login">The login details containing email and password.</param>

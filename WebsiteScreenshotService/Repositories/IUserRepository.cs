@@ -16,6 +16,13 @@ public interface IUserRepository
     public Task<User?> GetUserByEmailAndPasswordAsync(string email, string password);
 
     /// <summary>
+    /// Retrieves a user by their unique identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the user.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the user if found; otherwise, null.</returns>
+    public Task<User?> GetUserById(Guid id);
+
+    /// <summary>
     /// Creates a new user.
     /// </summary>
     /// <param name="user">The user to create.</param>
