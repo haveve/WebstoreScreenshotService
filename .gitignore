@@ -9,6 +9,11 @@
 /.pnp
 .pnp.js
 
+*/docs/api
+*/docs/_site
+
+.env.dev
+
 .cert/
 
 # testing
