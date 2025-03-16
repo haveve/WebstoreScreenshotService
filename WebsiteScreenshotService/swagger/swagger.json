@@ -14,6 +14,26 @@
     "version": "v1"
   },
   "paths": {
+    "/Identity/GetUserInfo": {
+      "get": {
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Retrieves the information of the currently authenticated user.",
+        "responses": {
+          "200": {
+            "description": "Returns the UserModel or null if used is not authorized or user does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/Identity/Login": {
       "post": {
         "tags": [
@@ -60,7 +80,7 @@
                 },
                 "examples": {
                   "Validation Error": {
-                    "value": "{\"type\":\"https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request\",\"title\":\"One or more model validation errors occurred.\",\"status\":400,\"detail\":\"See the errors property for details\",\"instance\":\"Identity/Login\",\"errors\":{},\"traceId\":\"940ae282-2d8a-4482-be44-f734d10227b3\"}"
+                    "value": "{\"type\":\"https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request\",\"title\":\"One or more model validation errors occurred.\",\"status\":400,\"detail\":\"See the errors property for details\",\"instance\":\"Identity/Login\",\"errors\":{},\"traceId\":\"afe3f12c-9e07-4e6f-a46b-4e316a560ab0\"}"
                   },
                   "User doesn't exist": {
                     "value": "User doesn't exist"
@@ -118,7 +138,7 @@
                 },
                 "examples": {
                   "Validation Error": {
-                    "value": "{\"type\":\"https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request\",\"title\":\"One or more model validation errors occurred.\",\"status\":400,\"detail\":\"See the errors property for details\",\"instance\":\"Identity/Register\",\"errors\":{},\"traceId\":\"b5e41758-1250-4f80-b883-f736c9e1890f\"}"
+                    "value": "{\"type\":\"https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request\",\"title\":\"One or more model validation errors occurred.\",\"status\":400,\"detail\":\"See the errors property for details\",\"instance\":\"Identity/Register\",\"errors\":{},\"traceId\":\"4e57b16f-14a7-4295-9912-efe70b30b3e8\"}"
                   },
                   "User already exists": {
                     "value": "User with that email already exist"
@@ -202,7 +222,7 @@
                 },
                 "examples": {
                   "Validation Error": {
-                    "value": "{\"type\":\"https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request\",\"title\":\"One or more model validation errors occurred.\",\"status\":400,\"detail\":\"See the errors property for details\",\"instance\":\"/MakeScreenshot\",\"errors\":{},\"traceId\":\"0d449c70-38bb-43fe-b8b3-7b3c8e229a37\"}"
+                    "value": "{\"type\":\"https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request\",\"title\":\"One or more model validation errors occurred.\",\"status\":400,\"detail\":\"See the errors property for details\",\"instance\":\"/MakeScreenshot\",\"errors\":{},\"traceId\":\"9dddeb24-2aee-42b3-ab56-db8ee8e72825\"}"
                   },
                   "User doesn't exist": {
                     "value": "User doesn't exist"
@@ -213,6 +233,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -220,31 +243,40 @@
   },
   "components": {
     "schemas": {
-      "Clip": {
+      "ClipModel": {
         "type": "object",
         "properties": {
           "x": {
-            "type": "number",
-            "format": "double"
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Gets or sets the x coordinate of the element in pixels.",
+            "format": "int32"
           },
           "y": {
-            "type": "number",
-            "format": "double"
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Gets or sets the y coordinate of the element in pixels.",
+            "format": "int32"
           },
           "width": {
-            "type": "number",
-            "format": "double"
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Gets or sets the width of the element in pixels.",
+            "format": "int32"
           },
           "height": {
-            "type": "number",
-            "format": "double"
-          },
-          "scale": {
+            "maximum": 10000,
+            "minimum": 1,
             "type": "integer",
+            "description": "Gets or sets the height of the element in pixels.",
             "format": "int32"
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "Represents a rectangular region of a webpage to capture in a screenshot."
       },
       "LoginModel": {
         "required": [
@@ -293,9 +325,7 @@
             "nullable": true
           }
         },
-        "additionalProperties": {
-
-        }
+        "additionalProperties": {}
       },
       "RegisterModel": {
         "required": [
@@ -344,7 +374,14 @@
             "format": "uri"
           },
           "screenshotType": {
-            "$ref": "#/components/schemas/ScreenshotType"
+            "enum": [
+              "Jpeg",
+              "Png",
+              "Webp"
+            ],
+            "type": "string",
+            "description": "Gets or sets the type of screenshot to capture (e.g., PNG, JPEG).",
+            "default": "Png"
           },
           "quality": {
             "maximum": 100,
@@ -354,31 +391,28 @@
             "format": "int32",
             "nullable": true
           },
-          "fullSreen": {
+          "fullScreen": {
             "type": "boolean",
             "description": "Gets or sets a value indicating whether to capture the full screen. Cannot be specified with Clip.",
             "nullable": true
           },
           "clip": {
-            "$ref": "#/components/schemas/Clip"
+            "$ref": "#/components/schemas/ClipModel"
           }
         },
         "additionalProperties": false,
         "description": "Represents the options for taking a screenshot."
       },
-      "ScreenshotType": {
-        "enum": [
-          "Jpeg",
-          "Png",
-          "Webp"
-        ],
-        "type": "string"
-      },
       "SubscriptionPlan": {
         "type": "object",
         "properties": {
           "type": {
-            "$ref": "#/components/schemas/SubscriptionType"
+            "enum": [
+              1
+            ],
+            "type": "integer",
+            "description": "The type of the subscription plan.",
+            "format": "int32"
           },
           "screenshotLeft": {
             "type": "integer",
@@ -388,12 +422,6 @@
         },
         "additionalProperties": false,
         "description": "Represents a subscription plan with a type and the number of screenshots left."
-      },
-      "SubscriptionType": {
-        "enum": [ 0 ],
-        "type": "integer",
-        "description": "Defines the types of subscription plans.",
-        "format": "int32"
       },
       "UserModel": {
         "type": "object",
@@ -455,9 +483,7 @@
             "nullable": true
           }
         },
-        "additionalProperties": {
-
-        }
+        "additionalProperties": {}
       }
     }
   }
