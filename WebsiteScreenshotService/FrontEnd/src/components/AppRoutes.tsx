@@ -8,6 +8,8 @@ import { useDispatch } from 'react-redux'
 import { useAppSelector } from '../behavior/rootReducer'
 import { getReceiveUserAction } from "../behavior/epic";
 import PrivateRoute from "./PrivateRoute";
+import TermsAndConditions from "./termsAndConditions/TermsAndConditions";
+import MyAccount from "./MyAccount";
 
 function AppRoutes() {
     const user = useAppSelector(state => state.user);
@@ -21,13 +23,15 @@ function AppRoutes() {
     if (user === undefined)
         return null;
 
-    var redirectIfUnAuth = () => user !== null;
-    var redirectIfAuth = () => !redirectIfUnAuth();
+    var isUnauth = () => user === null;
+    var isAuth = () => user !== null;
 
     return <Routes>
-        <Route path="/" element={<PrivateRoute element={<MainPage />} toPath="/login" validate={redirectIfUnAuth} />} />
-        <Route path="/login" element={<PrivateRoute element={<LoginPage />} toPath="/" validate={redirectIfAuth} />} />
-        <Route path="/register" element={<PrivateRoute element={<RegisterPage />} toPath="/" validate={redirectIfAuth} />} />
+        <Route path="/my-account" element={<PrivateRoute element={<MyAccount />} toPath="/login" validate={isAuth} />} />
+        <Route path="/privacy-policy" element={<TermsAndConditions />} />
+        <Route path="/" element={<PrivateRoute element={<MainPage />} toPath="/login" validate={isAuth} />} />
+        <Route path="/login" element={<PrivateRoute element={<LoginPage />} toPath="/" validate={isUnauth} />} />
+        <Route path="/register" element={<PrivateRoute element={<RegisterPage />} toPath="/" validate={isUnauth} />} />
     </Routes>
 }
 

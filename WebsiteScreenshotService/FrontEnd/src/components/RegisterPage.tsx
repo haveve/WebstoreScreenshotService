@@ -4,6 +4,7 @@ import { useAppSelector } from "../behavior/rootReducer";
 import { getRegisterAction } from "../behavior/epic";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import cookieStore from '../behavior/cookie/store';
 
 export default () => {
     const [email, setEmail] = useState('');
@@ -20,7 +21,9 @@ export default () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch(getRegisterAction({ email, password, surname, name }));
+
+        if (!cookieStore.declinedCookieConsent())
+            dispatch(getRegisterAction({ email, password, surname, name }));
     };
 
     return (
@@ -63,7 +66,6 @@ export default () => {
                         onChange={(e) => setName(e.target.value)}
                     />
                 </Form.Group>
-                {!loaded && <Form.Text className="text-secondary">Registration...</Form.Text>}
                 {error && <Form.Text className="text-danger">{error}</Form.Text>}
                 <Button variant="success" type="submit">Register</Button>
             </Form>

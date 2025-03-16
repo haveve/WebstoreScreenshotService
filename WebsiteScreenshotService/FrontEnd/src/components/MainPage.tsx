@@ -12,7 +12,7 @@ export default () => {
     const [fullScreen, setFullScreen] = useState<boolean | null>(null);
     const [clip, setClip] = useState<Clip | null>(null);
     const [error, setError] = useState('');
-    const { error: serverError, loaded, image } = useAppSelector(state => state);
+    const { error: serverError, image } = useAppSelector(state => state);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -162,7 +162,6 @@ export default () => {
                         </Row>
                     </Form.Group>
                 )}
-                {!loaded && <Form.Text className="text-secondary">Loading...</Form.Text>}
                 {error && <Form.Text className="text-danger">{error}</Form.Text>}
                 <Button variant="primary" type="submit" className="mt-3">Get Screenshot</Button>
                 {image && (

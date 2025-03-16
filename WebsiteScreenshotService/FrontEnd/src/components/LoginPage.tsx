@@ -4,6 +4,7 @@ import { useAppSelector } from "../behavior/rootReducer";
 import { useDispatch } from "react-redux";
 import { getLoginAction } from "../behavior/epic";
 import { useNavigate } from "react-router-dom";
+import cookieStore from '../behavior/cookie/store';
 
 export default () => {
   const [email, setEmail] = useState('');
@@ -14,7 +15,9 @@ export default () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(getLoginAction({ email, password }));
+
+    if (!cookieStore.declinedCookieConsent())
+      dispatch(getLoginAction({ email, password }));
   };
 
   useEffect(() => {
@@ -43,7 +46,6 @@ export default () => {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Group>
-        {!loaded && <Form.Text className="text-secondary">Login...</Form.Text>}
         {error && <Form.Text className="text-danger">{error}</Form.Text>}
         <Button variant="primary" type="submit">Login</Button>
       </Form>
