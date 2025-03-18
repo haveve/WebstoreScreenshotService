@@ -81,17 +81,4 @@ You can manage your cookie preferences through the cookie consent bar.
 
 ---
 
-## Children's Privacy
-
-Our service is not intended for children under the age of 16. We do not knowingly collect data from children.
-
----
-
-## Changes to This Policy
-
-We may update this Privacy Policy periodically.  
-Any changes will be posted on this page with the updated date.
-
----
-
 _Last updated: March 16, 2025_
