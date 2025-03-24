@@ -37,7 +37,7 @@ export const store = createSlice({
     },
     extraReducers(builder) {
         builder.addDefaultCase((state) => {
-            state.loaded = true;
+            state.loaded = false;
             state.error = null;
         });
     },

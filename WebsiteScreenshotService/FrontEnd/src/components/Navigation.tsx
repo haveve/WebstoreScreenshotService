@@ -34,7 +34,7 @@ export default () => {
                 </Container>
                 <Cookiebar setVisibility={setIsVisible} showCookieBar={isVisible} />
             </Navbar>
-            {!loaded && <BarLoader width={'100vw'} color="#1370f2" height={5} />}
+            <BarLoader width={'100vw'} color="#1370f2" height={5} loading={!loaded} />
             {loaded && cookieCosent === false &&
                 <Row className="p-0 m-0 justify-content-center">
                     <Col sm={9}>

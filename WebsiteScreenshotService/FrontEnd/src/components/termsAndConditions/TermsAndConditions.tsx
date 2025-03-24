@@ -11,16 +11,19 @@ const PrivacyPolicy = () => {
                 <h2>Privacy Policy</h2>
               </Card.Title>
               <Card.Text>
-                <h5>Introduction</h5>
+                <h5>Welcome and Introduction</h5>
                 <p>
-                  Welcome to the Privacy Policy of the <strong>Website Screenshot Service</strong>.
+                  Welcome to the Privacy Policy for our <strong>Website Screenshot Service</strong>.
+                  Your privacy is important to us. This policy explains what data we collect, how we use it, and how we protect your privacy.
                 </p>
-                <p>This document outlines how we collect, use, and protect your data while ensuring compliance with the <strong>General Data Protection Regulation (GDPR)</strong>.</p>
-                
+                <p>
+                  By using our service, you agree to the collection and use of your information as described here. We comply with the <strong>General Data Protection Regulation (GDPR)</strong>, and we’re committed to protecting your data.
+                </p>
+
                 <hr />
-                
-                <h5>Data Collection</h5>
-                <p>We collect the following types of data:</p>
+
+                <h5>What Data We Collect</h5>
+                <p>We collect the following data to provide and improve our services:</p>
                 <ListGroup>
                   <ListGroup.Item><strong>Personal Information:</strong></ListGroup.Item>
                   <ListGroup.Item>Email</ListGroup.Item>
@@ -28,88 +31,77 @@ const PrivacyPolicy = () => {
                   <ListGroup.Item>First and Last Name (during registration)</ListGroup.Item>
                   <ListGroup.Item><strong>Usage Data:</strong></ListGroup.Item>
                   <ListGroup.Item>URLs for screenshots</ListGroup.Item>
-                  <ListGroup.Item>Screenshot types</ListGroup.Item>
-                  <ListGroup.Item>Quality settings</ListGroup.Item>
+                  <ListGroup.Item>Screenshot types and quality settings</ListGroup.Item>
                 </ListGroup>
 
                 <hr />
 
-                <h5>Data Usage</h5>
-                <p>Your data is used to:</p>
+                <h5>How We Use Your Data</h5>
+                <p>Your data is used in the following ways to improve your experience:</p>
                 <ul>
-                  <li><strong>Provide and Improve the Service:</strong> Enhance user experience and service quality.</li>
-                  <li><strong>Authenticate You Securely:</strong> Ensure your account's safety and verify your identity.</li>
-                  <li><strong>Generate and Manage Screenshots Efficiently:</strong> Process and deliver screenshots as requested.</li>
+                  <li><strong>To Provide Our Services:</strong> Your data is used to generate the screenshots you request and ensure the service functions smoothly.</li>
+                  <li><strong>To Improve the Service:</strong> We analyze data to enhance our platform's performance and your experience.</li>
+                  <li><strong>To Secure Your Account:</strong> Your data helps us protect your account and ensure safe usage.</li>
                 </ul>
 
                 <hr />
 
-                <h5>Data Sharing</h5>
-                <p>We <strong>do not</strong> share your personal data with third parties except in the following cases:</p>
+                <h5>Who We Share Your Data With</h5>
+                <p>Your personal data is never sold to third parties. However, we may share your information in specific cases:</p>
                 <ul>
-                  <li><strong>Legal Requirements:</strong> When required by law.</li>
-                  <li><strong>Service Provision:</strong> To fulfill your request for screenshot services (includes third-party services such as headless browsers).</li>
+                  <li><strong>Legal Compliance:</strong> We may disclose data if required by law.</li>
+                  <li><strong>Service Providers:</strong> We may share your data with trusted third parties who help us deliver the service (e.g., headless browsers). These providers are bound by strict privacy contracts.</li>
                 </ul>
 
                 <hr />
 
-                <h5>Data Retention</h5>
-                <p>We retain your personal data only as long as necessary to provide our services and comply with legal obligations. Data will be deleted upon account closure or upon your request.</p>
-
-                <hr />
-
-                <h5>Data Security</h5>
-                <p>We implement robust security measures to protect your data, including encryption and secure storage practices. However, no method of internet transmission or electronic storage is 100% secure.</p>
-
-                <hr />
-
-                <h5>User Rights</h5>
-                <p>Under GDPR, you have the following rights:</p>
+                <h5>Your Rights</h5>
+                <p>Under the GDPR, you have the following rights regarding your personal data:</p>
                 <ul>
-                  <li><strong>Access:</strong> <a href='/my-account'>Request access to your personal data.</a></li>
-                  <li><strong>Rectification:</strong> Correct any inaccuracies in your data.</li>
-                  <li><strong>Erasure:</strong> Request deletion of your data.</li>
-                  <li><strong>Restriction:</strong> Restrict the processing of your data.</li>
-                  <li><strong>Data Portability:</strong> Transfer your data to another service.</li>
-                  <li><strong>Objection:</strong> Object to data processing.</li>
+                  <li><strong>Access:</strong> You can access the data we hold about you at any time. <a href='/my-account'>here</a>.</li>
+                  <li><strong>Correction:</strong> If any information is incorrect or outdated, you can update it.</li>
+                  <li><strong>Deletion:</strong> You have the right to request deletion of your personal data.</li>
+                  <li><strong>Data Portability:</strong> You can request to transfer your data to another service.</li>
+                  <li><strong>Objection:</strong> You can object to us processing your data for specific purposes.</li>
                 </ul>
-                <p>To exercise these rights, please contact us at <strong>haveveq@gmail.com</strong>.</p>
+                <p>If you want to exercise any of these rights, please reach out to us at <strong>haveveq@gmail.com</strong>.</p>
 
                 <hr />
 
-                <h5>Cookies</h5>
-                <p>We use cookies to enhance your experience. Cookies are small data files stored on your device.</p>
-                <p><strong>Types of cookies used:</strong></p>
+                <h5>Cookies and Tracking</h5>
+                <p>We use cookies to make your experience better. Cookies are small files that store data on your device. You can manage your cookie preferences anytime.</p>
+                <p><strong>Types of Cookies:</strong></p>
                 <ul>
-                  <li><strong>Essential Cookies:</strong> Necessary for basic functions.</li>
+                  <li><strong>Essential Cookies:</strong> Required for the website to function properly.</li>
                 </ul>
-                <p>You can manage your cookie preferences through the cookie consent bar.</p>
+                <p>You can control and manage your cookies through the cookie consent bar.</p>
 
                 <hr />
 
-                <h5>Children's Privacy</h5>
-                <p>Our service is not intended for children under the age of 16. We do not knowingly collect data from children.</p>
-
-                <hr />
-
-                <h5>Changes to This Policy</h5>
-                <p>We may update this Privacy Policy periodically. Any changes will be posted on this page with the updated date.</p>
+                <h5>Policy Changes</h5>
+                <p>We may update this policy periodically. The latest version will always be posted here, along with the date it was last updated.</p>
 
                 <hr />
 
                 <h5>Contact Us</h5>
-                <p>If you have any questions about this Privacy Policy, please contact us at:</p>
+                <p>If you have any questions or concerns about this Privacy Policy, please contact us at:</p>
                 <p>📧 <strong>haveveq@gmail.com</strong></p>
 
                 <hr />
 
                 <h5>Consent</h5>
-                <p>By accessing and using our service, you acknowledge that you have read, understood, and agreed to our Privacy Policy and its terms. Your continued use of the service constitutes your explicit consent to the collection, use, and disclosure of your information as described in the Privacy Policy.</p>
+                <p>By continuing to use our service, you acknowledge that you have read and understood this Privacy Policy, and you consent to the collection and use of your information as described.</p>
+                <p>By using our application, you also confirm the following:</p>
+                <ul>
+                  <li>you are older than 16</li>
+                  <li>you are not in a country under a U.S. government embargo or designated as a "terrorist-supporting" country;</li>
+                  <li>you are not on any U.S. government list of prohibited or restricted parties.</li>
+                </ul>
 
                 <hr />
 
                 <footer className="text-center mt-4">
-                  <p><small>Last updated: March 16, 2025</small></p>
+                  <p><small>Last updated: March 23, 2025</small></p>
                 </footer>
               </Card.Text>
             </Card.Body>

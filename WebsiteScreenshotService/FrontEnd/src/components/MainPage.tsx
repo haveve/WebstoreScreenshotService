@@ -45,8 +45,8 @@ export default () => {
             return;
         }
 
-        if(!fullScreen && clip){
-            if(!clip.x || !clip.y || !clip.width || !clip.height){
+        if (!fullScreen && clip) {
+            if (!clip.x || !clip.y || !clip.width || !clip.height) {
                 setError('Please enter valid clip values.');
                 return;
             }
@@ -171,7 +171,11 @@ export default () => {
             {image && (
                 <div className="mt-4 text-center">
                     <h3>Screenshot:</h3>
-                    <img src={image} alt="Screenshot" className="screenshot-image" />
+                    <img src={image}
+                        alt="Screenshot"
+                        className="screenshot-image screenshot-thumbnail cursor-pointer"
+                        onClick={() => window.open(image, '_blank')}
+                    />
                 </div>
             )}
         </Container>

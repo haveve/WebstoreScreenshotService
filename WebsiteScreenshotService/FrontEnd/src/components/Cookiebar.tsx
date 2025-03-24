@@ -1,6 +1,7 @@
 import { useDispatch } from 'react-redux';
 import cookieStore from '../behavior/cookie/store';
 import { getLogoutAction } from '../behavior/epic';
+import { useAppSelector } from '../behavior/rootReducer';
 
 type Props = {
     showCookieBar: boolean;
@@ -12,7 +13,7 @@ const CookieBar = ({ showCookieBar, setVisibility }: Props) => {
         cookieStore.setCookieConsent(choice);
         setVisibility(false);
     };
-
+    const user = useAppSelector((state) => state.user);
     const dispatch = useDispatch();
     const handleLogout = () => dispatch(getLogoutAction());
 
@@ -28,7 +29,7 @@ const CookieBar = ({ showCookieBar, setVisibility }: Props) => {
                 </button>
                 <button style={{ ...styles.button, ...styles.decline }} onClick={() => {
                     handleChoice(false);
-                    handleLogout();
+                    user && handleLogout();
 
                 }}>
                     Decline
