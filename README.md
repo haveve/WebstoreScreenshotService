@@ -35,7 +35,7 @@ The Website Screenshot Service is a .NET 8 application with a React frontend tha
     ```
         mkdir .cert
     ```
-    For starting the front end you need to generate SSL certificates locally. You can use for this purposes mkcert. 
+    For starting the front end you need to generate SSL certificates locally. You can use for this purposes [mkcert](https://github.com/FiloSottile/mkcert). 
     ```
         mkcert -cert-file .cert/cert.pem -key-file .cert/key.pem localhost
     ```
@@ -78,7 +78,7 @@ Refer to the [Code Practices](WebsiteScreenshotService/docs/docs/code-practices.
 
 ## Swagger
 
-To view the Swagger documentation, see [Swagger](WebsiteScreenshotService/Swagger/swagger.json).
+To view the Swagger documentation, see [Swagger](WebsiteScreenshotService/swagger/swagger.json).
 
 For more information, see [Swagger documentation](https://swagger.io/tools/open-source/getting-started/).
 
