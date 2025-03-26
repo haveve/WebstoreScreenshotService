@@ -51,7 +51,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors(builder => builder.WithOrigins("https://localhost:3000")
+app.UseCors(builder => builder.WithOrigins(app.Configuration.GetValue<string>("FrontUrl") ?? "http://localhost:3000")
                  .AllowAnyHeader()
                  .WithMethods(["POST", "GET"])
                  .AllowCredentials());
