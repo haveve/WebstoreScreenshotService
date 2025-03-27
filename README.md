@@ -72,6 +72,17 @@ To change the development configuration, you need to update both the `.env` file
 - **Properties**: Contains launch and publish settings.
 - **docs**: Contains project documentation.
 
+## Documentation
+
+For documentation generation, the 'DocFX' library has been used. Refer to the [API Documentation](WebsiteScreenshotService/docs/index.md).
+
+**Start Documentation Project**:
+```
+    docfx WebsiteScreenshotService\docs\docfx.json --serve
+```
+
+For more information, see [Docfx documentation](https://dotnet.github.io/docfx/).
+
 ## Code Practices
 
 Refer to the [Code Practices](WebsiteScreenshotService/docs/docs/code-practices.md) document for best practices on writing and maintaining code in this project.
@@ -94,22 +105,15 @@ Storybook is used for developing UI components in isolation, see [StoryBook](Web
 
 For more information, see [StoryBook documentation](https://storybook.js.org/docs).
 
-## Documentation
-
-For documentation generation, the 'DocFX' library has been used. Refer to the [API Documentation](WebsiteScreenshotService/docs/index.md).
-
-**Start Documentation Project**:
-```
-    docfx WebsiteScreenshotService\docs\docfx.json --serve
-```
-
-For more information, see [Docfx documentation](https://dotnet.github.io/docfx/).
-
 ## Author
 
 - **Name**: Ivan Pohoidash
 - **Email**: haveveq@gmail.com
 - **GitHub**: [haveveq](https://github.com/haveve)
+
+## GDPR Consent
+
+This project complies with GDPR regulations by obtaining user consent before storing or processing any personal data. Users are informed about the type of data collected and its intended use. For details on GDPR compliance, refer to the GDPR [Compliance document](GDPR.md).
 
 ## License
 
