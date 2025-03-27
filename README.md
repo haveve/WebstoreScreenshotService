@@ -96,7 +96,7 @@ For more information, see [StoryBook documentation](https://storybook.js.org/doc
 
 ## Documentation
 
-For deneration docummentation 'docfx' library has been used, refer to the [API Documentation](WebsiteScreenshotService/docs/index.md).
+For documentation generation, the 'DocFX' library has been used. Refer to the [API Documentation](WebsiteScreenshotService/docs/index.md).
 
 **Start Documentation Project**:
 ```
@@ -113,4 +113,4 @@ For more information, see [Docfx documentation](https://dotnet.github.io/docfx/)
 
 ## License
 
-This project is licensed under the 'CC BY-NC-ND 4.0' License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the **'CC BY-NC-ND 4.0'** License. See the [LICENSE](LICENSE) file for details.
