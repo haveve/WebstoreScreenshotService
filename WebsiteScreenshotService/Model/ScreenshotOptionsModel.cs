@@ -1,8 +1,5 @@
-﻿using PuppeteerSharp;
-using PuppeteerSharp.Media;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using WebsiteScreenshotService.Utils.Attributes;
 
 namespace WebsiteScreenshotService.Model;
 
@@ -25,21 +22,17 @@ public class ScreenshotOptionsModel
     public ScreenshotType ScreenshotType { get; set; }
 
     /// <summary>
-    /// Gets or sets the quality of the screenshot if the type is JPEG. Ignored for PNG.
+    /// Gets or sets the clipping region of the screenshot.
     /// </summary>
-    [Range(0, 100)]
-    [EmptyIf<ScreenshotType>(nameof(ScreenshotType), ScreenshotType.Png)]
-    public int? Quality { get; set; }
+    public ClipModel Clip { get; set; } = default!;
+}
 
-    /// <summary>
-    /// Gets or sets a value indicating whether to capture the full screen. Cannot be specified with Clip.
-    /// </summary>
-    [OnlyOneSpecified(nameof(Clip))]
-    public bool? FullScreen { get; set; }
-
-    /// <summary>
-    /// Gets or sets the clipping region of the screenshot. Cannot be specified with FullScreen.
-    /// </summary>
-    [OnlyOneSpecified(nameof(FullScreen))]
-    public ClipModel? Clip { get; set; }
+/// <summary>
+/// Screenshot file type.
+/// </summary>
+public enum ScreenshotType
+{
+    Png,
+    Jpeg,
+    Pdf,
 }

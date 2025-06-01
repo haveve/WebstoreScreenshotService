@@ -40,4 +40,8 @@ public enum SubscriptionType
     /// Represents a regular subscription plan.
     /// </summary>
     Regular = 1,
+
+    Pro = 2,
+
+    Advanced = 3,
 }

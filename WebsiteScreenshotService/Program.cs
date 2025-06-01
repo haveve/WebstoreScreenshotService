@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using PuppeteerSharp;
 using System.Text.Json;
 using WebsiteScreenshotService.Repositories;
 using WebsiteScreenshotService.ServiceExtensions;
 using WebsiteScreenshotService.Services;
+using WebsiteScreenshotService.Services.ContentInitialization;
+using WebsiteScreenshotService.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +18,13 @@ builder.Services.AddControllerServices()
 if (builder.Environment.IsDevelopment())
     builder.Services.AddSwaggerServices();
 
+builder.Services.AddOptionsWithValidation<BrowserServiceSettings>(builder.Configuration.GetSection("BrowserServiceOptions"));
+
 builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
 builder.Services.AddSingleton<IBrowserService, BrowserService>();
+
+builder.Services.AddSingleton<IContentInitializationManager, ContentInitializationManager>();
+builder.Services.AddSingleton<IContentInitializationStep, ScrollToPageEndStep>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -39,19 +45,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 var app = builder.Build();
 
-app.Lifetime.ApplicationStarted.Register(async () =>
-{
-    var browserFetcher = new BrowserFetcher();
-    await browserFetcher.DownloadAsync();
-});
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseCors(builder => builder.WithOrigins(app.Configuration.GetValue<string>("FrontUrl") ?? "http://localhost:3000")
+app.UseCors(builder => builder.WithOrigins(app.Configuration.GetValue<string>("FrontUrl")!)
                  .AllowAnyHeader()
                  .WithMethods(["POST", "GET"])
                  .AllowCredentials());
