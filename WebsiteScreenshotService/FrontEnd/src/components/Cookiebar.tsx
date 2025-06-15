@@ -2,6 +2,7 @@ import { useDispatch } from 'react-redux';
 import cookieStore from '../behavior/cookie/store';
 import { getLogoutAction } from '../behavior/epic';
 import { useAppSelector } from '../behavior/rootReducer';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
     showCookieBar: boolean;
@@ -9,6 +10,7 @@ type Props = {
 }
 
 const CookieBar = ({ showCookieBar, setVisibility }: Props) => {
+    const { t } = useTranslation();
     const handleChoice = (choice: boolean) => {
         cookieStore.setCookieConsent(choice);
         setVisibility(false);
@@ -22,17 +24,17 @@ const CookieBar = ({ showCookieBar, setVisibility }: Props) => {
 
     return (
         <div style={styles.cookieBar}>
-            <span>This website uses cookies to enhance your experience. By continuing on our site, you are agreeing to our {<a href='/policy-privacy'>Privacy Policy</a>}</span>
+            <span>{t('CookieBar.cookieMessage')} {<a href='/privacy-policy'>{t('CookieBar.privacyPolicy')}</a>}</span>
             <div>
                 <button style={{ ...styles.button, ...styles.accept }} onClick={() => handleChoice(true)}>
-                    Accept essential cookies
+                    {t('CookieBar.acceptCookies')}
                 </button>
                 <button style={{ ...styles.button, ...styles.decline }} onClick={() => {
                     handleChoice(false);
                     user && handleLogout();
 
                 }}>
-                    Decline
+                    {t('CookieBar.decline')}
                 </button>
             </div>
         </div>

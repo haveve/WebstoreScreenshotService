@@ -3,12 +3,14 @@ import { useAppSelector } from "../behavior/rootReducer";
 import { useDispatch } from "react-redux";
 import { getReceiveUserAction } from "../behavior/epic";
 import { Container, Row, Col, Card } from "react-bootstrap";
-import { SubscriptionPlan, SubscriptionType } from "../behavior/types";
+import { SubscriptionType } from "../behavior/types";
+import { useTranslation } from 'react-i18next';
 
 const MyAccount: React.FC = () => {
     const user = useAppSelector((state) => state.user!);
     const loaded = useAppSelector((state) => state.loaded);
     const dispatch = useDispatch();
+    const { t } = useTranslation();
 
     useEffect(() => {
         dispatch(getReceiveUserAction());
@@ -21,35 +23,35 @@ const MyAccount: React.FC = () => {
             <Row className="justify-content-md-center">
                 <Col md={8}>
                     <Card>
-                        <Card.Header as="h2">My Account</Card.Header>
+                        <Card.Header as="h2">{t('MyAccount.myAccount')}</Card.Header>
                         <Card.Body>
                             <Row>
                                 <Col>
                                     <Card.Text>
-                                        <strong>Email:</strong> {user.email}
+                                        <strong>{t('MyAccount.email')}</strong> {user.email}
                                     </Card.Text>
                                 </Col>
                             </Row>
                             <Row>
                                 <Col>
                                     <Card.Text>
-                                        <strong>First Name:</strong> {user.name}
+                                        <strong>{t('MyAccount.firstName')}</strong> {user.name}
                                     </Card.Text>
                                 </Col>
                             </Row>
                             <Row>
                                 <Col>
                                     <Card.Text>
-                                        <strong>Last Name:</strong> {user.surname}
+                                        <strong>{t('MyAccount.lastName')}</strong> {user.surname}
                                     </Card.Text>
                                 </Col>
                             </Row>
                             <Row>
                                 <Col>
                                     <Card.Text>
-                                        <strong>Screenshots Left:</strong> {user.subscriptionPlan.screenshotLeft}
+                                        <strong>{t('MyAccount.screenshotsLeft')}</strong> {user.subscriptionPlan.screenshotLeft}
                                         <br />
-                                        <strong>Plan:</strong> {getPlanDescription(user.subscriptionPlan.type)}
+                                        <strong>{t('MyAccount.plan')}</strong> {getPlanDescription(user.subscriptionPlan.type, t)}
                                     </Card.Text>
                                 </Col>
                             </Row>
@@ -57,9 +59,9 @@ const MyAccount: React.FC = () => {
                                 <Col>
                                     <Card.Text>
                                         <br />
-                                        To manage your data according to <b>GDPR</b>, contact us -{" "}
+                                        {t('MyAccount.gdprContact')} <b>{t('MyAccount.gdpr')}</b>{t('MyAccount.contactUs')} {" "}
                                         <a href="/privacy-policy">
-                                            You can find contact information here
+                                            {t('MyAccount.contactInformation')}
                                         </a>
                                     </Card.Text>
                                 </Col>
@@ -73,12 +75,12 @@ const MyAccount: React.FC = () => {
 };
 
 
-function getPlanDescription(plan: SubscriptionType) {
+function getPlanDescription(plan: SubscriptionType, t: any) {
     switch (plan) {
         case SubscriptionType.Regular:
-            return "Regular plan";
+            return t('MyAccount.regularPlan');
         default:
-            return "Unknown plan";
+            return t('MyAccount.unknownPlan');
     }
 }
 

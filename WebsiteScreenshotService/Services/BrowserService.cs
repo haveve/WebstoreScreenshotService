@@ -27,9 +27,9 @@ public class BrowserService(IContentInitializationManager contentInitializationM
     /// </summary>
     /// <param name="screenshotOptionsModel">The options for taking the screenshot.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the screenshot as a stream.</returns>
-    public async Task<Stream> MakeScreenshotAsync(ScreenshotOptionsModel screenshotOptionsModel)
+    public Stream MakeScreenshot(ScreenshotOptionsModel screenshotOptionsModel)
     {
-        var screenshot = await TakeScreenshot(screenshotOptionsModel);
+        var screenshot = TakeScreenshot(screenshotOptionsModel);
 
         var screenshotResult = screenshotOptionsModel.Clip.Height.HasValue
             ? ResizeScreenshot(screenshot, screenshotOptionsModel)
@@ -38,7 +38,7 @@ public class BrowserService(IContentInitializationManager contentInitializationM
         return screenshotResult;
     }
 
-    private async Task<byte[]> TakeScreenshot(ScreenshotOptionsModel screenshotOptionsModel)
+    private byte[] TakeScreenshot(ScreenshotOptionsModel screenshotOptionsModel)
     {
         using var driver = CreateDriver();
 
@@ -47,7 +47,7 @@ public class BrowserService(IContentInitializationManager contentInitializationM
 
         driver.Navigate().GoToUrl(screenshotOptionsModel.Url);
 
-        await _contentInitializationManager.InitializeContentAsync(driver);
+        _contentInitializationManager.InitializeContent(driver, screenshotOptionsModel);
 
         var screenshot = driver.GetFullPageScreenshot();
 
@@ -61,13 +61,16 @@ public class BrowserService(IContentInitializationManager contentInitializationM
         {
             AcceptInsecureCertificates = true,
             PageLoadStrategy = PageLoadStrategy.Normal,
-            PageLoadTimeout = TimeSpan.FromSeconds(_browserServiceSettings.PageLoadTimeout),
-            ScriptTimeout = TimeSpan.FromSeconds(_browserServiceSettings.ScriptLoadTimeout),
         };
 
         options.AddArgument("--headless");
 
-        return new FirefoxDriver(service, options);
+        var driver = new FirefoxDriver(service, options);
+        
+        driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(_browserServiceSettings.PageLoadTimeout);
+        driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(_browserServiceSettings.ScriptLoadTimeout);
+        
+        return driver;
     }
 
     public MemoryStream ResizeScreenshot(byte[] inputStream, ScreenshotOptionsModel screenshotOptionsModel)
@@ -81,7 +84,7 @@ public class BrowserService(IContentInitializationManager contentInitializationM
 
         IImageEncoder imageEncoder = screenshotOptionsModel.ScreenshotType switch
         {
-            ScreenshotType.Png or ScreenshotType.Pdf => new PngEncoder(),
+            ScreenshotType.Png => new PngEncoder(),
             ScreenshotType.Jpeg => new JpegEncoder(),
             _ => throw new NotImplementedException("Invalid image type")
         };

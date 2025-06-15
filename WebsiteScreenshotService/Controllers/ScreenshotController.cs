@@ -42,7 +42,7 @@ public class ScreenshotController(IUserRepository UserRepository, IBrowserServic
         if (!subscriptionPlan.CanMakeScreenshot())
             return BadRequest("You cannot make screenshot any more because you ran out of available screenshots");
 
-        var screenshotStream = await _browserService.MakeScreenshotAsync(screenshotOptions);
+        var screenshotStream = _browserService.MakeScreenshot(screenshotOptions);
         var screenshotType = GetImageType(screenshotOptions.ScreenshotType);
 
         return File(screenshotStream, screenshotType);
@@ -53,7 +53,6 @@ public class ScreenshotController(IUserRepository UserRepository, IBrowserServic
         {
             ScreenshotType.Png => "image/png",
             ScreenshotType.Jpeg => "image/jpeg",
-            ScreenshotType.Pdf => "application/pdf",
             _ => throw new NotImplementedException("Invalid image type")
         };
 }

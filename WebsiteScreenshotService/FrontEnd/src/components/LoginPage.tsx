@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { getLoginAction } from "../behavior/epic";
 import { useNavigate } from "react-router-dom";
 import cookieStore from '../behavior/cookie/store';
+import { useTranslation } from 'react-i18next';
 
 export default () => {
   const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ export default () => {
   const { error, loaded, user } = useAppSelector(state => state);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,32 +24,32 @@ export default () => {
 
   useEffect(() => {
     loaded && user && navigate('/');
-  }, [loaded, user]);
+  }, [loaded, user, navigate]);
 
   return (
     <Container className="mt-4">
-      <h2>Login</h2>
+      <h2>{t('LoginPage.login')}</h2>
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3">
-          <Form.Label>Email</Form.Label>
+          <Form.Label>{t('LoginPage.email')}</Form.Label>
           <Form.Control
             type="email"
-            placeholder="Enter email"
+            placeholder={t('LoginPage.enterEmail')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Password</Form.Label>
+          <Form.Label>{t('LoginPage.password')}</Form.Label>
           <Form.Control
             type="password"
-            placeholder="Enter password"
+            placeholder={t('LoginPage.enterPassword')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Group>
         {error && <Form.Text className="text-danger">{error}</Form.Text>}
-        <Button variant="primary" type="submit">Login</Button>
+        <Button variant="primary" type="submit">{t('LoginPage.loginButton')}</Button>
       </Form>
     </Container>
   );

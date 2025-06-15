@@ -4,6 +4,7 @@ import { Provider } from 'react-redux'
 import store from './behavior/rootReducer'
 import Navigation from "./components/Navigation";
 import { AppRoutes } from "./components";
+import './localization.ts';
 
 const App = () => {
   return (

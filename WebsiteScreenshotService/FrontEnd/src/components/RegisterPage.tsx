@@ -5,6 +5,7 @@ import { getRegisterAction } from "../behavior/epic";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import cookieStore from '../behavior/cookie/store';
+import { useTranslation } from 'react-i18next';
 
 export default () => {
     const [email, setEmail] = useState('');
@@ -14,10 +15,11 @@ export default () => {
     const { error, loaded, user } = useAppSelector(state => state);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     useEffect(() => {
         loaded && user && navigate('/');
-    }, [loaded, user]);
+    }, [loaded, user, navigate]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,46 +30,46 @@ export default () => {
 
     return (
         <Container className="mt-4">
-            <h2>Register</h2>
+            <h2>{t('RegisterPage.register')}</h2>
             <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
-                    <Form.Label>Email</Form.Label>
+                    <Form.Label>{t('RegisterPage.email')}</Form.Label>
                     <Form.Control
                         type="email"
-                        placeholder="Enter email"
+                        placeholder={t('RegisterPage.enterEmail')}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
                 </Form.Group>
                 <Form.Group className="mb-3">
-                    <Form.Label>Password</Form.Label>
+                    <Form.Label>{t('RegisterPage.password')}</Form.Label>
                     <Form.Control
                         type="password"
-                        placeholder="Enter password"
+                        placeholder={t('RegisterPage.enterPassword')}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
                 </Form.Group>
                 <Form.Group className="mb-3">
-                    <Form.Label>Surname</Form.Label>
+                    <Form.Label>{t('RegisterPage.surname')}</Form.Label>
                     <Form.Control
                         type="text"
-                        placeholder="Enter surname"
+                        placeholder={t('RegisterPage.enterSurname')}
                         value={surname}
                         onChange={(e) => setSurname(e.target.value)}
                     />
                 </Form.Group>
                 <Form.Group className="mb-3">
-                    <Form.Label>Name</Form.Label>
+                    <Form.Label>{t('RegisterPage.name')}</Form.Label>
                     <Form.Control
                         type="text"
-                        placeholder="Enter name"
+                        placeholder={t('RegisterPage.enterName')}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
                 </Form.Group>
                 {error && <Form.Text className="text-danger">{error}</Form.Text>}
-                <Button variant="success" type="submit">Register</Button>
+                <Button variant="success" type="submit">{t('RegisterPage.registerButton')}</Button>
             </Form>
         </Container>
     );

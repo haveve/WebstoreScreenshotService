@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace WebsiteScreenshotService.Model;
 
@@ -30,9 +31,9 @@ public class ScreenshotOptionsModel
 /// <summary>
 /// Screenshot file type.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ScreenshotType
 {
     Png,
     Jpeg,
-    Pdf,
 }

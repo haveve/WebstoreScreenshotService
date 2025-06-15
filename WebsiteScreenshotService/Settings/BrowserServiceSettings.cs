@@ -15,4 +15,10 @@ public class BrowserServiceSettings
 
     [Required]
     public double ScriptLoadTimeout { get; set; }
+
+    [Required]
+    public double DefaultDelay { get; set; }
+
+    [Required]
+    public double InitialPageLoadDelay { get; set; }
 }

@@ -1,8 +1,9 @@
 ﻿using OpenQA.Selenium;
+using WebsiteScreenshotService.Model;
 
 namespace WebsiteScreenshotService.Services.ContentInitialization;
 
 public interface IContentInitializationManager
 {
-    public Task InitializeContentAsync(WebDriver webDriver);
+    public void InitializeContent(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions);
 }

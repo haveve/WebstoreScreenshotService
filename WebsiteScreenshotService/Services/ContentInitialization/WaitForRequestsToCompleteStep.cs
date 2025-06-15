@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using WebsiteScreenshotService.Model;
 using WebsiteScreenshotService.Settings;
 
 namespace WebsiteScreenshotService.Services.ContentInitialization;
@@ -9,11 +10,9 @@ public class WaitForRequestsToCompleteStep(IOptions<BrowserServiceSettings> brow
 {
     private readonly BrowserServiceSettings _browserServiceSettings = browserServiceSettings.Value;
 
-    public async Task InitializeAsync(WebDriver webDriver)
+    public void InitializeScripts(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions)
     {
-        try
-        {
-            webDriver.ExecuteScript(@"
+        webDriver.ExecuteScript(@"
                 if (!window.__requestTrackerInjected) {
                     window.__activeResources = 0;
 
@@ -58,22 +57,27 @@ public class WaitForRequestsToCompleteStep(IOptions<BrowserServiceSettings> brow
                     window.__requestTrackerInjected = true;
                 }
             ");
+    }
 
+    public void Initialize(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions)
+    {
+        try
+        {
             var wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(_browserServiceSettings.WaitForRequestsToCompleteTimeout))
             {
                 PollingInterval = TimeSpan.FromMilliseconds(1000),
                 Message = "Waiting for the all requests to complete."
             };
 
-            await Task.Delay(wait.PollingInterval);
+            Thread.Sleep(wait.PollingInterval);
 
             wait.Until(driver =>
             {
                 var js = (IJavaScriptExecutor)driver;
 
-                var isNetworkSettled = js.ExecuteScript(@"return !window.__activeRequests;");
+                var activeRequestsPresent = js.ExecuteScript(@"return !!window.__activeResources;");
 
-                return Convert.ToBoolean(isNetworkSettled);
+                return Convert.ToBoolean(activeRequestsPresent);
             });
         }
         catch (WebDriverTimeoutException)
@@ -82,7 +86,7 @@ public class WaitForRequestsToCompleteStep(IOptions<BrowserServiceSettings> brow
         }
         finally
         {
-            await Task.Delay(1000);
+            Thread.Sleep(TimeSpan.FromSeconds(_browserServiceSettings.DefaultDelay));
         }
     }
 }

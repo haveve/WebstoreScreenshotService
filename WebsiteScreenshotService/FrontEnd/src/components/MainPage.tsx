@@ -4,176 +4,170 @@ import { Clip, ScreenshotType } from "../behavior/types";
 import { useAppSelector } from "../behavior/rootReducer";
 import { useDispatch } from "react-redux";
 import { getMakeScreenshotAction } from "../behavior/epic";
+import { useTranslation } from 'react-i18next';
+
+const $4kClipName = "Desktop 4K (3840x2160)";
+
+const clipModels: Record<string, Clip> = {
+    "iPhone SE (375x667)": { width: 375, height: 667 },
+    "iPhone 12 (390x844)": { width: 390, height: 844 },
+    "iPhone 14 Pro Max (430x932)": { width: 430, height: 932 },
+    "iPad Mini (768x1024)": { width: 768, height: 1024 },
+    "iPad Pro 11\" (834x1194)": { width: 834, height: 1194 },
+    "Galaxy S21 (360x800)": { width: 360, height: 800 },
+    "Galaxy Fold (280x653)": { width: 280, height: 653 },
+    "Pixel 7 (412x915)": { width: 412, height: 915 },
+    "Surface Pro 7 (912x1368)": { width: 912, height: 1368 },
+    "Laptop 13\" (1280x800)": { width: 1280, height: 800 },
+    "Laptop 15\" (1440x900)": { width: 1440, height: 900 },
+    "Desktop HD (1366x768)": { width: 1366, height: 768 },
+    "Desktop Full HD (1920x1080)": { width: 1920, height: 1080 },
+    "Desktop 4K (3840x2160)": { width: 3840, height: 2160 }
+};
 
 export default () => {
     const [url, setUrl] = useState('');
     const [screenshotType, setScreenshotType] = useState<ScreenshotType>(ScreenshotType.Png);
-    const [quality, setQuality] = useState<number>(0);
-    const [fullScreen, setFullScreen] = useState<boolean | null>(null);
-    const [clip, setClip] = useState<Clip | null>(null);
+    const [clip, setClip] = useState<Clip>(clipModels[$4kClipName]);
+    const [preset, setPreset] = useState($4kClipName);
+    const [useFullHeight, setUseFullHeight] = useState(false);
     const [error, setError] = useState('');
     const { error: serverError, image } = useAppSelector(state => state);
     const dispatch = useDispatch();
+    const { t } = useTranslation();
 
     useEffect(() => {
         setError(serverError ?? '');
-    }, [serverError])
+    }, [serverError]);
 
     const validateUrl = (url: string) => {
-        const urlPattern = new RegExp('^(https?:\\/\\/)?' + // protocol
-            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
-            '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-            '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
-        return !!urlPattern.test(url);
+        const urlPattern = new RegExp('^(https?:\\/\\/)' + // protocol
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain
+            '((\\d{1,3}\\.){3}\\d{1,3}))' + // or IP
+            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port/path
+            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query
+            '(\\#[-a-z\\d_]*)?$', 'i');
+        return urlPattern.test(url);
     };
 
-    const handleDownload = () => {
-        if (image) {
-            var link = document.createElement("a");
-            link.download = `screenshot.${screenshotType.toLowerCase()}`;
-            link.href = image;
-            link.click();
-        }
+    const handlePresetChange = (presetLabel: string) => {
+        setPreset(presetLabel);
+        const selected = clipModels[presetLabel];
+        setClip({ width: selected.width, height: selected.height });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!validateUrl(url)) {
-            setError('Please enter a valid URL.');
+            setError(t('MainPage.enterValidURL'));
+            return;
+        }
+        if (!clip.width || clip.width < 1 || clip.width > 10000 || (clip.height !== null && (clip.height < 1 || clip.height > 10000))) {
+            setError(t('MainPage.enterValidDimensions'));
             return;
         }
 
-        if (!fullScreen && clip) {
-            if (!clip.x || !clip.y || !clip.width || !clip.height) {
-                setError('Please enter valid clip values.');
-                return;
-            }
-        }
-
-        const data = {
+        dispatch(getMakeScreenshotAction({
             url,
             screenshotType,
-            quality: screenshotType === ScreenshotType.Jpeg ? quality : null,
-            fullScreen: fullScreen,
-            clip: fullScreen ? null : clip
-        };
-
-        dispatch(getMakeScreenshotAction(data));
+            clip: useFullHeight ? { ...clip, height: null } : clip,
+        }));
     };
 
     return (
         <Container className="mt-4">
-            <h2 className="text-center">Screenshot Service</h2>
-            <p className="text-center">Capture and manage screenshots easily.</p>
-            <Form onSubmit={handleSubmit} className="screenshot-form">
+            <h2 className="text-center">{t('MainPage.screenshotService')}</h2>
+            <p className="text-center">{t('MainPage.captureManageScreenshots')}</p>
+            <Form onSubmit={handleSubmit}>
+
                 <Form.Group controlId="formUrl" className="mb-3">
-                    <Form.Label>Enter URL</Form.Label>
+                    <Form.Label>{t('MainPage.url')}</Form.Label>
                     <Form.Control
                         type="text"
-                        placeholder="Enter URL"
+                        placeholder={t('MainPage.urlPlaceholder')}
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                     />
                 </Form.Group>
+
                 <Form.Group controlId="formScreenshotType" className="mb-3">
-                    <Form.Label>Screenshot Type</Form.Label>
-                    <Form.Control
-                        as="select"
+                    <Form.Label>{t('MainPage.screenshotType')}</Form.Label>
+                    <Form.Select
                         value={screenshotType}
                         onChange={(e) => setScreenshotType(e.target.value as ScreenshotType)}
                     >
-                        <option value={ScreenshotType.Png}>PNG</option>
-                        <option value={ScreenshotType.Jpeg}>JPEG</option>
-                    </Form.Control>
+                        <option value={ScreenshotType.Png}>{t('MainPage.png')}</option>
+                        <option value={ScreenshotType.Jpeg}>{t('MainPage.jpeg')}</option>
+                    </Form.Select>
                 </Form.Group>
-                {screenshotType === ScreenshotType.Jpeg && (
-                    <Form.Group controlId="formQuality" className="mb-3">
-                        <Form.Label>Quality (0-100)</Form.Label>
-                        <Form.Control
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={quality || 0}
-                            onChange={(e) => setQuality(Number(e.target.value))}
-                            placeholder="Enter quality (0-100)"
-                        />
-                        <Form.Text className="text-muted">Current Quality: {quality}</Form.Text>
-                    </Form.Group>
-                )}
-                <Form.Group controlId="formFullScreen" className="mb-3">
+
+                <Form.Group controlId="formPreset" className="mb-3">
+                    <Form.Label>{t('MainPage.screenPreset')}</Form.Label>
+                    <Form.Select
+                        value={preset}
+                        onChange={(e) => handlePresetChange(e.target.value)}
+                    >
+                        {Object.keys(clipModels).map(label => (
+                            <option key={label} value={label}>{label}</option>
+                        ))}
+                    </Form.Select>
+                </Form.Group>
+
+                <Form.Group controlId="formFullHeight" className="mb-3">
                     <Form.Check
                         type="checkbox"
-                        label="Full Screen"
-                        checked={!!fullScreen}
-                        onChange={(e) => setFullScreen(e.target.checked)}
+                        label={t('MainPage.useFullHeight')}
+                        checked={useFullHeight}
+                        onChange={(e) => setUseFullHeight(e.target.checked)}
                     />
                 </Form.Group>
-                {!fullScreen && (
-                    <Form.Group controlId="formClip" className="mb-3">
-                        <Row>
-                            <Col>
-                                <Form.Label>X</Form.Label>
-                                <Form.Control
-                                    type="number"
-                                    placeholder="X coordinate"
-                                    value={clip?.x || ''}
-                                    max={10000}
-                                    min={1}
-                                    onChange={(e) => setClip({ ...clip, x: Number(e.target.value) })}
-                                />
-                            </Col>
-                            <Col>
-                                <Form.Label>Y</Form.Label>
-                                <Form.Control
-                                    type="number"
-                                    placeholder="Y coordinate"
-                                    value={clip?.y || ''}
-                                    max={10000}
-                                    min={1}
-                                    onChange={(e) => setClip({ ...clip, y: Number(e.target.value) })}
-                                />
-                            </Col>
-                        </Row>
-                        <Row className="mt-2">
-                            <Col>
-                                <Form.Label>Width (px)</Form.Label>
-                                <Form.Control
-                                    type="number"
-                                    placeholder="Width in pixels"
-                                    value={clip?.width || ''}
-                                    max={10000}
-                                    min={1}
-                                    onChange={(e) => setClip({ ...clip, width: Number(e.target.value) })}
-                                />
-                            </Col>
-                            <Col>
-                                <Form.Label>Height (px)</Form.Label>
-                                <Form.Control
-                                    type="number"
-                                    placeholder="Height in pixels"
-                                    value={clip?.height || ''}
-                                    max={10000}
-                                    min={1}
-                                    onChange={(e) => setClip({ ...clip, height: Number(e.target.value) })}
-                                />
-                            </Col>
-                        </Row>
-                    </Form.Group>
-                )}
+
+                <Row className="mb-3">
+                    <Col>
+                        <Form.Label>{t('MainPage.widthPx')}</Form.Label>
+                        <Form.Control
+                            type="number"
+                            min={1}
+                            max={10000}
+                            value={clip.width}
+                            onChange={(e) => setClip({ ...clip, width: Number(e.target.value) })}
+                        />
+                    </Col>
+                    <Col>
+                        <Form.Label>{t('MainPage.heightPx')}</Form.Label>
+                        <Form.Control
+                            type="number"
+                            min={1}
+                            max={10000}
+                            value={clip.height ?? ''}
+                            disabled={useFullHeight}
+                            onChange={(e) => setClip({ ...clip, height: Number(e.target.value) })}
+                        />
+                    </Col>
+                </Row>
+
                 {error && <Form.Text className="text-danger">{error}</Form.Text>}
-                <Button variant="primary" type="submit" className="mt-3">Get Screenshot</Button>
+
+                <Button variant="primary" type="submit">{t('MainPage.getScreenshot')}</Button>
                 {image && (
-                    <Button variant="success" onClick={handleDownload} className="mt-3 ms-3">Download Screenshot</Button>
+                    <Button variant="success" className="ms-3" onClick={() => {
+                        const link = document.createElement('a');
+                        link.download = `screenshot.${screenshotType.toLowerCase()}`;
+                        link.href = image;
+                        link.click();
+                    }}>
+                        {t('MainPage.downloadScreenshot')}
+                    </Button>
                 )}
             </Form>
+
             {image && (
                 <div className="mt-4 text-center">
-                    <h3>Screenshot:</h3>
-                    <img src={image}
+                    <h3>{t('MainPage.screenshot')}:</h3>
+                    <img
+                        src={image}
                         alt="Screenshot"
-                        className="screenshot-image screenshot-thumbnail cursor-pointer"
+                        className="screenshot-thumbnail cursor-pointer"
                         onClick={() => window.open(image, '_blank')}
                     />
                 </div>

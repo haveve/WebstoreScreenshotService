@@ -12,6 +12,6 @@ public interface IBrowserService
     /// </summary>
     /// <param name="screenshotOptionsModel">The options for taking the screenshot.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the screenshot as a stream.</returns>
-    public Task<Stream> MakeScreenshotAsync(ScreenshotOptionsModel screenshotOptionsModel);
+    public Stream MakeScreenshot(ScreenshotOptionsModel screenshotOptionsModel);
 }
 

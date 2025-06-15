@@ -32,16 +32,12 @@ export type RegisterModel = {
 }
 
 export interface Clip {
-    x?: number;
-    y?: number;
-    width?: number;
-    height?: number;
+    width: number;
+    height: number | null;
 }
 
 export interface ScreenshotOptionsModel {
     url: string;
-    screenshotType: ScreenshotType | null;
-    quality: number | null;
-    fullScreen: boolean | null;
-    clip: Clip | null;
+    screenshotType: ScreenshotType;
+    clip: Clip;
 }

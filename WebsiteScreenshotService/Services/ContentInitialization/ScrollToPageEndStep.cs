@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using WebsiteScreenshotService.Model;
 using WebsiteScreenshotService.Settings;
 
 namespace WebsiteScreenshotService.Services.ContentInitialization;
@@ -9,14 +10,18 @@ public class ScrollToPageEndStep(IOptions<BrowserServiceSettings> browserService
 {
     private readonly BrowserServiceSettings _browserServiceSettings = browserServiceSettings.Value;
 
-    public async Task InitializeAsync(WebDriver webDriver)
+    public void InitializeScripts(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions)
+    { }
+
+    public void Initialize(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions)
     {
         try
         {
             var variables = @$"
                 const scrollStep = window.innerHeight / 10;
                 const scrollDelay = 50;
-                const waitForPossibleContentLoad = 3000;
+                const waitForPossibleContentLoad = {_browserServiceSettings.DefaultDelay * 1000};
+                const maxHeightToRender = {screenshotOptions.Clip.Height ?? 0}
             ";
 
             webDriver.ExecuteScript(variables + @"
@@ -24,7 +29,9 @@ public class ScrollToPageEndStep(IOptions<BrowserServiceSettings> browserService
 
             window.__scrollInterval = setInterval(() => {
                 const scrolled = window.scrollY;
-                const atBottom = (window.innerHeight * 1.2 + scrolled) >= document.documentElement.scrollHeight;
+                const currentScrolledHeight = window.innerHeight + scrolled;
+                const reachedMaxHeight = maxHeightToRender && currentScrolledHeight >= maxHeightToRender;
+                const atBottom = reachedMaxHeight || (currentScrolledHeight + scrollStep) >= document.documentElement.scrollHeight;
 
                 if(__clearInterval && atBottom)
                     return;
@@ -69,7 +76,8 @@ public class ScrollToPageEndStep(IOptions<BrowserServiceSettings> browserService
                   behavior: 'smooth'
                 });
                 window.scrollTo(0, 0);");
-            await Task.Delay(1000);
+
+            Thread.Sleep(TimeSpan.FromSeconds(_browserServiceSettings.DefaultDelay));
         }
     }
 }
