@@ -19,16 +19,18 @@ public record SubscriptionPlan(SubscriptionType Type, int ScreenshotLeft)
     public static SubscriptionPlan GetRegularSubscriptionPlan()
         => new(Type: SubscriptionType.Regular, ScreenshotLeft: 50);
 
-    /// <summary>
-    /// Determines whether the user can make a screenshot based on the remaining screenshots.
-    /// </summary>
-    /// <returns><c>true</c> if the user can make a screenshot; otherwise, <c>false</c>.</returns>
-    public bool CanMakeScreenshot() => ScreenshotLeft > 0;
+    public static SubscriptionPlan GetProSubscriptionPlan()
+        => new(Type: SubscriptionType.Pro, ScreenshotLeft: 5_000);
+
+    public static SubscriptionPlan GetAdvancedSubscriptionPlan()
+        => new(Type: SubscriptionType.Advanced, ScreenshotLeft: 50_000);
 
     /// <summary>
     /// Decrements the number of screenshots left by one.
     /// </summary>
     public void ScreenshotWasMade() => ScreenshotLeft--;
+
+    public void IncrementScreenshotCount() => ScreenshotLeft++;
 }
 
 /// <summary>

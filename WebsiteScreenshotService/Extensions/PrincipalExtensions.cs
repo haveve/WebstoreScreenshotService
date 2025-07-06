@@ -49,21 +49,5 @@ public static class PrincipalExtensions
     /// <returns>The user ID if found and valid; otherwise, null.</returns>
     public static Guid? GetUserId(this ClaimsPrincipal currentPrincipal)
         => Guid.TryParse(currentPrincipal.GetClaimValue(ClaimTypes.NameIdentifier), out Guid Id) ? Id : null;
-
-    /// <summary>
-    /// Gets the user name from the current principal's claims.
-    /// </summary>
-    /// <param name="currentPrincipal">The current claims principal.</param>
-    /// <returns>The user name if found; otherwise, null.</returns>
-    public static string? GetUserName(this ClaimsPrincipal currentPrincipal)
-        => currentPrincipal.GetClaimValue(ClaimTypes.Name);
-
-    /// <summary>
-    /// Gets the user email from the current principal's claims.
-    /// </summary>
-    /// <param name="currentPrincipal">The current claims principal.</param>
-    /// <returns>The user email if found; otherwise, null.</returns>
-    public static string? GetUserEmail(this ClaimsPrincipal currentPrincipal)
-        => currentPrincipal.GetClaimValue(ClaimTypes.Email);
 }
 

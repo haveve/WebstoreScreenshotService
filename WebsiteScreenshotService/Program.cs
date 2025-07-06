@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Text.Json;
+using WebsiteScreenshotService;
 using WebsiteScreenshotService.Repositories;
 using WebsiteScreenshotService.ServiceExtensions;
 using WebsiteScreenshotService.Services;
-using WebsiteScreenshotService.Services.ContentInitialization;
-using WebsiteScreenshotService.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,13 +17,14 @@ builder.Services.AddControllerServices()
 if (builder.Environment.IsDevelopment())
     builder.Services.AddSwaggerServices();
 
-builder.Services.AddOptionsWithValidation<BrowserServiceSettings>(builder.Configuration.GetSection("BrowserServiceOptions"));
+builder.Services.AddOptionsWithValidation<MessageBrokerConfigurations>(builder.Configuration.GetSection("MessageBrokerConfigurations"));
 
 builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
-builder.Services.AddSingleton<IBrowserService, BrowserService>();
+builder.Services.AddSingleton<IUserContextAccessor, UserContextAccessor>();
+builder.Services.AddSingleton<IMessageBrokerProvider, MessageBrokerProvider>();
 
-builder.Services.AddSingleton<IContentInitializationManager, ContentInitializationManager>();
-builder.Services.AddSingleton<IContentInitializationStep, ScrollToPageEndStep>();
+builder.Services.AddSingleton<ISubscriptionManager, SubscriptionManager>();
+builder.Services.AddSingleton<ISubscriptionRepository, SubscriptionRepository>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -58,8 +58,12 @@ app.UseCors(builder => builder.WithOrigins(app.Configuration.GetValue<string>("F
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<UserContextInitializeMiddleware>();
 
 app.MapControllers();
 app.Run();

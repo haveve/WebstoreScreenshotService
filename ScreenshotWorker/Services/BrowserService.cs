@@ -1,5 +1,5 @@
-﻿using WebsiteScreenshotService.Model;
-using WebsiteScreenshotService.Services.ContentInitialization;
+﻿using ScreenshotWorker.Model;
+using ScreenshotWorker.Services.ContentInitialization;
 
 using OpenQA.Selenium;
 using OpenQA.Selenium.Firefox;
@@ -10,9 +10,8 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats;
 using Microsoft.Extensions.Options;
-using WebsiteScreenshotService.Settings;
 
-namespace WebsiteScreenshotService.Services;
+namespace ScreenshotWorker.Services;
 
 /// <summary>
 /// Provides services for browser operations, including taking screenshots.
@@ -27,9 +26,9 @@ public class BrowserService(IContentInitializationManager contentInitializationM
     /// </summary>
     /// <param name="screenshotOptionsModel">The options for taking the screenshot.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the screenshot as a stream.</returns>
-    public Stream MakeScreenshot(ScreenshotOptionsModel screenshotOptionsModel)
+    public async Task<Stream> MakeScreenshotAsync(ScreenshotOptionsModel screenshotOptionsModel)
     {
-        var screenshot = TakeScreenshot(screenshotOptionsModel);
+        var screenshot = await TakeScreenshot(screenshotOptionsModel);
 
         var screenshotResult = screenshotOptionsModel.Clip.Height.HasValue
             ? ResizeScreenshot(screenshot, screenshotOptionsModel)
@@ -38,7 +37,7 @@ public class BrowserService(IContentInitializationManager contentInitializationM
         return screenshotResult;
     }
 
-    private byte[] TakeScreenshot(ScreenshotOptionsModel screenshotOptionsModel)
+    private async Task<byte[]> TakeScreenshot(ScreenshotOptionsModel screenshotOptionsModel)
     {
         using var driver = CreateDriver();
 
@@ -47,7 +46,7 @@ public class BrowserService(IContentInitializationManager contentInitializationM
 
         driver.Navigate().GoToUrl(screenshotOptionsModel.Url);
 
-        _contentInitializationManager.InitializeContent(driver, screenshotOptionsModel);
+        await _contentInitializationManager.InitializeContentAsync(driver, screenshotOptionsModel);
 
         var screenshot = driver.GetFullPageScreenshot();
 
@@ -60,20 +59,20 @@ public class BrowserService(IContentInitializationManager contentInitializationM
         var options = new FirefoxOptions
         {
             AcceptInsecureCertificates = true,
-            PageLoadStrategy = PageLoadStrategy.Normal,
+            PageLoadStrategy = PageLoadStrategy.Normal
         };
 
         options.AddArgument("--headless");
 
         var driver = new FirefoxDriver(service, options);
-        
+
         driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(_browserServiceSettings.PageLoadTimeout);
         driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(_browserServiceSettings.ScriptLoadTimeout);
-        
+
         return driver;
     }
 
-    public MemoryStream ResizeScreenshot(byte[] inputStream, ScreenshotOptionsModel screenshotOptionsModel)
+    private static MemoryStream ResizeScreenshot(byte[] inputStream, ScreenshotOptionsModel screenshotOptionsModel)
     {
         using var image = Image.Load(inputStream);
 

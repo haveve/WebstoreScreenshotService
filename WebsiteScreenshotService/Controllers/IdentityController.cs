@@ -34,7 +34,7 @@ public class IdentityController(IUserRepository UserRepository) : ControllerBase
         if (!userId.HasValue)
             return Ok();
 
-        var user = await _userRepository.GetUserById(userId.Value);
+        var user = await _userRepository.GetUserByIdAsync(userId.Value);
         var userModel = (UserModel?)null;
 
         if (user != null)
@@ -85,7 +85,7 @@ public class IdentityController(IUserRepository UserRepository) : ControllerBase
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(RegisterResponseExample))]
     public async Task<IActionResult> Register(RegisterModel registerModel)
     {
-        var user = await _userRepository.CreateUser(registerModel.ToEntity());
+        var user = await _userRepository.CreateUserAsync(registerModel.ToEntity());
 
         if (user == null)
             return BadRequest("User with that email already exist");

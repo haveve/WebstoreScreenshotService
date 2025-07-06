@@ -8,7 +8,7 @@ public class LazyAsync<T>(Func<Task<T>> Factory)
 {
     private readonly Func<Task<T>> _factory = Factory;
 
-    private readonly SemaphoreSlim _semaphore = new(initialCount: 1);
+    private readonly SemaphoreSlim _semaphore = new(initialCount: 1, maxCount: 1);
 
     private T? _value = default;
 

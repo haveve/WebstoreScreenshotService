@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Filters;
 using WebsiteScreenshotService.Controllers.Examples.Indentity;
-using WebsiteScreenshotService.Extensions;
 using WebsiteScreenshotService.Model;
 using WebsiteScreenshotService.Repositories;
 using WebsiteScreenshotService.Services;
@@ -12,10 +11,10 @@ namespace WebsiteScreenshotService.Controllers;
 [Authorize]
 [ApiController]
 [Route("[action]")]
-public class ScreenshotController(IUserRepository UserRepository, IBrowserService BrowserService) : ControllerBase
+public class ScreenshotController(ISubscriptionManager subscriptionManager, IScreenshotService screenshotService) : ControllerBase
 {
-    private readonly IUserRepository _userRepository = UserRepository;
-    private readonly IBrowserService _browserService = BrowserService;
+    private readonly ISubscriptionManager _subscriptionManager = subscriptionManager;
+    private readonly IScreenshotService _screenshotService = screenshotService;
 
     /// <summary>
     /// Captures a screenshot based on the specified options and returns the image file.
@@ -33,26 +32,22 @@ public class ScreenshotController(IUserRepository UserRepository, IBrowserServic
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(MakeScreenshotResponseExample))]
     public async Task<IActionResult> MakeScreenshot(ScreenshotOptionsModel screenshotOptions)
     {
-        var userId = User.GetUserId()!.Value;
-        var subscriptionPlan = await _userRepository.ScreenshotWasMade(userId);
+        var subscriptionPlan = await _subscriptionManager.ScreenshotWasMadeAsync();
 
         if (subscriptionPlan is null)
-            return BadRequest("User does not exist");
+            return BadRequest(new ErrorResponse("User does not exist"));
 
-        if (!subscriptionPlan.CanMakeScreenshot())
-            return BadRequest("You cannot make screenshot any more because you ran out of available screenshots");
+        if (!await _subscriptionManager.CanMakeScreenshotAsync())
+            return BadRequest(new ErrorResponse("You cannot make screenshot any more because you ran out of available screenshots"));
 
-        var screenshotStream = _browserService.MakeScreenshot(screenshotOptions);
-        var screenshotType = GetImageType(screenshotOptions.ScreenshotType);
+        var screenshotResult = await _screenshotService.MakeScreenshotAsync(screenshotOptions);
 
-        return File(screenshotStream, screenshotType);
-    }
-
-    private static string GetImageType(ScreenshotType screenshotType)
-        => screenshotType switch
+        if (!screenshotResult.IsSuccess)
         {
-            ScreenshotType.Png => "image/png",
-            ScreenshotType.Jpeg => "image/jpeg",
-            _ => throw new NotImplementedException("Invalid image type")
-        };
+            await _subscriptionManager.IncrementScreenshotCountAsync();
+            return BadRequest(new ErrorResponse(screenshotResult.ErrorMessage!));
+        }
+
+        return Ok(new { screenshotId = screenshotResult.Value });
+    }
 }

@@ -1,26 +1,26 @@
-﻿using Microsoft.Extensions.Options;
-using OpenQA.Selenium;
+﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using WebsiteScreenshotService.Model;
-using WebsiteScreenshotService.Settings;
+using ScreenshotWorker;
+using ScreenshotWorker.Services.ContentInitialization;
+using ScreenshotWorker.Model;
 
-namespace WebsiteScreenshotService.Services.ContentInitialization;
+namespace ScreenshotWorker.Services.ContentInitialization;
 
-public class ScrollToPageEndStep(IOptions<BrowserServiceSettings> browserServiceSettings) : IContentInitializationStep
+public class ScrollToPageEndStep : IContentInitializationStep
 {
-    private readonly BrowserServiceSettings _browserServiceSettings = browserServiceSettings.Value;
+    public string StepName => ContentInitializationStepsNames.Scroll;
 
-    public void InitializeScripts(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions)
-    { }
-
-    public void Initialize(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions)
+    public Task InitializeAsync(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions, ContentInitializationStepSettings settings)
     {
+        var scrollSettings = settings as ScrollInitializationStepSettings
+            ?? throw new ArgumentException($"Invalid settings type for {StepName}. Expected {nameof(ScrollInitializationStepSettings)}.", nameof(settings));
+
         try
         {
             var variables = @$"
                 const scrollStep = window.innerHeight / 10;
                 const scrollDelay = 50;
-                const waitForPossibleContentLoad = {_browserServiceSettings.DefaultDelay * 1000};
+                const waitForPossibleContentLoad = {scrollSettings.WaitForPossibleContentLoad * 1000};
                 const maxHeightToRender = {screenshotOptions.Clip.Height ?? 0}
             ";
 
@@ -49,9 +49,9 @@ public class ScrollToPageEndStep(IOptions<BrowserServiceSettings> browserService
             }, scrollDelay);
             ");
 
-            var wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(_browserServiceSettings.ScrollTimeout))
+            var wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(settings.ExecutionTimeout))
             {
-                PollingInterval = TimeSpan.FromMilliseconds(50),
+                PollingInterval = TimeSpan.FromSeconds(settings.PoolingTimeout),
                 Message = "Waiting for the page to load and scroll to the bottom."
             };
 
@@ -62,10 +62,13 @@ public class ScrollToPageEndStep(IOptions<BrowserServiceSettings> browserService
 
                 return scrollCompleted;
             });
+
+            return Task.CompletedTask;
         }
         catch (WebDriverTimeoutException)
         {
             // If the timeout occurs, we can still proceed with the screenshot.
+            return Task.CompletedTask;
         }
         finally
         {
@@ -76,8 +79,6 @@ public class ScrollToPageEndStep(IOptions<BrowserServiceSettings> browserService
                   behavior: 'smooth'
                 });
                 window.scrollTo(0, 0);");
-
-            Thread.Sleep(TimeSpan.FromSeconds(_browserServiceSettings.DefaultDelay));
         }
     }
 }

@@ -20,7 +20,7 @@ public class InMemoryUserRepository : IUserRepository
     /// </summary>
     /// <param name="id">The unique identifier of the user.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the user if found; otherwise, null.</returns>
-    public Task<User?> GetUserById(Guid id)
+    public Task<User?> GetUserByIdAsync(Guid id)
     {
         return Task.FromResult(_users.FirstOrDefault(user => user.Id == id));
     }
@@ -30,7 +30,7 @@ public class InMemoryUserRepository : IUserRepository
     /// </summary>
     /// <param name="user">The user to create.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created user if successful; otherwise, null.</returns>
-    public Task<User?> CreateUser(User user)
+    public Task<User?> CreateUserAsync(User user)
     {
         var userWithSameEmail = _users.FirstOrDefault(u => u.Email == user.Email);
 
@@ -49,43 +49,5 @@ public class InMemoryUserRepository : IUserRepository
     /// <returns>A task that represents the asynchronous operation. The task result contains the user if found; otherwise, null.</returns>
     public Task<User?> GetUserByEmailAndPasswordAsync(string email, string password)
         => Task.FromResult(_users.FirstOrDefault(user => user.Email == email && user.Password == password));
-
-    /// <summary>
-    /// Retrieves the subscription plan of a user by their ID.
-    /// </summary>
-    /// <param name="userId">The ID of the user.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the subscription plan if found; otherwise, null.</returns>
-    public Task<SubscriptionPlan?> GetUserSubscription(Guid userId)
-    {
-        _subscriptionLock.EnterReadLock();
-
-        var result = Task.FromResult(_users.FirstOrDefault(user => user.Id == userId)?.SubscriptionPlan);
-
-        _subscriptionLock.ExitReadLock();
-
-        return result;
-    }
-
-    /// <summary>
-    /// Updates the subscription plan when a screenshot is made by the user.
-    /// </summary>
-    /// <param name="userId">The ID of the user.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the updated subscription plan if found; otherwise, null.</returns>
-    public Task<SubscriptionPlan?> ScreenshotWasMade(Guid userId)
-    {
-        _subscriptionLock.EnterWriteLock();
-
-        var user = _users.FirstOrDefault(user => user.Id == userId);
-        var subscriptionPlan = user?.SubscriptionPlan;
-
-        if (subscriptionPlan != null && subscriptionPlan.ScreenshotLeft > 0)
-            subscriptionPlan.ScreenshotWasMade();
-
-        var result = Task.FromResult(subscriptionPlan);
-
-        _subscriptionLock.ExitWriteLock();
-
-        return result;
-    }
 }
 

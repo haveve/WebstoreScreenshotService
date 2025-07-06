@@ -1,16 +1,14 @@
-﻿using Microsoft.Extensions.Options;
-using OpenQA.Selenium;
+﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using WebsiteScreenshotService.Model;
-using WebsiteScreenshotService.Settings;
+using ScreenshotWorker.Model;
 
-namespace WebsiteScreenshotService.Services.ContentInitialization;
+namespace ScreenshotWorker.Services.ContentInitialization;
 
-public class WaitForRequestsToCompleteStep(IOptions<BrowserServiceSettings> browserServiceSettings) : IContentInitializationStep
+public class WaitForRequestsToCompleteStep : IContentInitializationStep
 {
-    private readonly BrowserServiceSettings _browserServiceSettings = browserServiceSettings.Value;
+    public string StepName => ContentInitializationStepsNames.RequestsToComplete;
 
-    public void InitializeScripts(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions)
+    public Task InitializeScriptsAsync(WebDriver webDriver, ScreenshotOptionsModel _)
     {
         webDriver.ExecuteScript(@"
                 if (!window.__requestTrackerInjected) {
@@ -57,13 +55,14 @@ public class WaitForRequestsToCompleteStep(IOptions<BrowserServiceSettings> brow
                     window.__requestTrackerInjected = true;
                 }
             ");
+        return Task.CompletedTask;
     }
 
-    public void Initialize(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions)
+    public Task InitializeAsync(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions, ContentInitializationStepSettings settings)
     {
         try
         {
-            var wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(_browserServiceSettings.WaitForRequestsToCompleteTimeout))
+            var wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(settings.ExecutionTimeout))
             {
                 PollingInterval = TimeSpan.FromMilliseconds(1000),
                 Message = "Waiting for the all requests to complete."
@@ -79,14 +78,13 @@ public class WaitForRequestsToCompleteStep(IOptions<BrowserServiceSettings> brow
 
                 return Convert.ToBoolean(activeRequestsPresent);
             });
+
+            return Task.CompletedTask;
         }
         catch (WebDriverTimeoutException)
         {
             // If the timeout occurs, we can still proceed with the screenshot.
-        }
-        finally
-        {
-            Thread.Sleep(TimeSpan.FromSeconds(_browserServiceSettings.DefaultDelay));
+            return Task.CompletedTask;
         }
     }
 }
