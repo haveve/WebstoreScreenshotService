@@ -2,7 +2,7 @@
 using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 
-namespace WebsiteScreenshotService.ServiceExtensions;
+namespace WebsiteScreenshotService.Extensions.ServiceExtensions;
 
 public static class SwaggerServicesExtension
 {

@@ -1,4 +1,6 @@
-﻿namespace WebsiteScreenshotService;
+﻿using WebsiteScreenshotService.Extensions;
+
+namespace WebsiteScreenshotService;
 
 public class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> logger) : IMiddleware
 {
@@ -13,12 +15,7 @@ public class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> lo
         catch (Exception ex)
         {
             _logger.LogError(ex, "An unhandled exception occurred.");
-
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-
-            var errorResponse = new ErrorResponse("An unexpected error occurred. Please try again later.");
-
-            await context.Response.WriteAsJsonAsync(errorResponse);
+            await context.Response.InternalServerError();
         }
     }
 }

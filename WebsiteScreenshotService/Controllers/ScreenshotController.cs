@@ -32,13 +32,13 @@ public class ScreenshotController(ISubscriptionManager subscriptionManager, IScr
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(MakeScreenshotResponseExample))]
     public async Task<IActionResult> MakeScreenshot(ScreenshotOptionsModel screenshotOptions)
     {
+        if (!await _subscriptionManager.CanMakeScreenshotAsync())
+            return BadRequest(new ErrorResponse("You cannot make screenshot any more because you ran out of available screenshots"));
+
         var subscriptionPlan = await _subscriptionManager.ScreenshotWasMadeAsync();
 
         if (subscriptionPlan is null)
             return BadRequest(new ErrorResponse("User does not exist"));
-
-        if (!await _subscriptionManager.CanMakeScreenshotAsync())
-            return BadRequest(new ErrorResponse("You cannot make screenshot any more because you ran out of available screenshots"));
 
         var screenshotResult = await _screenshotService.MakeScreenshotAsync(screenshotOptions);
 

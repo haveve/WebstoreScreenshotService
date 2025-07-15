@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using System.Text.Json;
 using WebsiteScreenshotService;
+using WebsiteScreenshotService.Configurations;
+using WebsiteScreenshotService.Extensions.ServiceExtensions;
 using WebsiteScreenshotService.Repositories;
-using WebsiteScreenshotService.ServiceExtensions;
-using WebsiteScreenshotService.Services;
+using WebsiteScreenshotService.Services.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,13 +16,20 @@ builder.Services.AddControllerServices()
         options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     });
 
+builder.Services.Configure<KestrelServerOptions>(builder.Configuration.GetSection("ServerConfigurations"));
+
+builder.Services.AddOptionsWithValidation<MessageBrokerConfigurations>(builder.Configuration.GetSection("MessageBrokerConfigurations"));
+builder.Services.AddOptionsWithValidation<ServerConfigurations>(builder.Configuration.GetSection("ServerConfigurations"));
+
 if (builder.Environment.IsDevelopment())
     builder.Services.AddSwaggerServices();
 
-builder.Services.AddOptionsWithValidation<MessageBrokerConfigurations>(builder.Configuration.GetSection("MessageBrokerConfigurations"));
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
 builder.Services.AddSingleton<IUserContextAccessor, UserContextAccessor>();
+
+builder.Services.AddSingleton<IMessageBrokerChannelManager, RabbitMqChannelManager>();
 builder.Services.AddSingleton<IMessageBrokerProvider, MessageBrokerProvider>();
 
 builder.Services.AddSingleton<ISubscriptionManager, SubscriptionManager>();
@@ -42,6 +51,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.SameSite = SameSiteMode.None;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
+
+builder.Services.AddSingleton<ExceptionHandlingMiddleware>();
+builder.Services.AddSingleton<UserContextInitializeMiddleware>();
 
 var app = builder.Build();
 

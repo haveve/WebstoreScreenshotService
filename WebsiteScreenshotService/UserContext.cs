@@ -1,10 +1,8 @@
-﻿using System.Security.Claims;
-using WebsiteScreenshotService.Entities;
-using WebsiteScreenshotService.Extensions;
+﻿using WebsiteScreenshotService.Entities;
 
 namespace WebsiteScreenshotService;
 
-public record UserContext(Guid Id, SubscriptionPlan SubscriptionPlan ,UserRole Role);
+public record UserContext(Guid Id, SubscriptionPlan SubscriptionPlan, UserRole Role);
 
 public enum UserRole
 {

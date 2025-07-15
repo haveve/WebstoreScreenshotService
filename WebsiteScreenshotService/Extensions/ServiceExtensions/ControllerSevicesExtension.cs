@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace WebsiteScreenshotService.ServiceExtensions
+namespace WebsiteScreenshotService.Extensions.ServiceExtensions
 {
     public static class ControllerSevicesExtension
     {

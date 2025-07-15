@@ -1,4 +1,4 @@
-﻿namespace WebsiteScreenshotService.Services;
+﻿namespace WebsiteScreenshotService.Services.Messaging;
 
 public interface IMessageBrokerProvider
 {

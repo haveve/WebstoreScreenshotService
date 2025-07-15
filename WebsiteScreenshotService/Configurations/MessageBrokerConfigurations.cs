@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using WebsiteScreenshotService.Entities;
 
-namespace WebsiteScreenshotService;
+namespace WebsiteScreenshotService.Configurations;
 
 public class MessageBrokerConfigurations
 {

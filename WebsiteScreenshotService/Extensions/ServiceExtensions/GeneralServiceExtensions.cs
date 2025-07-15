@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 
-namespace WebsiteScreenshotService.ServiceExtensions;
+namespace WebsiteScreenshotService.Extensions.ServiceExtensions;
 
 public static class GeneralServiceExtensions
 {
