@@ -1,0 +1,55 @@
+{
+  "exchanges": [
+    {
+      "name": "browser-service-exchange",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "Regular",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "Pro",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "Advanced",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "browser-service-exchange",
+      "destination": "Regular",
+      "destination_type": "queue",
+      "routing_key": "Regular",
+      "arguments": {}
+    },
+    {
+      "source": "browser-service-exchange",
+      "destination": "Pro",
+      "destination_type": "queue",
+      "routing_key": "Pro",
+      "arguments": {}
+    },
+    {
+      "source": "browser-service-exchange",
+      "destination": "Advanced",
+      "destination_type": "queue",
+      "routing_key": "Advanced",
+      "arguments": {}
+    }
+  ]
+}
