@@ -39,7 +39,7 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
 
         var successfullySent = await _messageBrokerProvider.SendMessageAsync(model, routingKey);
 
-        if (successfullySent)
+        if (!successfullySent)
             return Result<string>.Error("Failed to send screenshot request. Please, try again later");
 
         return Result<string>.Success(screenshotId);

@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebsiteScreenshotService", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenshotWorker", "..\ScreenshotWorker\ScreenshotWorker.csproj", "{ABA35242-CB90-4DA2-859D-0EFB05D5B648}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenshotStorage", "..\ScreenshotStorage\ScreenshotStorage.csproj", "{CBDF4A28-4265-4231-9432-06777D16FEAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{ABA35242-CB90-4DA2-859D-0EFB05D5B648}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABA35242-CB90-4DA2-859D-0EFB05D5B648}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABA35242-CB90-4DA2-859D-0EFB05D5B648}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBDF4A28-4265-4231-9432-06777D16FEAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBDF4A28-4265-4231-9432-06777D16FEAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBDF4A28-4265-4231-9432-06777D16FEAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBDF4A28-4265-4231-9432-06777D16FEAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
