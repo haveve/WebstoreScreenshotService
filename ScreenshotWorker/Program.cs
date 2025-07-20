@@ -19,7 +19,15 @@ builder.ConfigureServices((context, services) =>
                services.AddSingleton<IApplicationLifetimeManager, ApplicationLifetimeManager>();
 
                services.AddOptionsWithValidation<BrowserServiceSettings>(context.Configuration.GetSection("BrowserServiceOptions"));
-               services.AddOptionsWithValidation<MessageBrokerConfigurations>(context.Configuration.GetSection("MessageBrokerConfigurations"));
+               services.AddOptionsWithValidation<MessageBrokerSettings>(context.Configuration.GetSection("MessageBrokerSettings"));
+
+               if (context.HostingEnvironment.IsDevelopment())
+               {
+                   services.AddSingleton<IScreenshotRepository, InMemoryScreenshotRepository>();
+                   services.AddOptionsWithValidation<InMemoryScreenshotStorageSettings>(context.Configuration.GetSection("ScreenshotStorageSettings"));
+               }
+
+               services.AddHttpClient();
            });
 
 builder.ConfigureLogging(logging =>

@@ -3,12 +3,6 @@ using System.Text.Json;
 
 namespace ScreenshotWorker.Serialization;
 
-public record Result<T>(IEnumerable<string> Errors, bool IsValid, T? ParsedValue)
-{
-    public static Result<T> Invalid(IEnumerable<string> errors) => new(errors, false, default);
-    public static Result<T> Valid(T value) => new([], true, value);
-}
-
 public static class CustomJsonSerializer
 {
     private readonly static JsonSerializerOptions _options = new()

@@ -26,13 +26,13 @@ public class BrowserService(IContentInitializationManager contentInitializationM
     /// </summary>
     /// <param name="screenshotOptionsModel">The options for taking the screenshot.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the screenshot as a stream.</returns>
-    public async Task<Stream> MakeScreenshotAsync(ScreenshotOptionsModel screenshotOptionsModel)
+    public async Task<byte[]> MakeScreenshotAsync(ScreenshotOptionsModel screenshotOptionsModel)
     {
         var screenshot = await TakeScreenshot(screenshotOptionsModel);
 
         var screenshotResult = screenshotOptionsModel.Clip.Height.HasValue
             ? ResizeScreenshot(screenshot, screenshotOptionsModel)
-            : new MemoryStream(screenshot);
+            : screenshot;
 
         return screenshotResult;
     }
@@ -72,12 +72,12 @@ public class BrowserService(IContentInitializationManager contentInitializationM
         return driver;
     }
 
-    private static MemoryStream ResizeScreenshot(byte[] inputStream, ScreenshotOptionsModel screenshotOptionsModel)
+    private static byte[] ResizeScreenshot(byte[] inputStream, ScreenshotOptionsModel screenshotOptionsModel)
     {
         using var image = Image.Load(inputStream);
 
         if (image.Height <= screenshotOptionsModel.Clip.Height)
-            return new MemoryStream(inputStream);
+            return inputStream;
 
         image.Mutate(x => x.Crop(image.Width, screenshotOptionsModel.Clip.Height!.Value));
 
@@ -93,6 +93,6 @@ public class BrowserService(IContentInitializationManager contentInitializationM
 
         outputStream.Seek(0, SeekOrigin.Begin);
 
-        return outputStream;
+        return outputStream.ToArray();
     }
 }

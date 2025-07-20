@@ -6,7 +6,7 @@ namespace ScreenshotWorker;
 public class BrowserServiceSettings : IValidatableObject
 {
     [Required]
-    public Dictionary<string, ContentInitializationStepSettings> ContentInitializationSteps { get; set; } = new();
+    public Dictionary<string, ContentInitializationStepSettings> ContentInitializationSteps { get; set; } = [];
 
     [Required]
     [Range(0, 720)]

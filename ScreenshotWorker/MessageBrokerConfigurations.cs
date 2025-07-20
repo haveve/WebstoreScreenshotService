@@ -2,22 +2,22 @@
 
 namespace ScreenshotWorker;
 
-public class MessageBrokerConfigurations
+public class MessageBrokerSettings
 {
     [Required]
-    public required QueueConfig Queue { get; set; }
+    public required QueueSettings Queue { get; set; }
 
     [Required]
-    public required ConnectionConfig Connection { get; set; }
+    public required ConnectionSettings Connection { get; set; }
 }
 
-public class QueueConfig
+public class QueueSettings
 {
     [Required]
     public required string Name { get; set; }
 }
 
-public class ConnectionConfig
+public class ConnectionSettings
 {
     [Required]
     public required string HostName { get; set; }
