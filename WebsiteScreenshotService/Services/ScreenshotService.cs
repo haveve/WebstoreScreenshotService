@@ -9,11 +9,14 @@ namespace WebsiteScreenshotService.Services;
 /// <summary>
 /// Provides services for browser operations, including taking screenshots.
 /// </summary>
-public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessageBrokerProvider messageBrokerProvider, IOptions<MessageBrokerConfigurations> options) : IScreenshotService
+public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessageBrokerManager messageBrokerManager, IOptions<MessageBrokerConfigurations> options, IAuthorizationManager authorizationManager) : IScreenshotService
 {
     private readonly IUserContextAccessor _userContextAccessor = userContextAccessor;
-    private readonly IMessageBrokerProvider _messageBrokerProvider = messageBrokerProvider;
+    private readonly IMessageBrokerManager _messageBrokerManager = messageBrokerManager;
+    private readonly IAuthorizationManager _authorizationManager = authorizationManager;
     private readonly QueueConfig _queueConfig = options.Value.Queue;
+
+    private readonly Result<string> defaultErrorMessage = Result<string>.Error("Failed to send screenshot request. Please, try again later");
 
     /// <summary>
     /// Takes a screenshot of a webpage based on the specified options.
@@ -25,10 +28,21 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
         var userContext = _userContextAccessor.GetCurrentUser();
         var screenshotId = MakeScreenshotId(userContext.Id);
 
+        var confirmationToken = _authorizationManager.GenerateConfirmationToken(new ConfirmationData
+            (
+                UserId: userContext.Id,
+                WebsiteUrl: screenshotOptionsModel.Url,
+                ScreenshotId: screenshotId
+            ));
+
+        if(confirmationToken is null)
+            return defaultErrorMessage;
+
         var model = new MakeScreenshotModel
         {
             ScreenshotId = screenshotId,
             ScreenshotOptionsModel = screenshotOptionsModel,
+            ConfirmationToken = confirmationToken,
             UserInformation = new UserInformation
             {
                 UserId = userContext.Id,
@@ -37,10 +51,10 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
 
         var routingKey = _queueConfig.QueuePerSubscription[userContext.SubscriptionPlan.Type];
 
-        var successfullySent = await _messageBrokerProvider.SendMessageAsync(model, routingKey);
+        var successfullySent = await _messageBrokerManager.SendMessageAsync(model, routingKey);
 
         if (!successfullySent)
-            return Result<string>.Error("Failed to send screenshot request. Please, try again later");
+            return defaultErrorMessage;
 
         return Result<string>.Success(screenshotId);
     }

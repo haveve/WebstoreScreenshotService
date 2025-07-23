@@ -9,6 +9,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Protobuf Include="Protos\screenshot.proto" GrpcServices="Server" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="DocX" Version="4.0.25103.5784" />
 		<PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
 		<PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
@@ -16,6 +20,8 @@
 		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 		<PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
+		<PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.13.0" />
 	</ItemGroup>
 
 </Project>

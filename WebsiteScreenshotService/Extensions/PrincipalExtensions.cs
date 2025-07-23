@@ -48,6 +48,6 @@ public static class PrincipalExtensions
     /// <param name="currentPrincipal">The current claims principal.</param>
     /// <returns>The user ID if found and valid; otherwise, null.</returns>
     public static Guid? GetUserId(this ClaimsPrincipal currentPrincipal)
-        => Guid.TryParse(currentPrincipal.GetClaimValue(ClaimTypes.NameIdentifier), out Guid Id) ? Id : null;
+        => Guid.TryParse(currentPrincipal.GetClaimValue(Constants.Claims.UserId), out Guid Id) ? Id : null;
 }
 

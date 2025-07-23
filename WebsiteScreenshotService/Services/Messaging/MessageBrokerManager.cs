@@ -1,8 +1,8 @@
 ﻿namespace WebsiteScreenshotService.Services.Messaging;
 
-public class MessageBrokerProvider(ILogger<MessageBrokerProvider> logger, IMessageBrokerChannelManager messageBrokerChannelManager) : IMessageBrokerProvider
+public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IMessageBrokerChannelManager messageBrokerChannelManager) : IMessageBrokerManager
 {
-    private readonly ILogger<MessageBrokerProvider> _logger = logger;
+    private readonly ILogger<MessageBrokerManager> _logger = logger;
 
     private readonly IMessageBrokerChannelManager _messageBrokerChannelManager = messageBrokerChannelManager;
 

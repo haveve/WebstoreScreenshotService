@@ -5,6 +5,7 @@ using WebsiteScreenshotService;
 using WebsiteScreenshotService.Configurations;
 using WebsiteScreenshotService.Extensions.ServiceExtensions;
 using WebsiteScreenshotService.Repositories;
+using WebsiteScreenshotService.Services;
 using WebsiteScreenshotService.Services.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,10 +17,11 @@ builder.Services.AddControllerServices()
         options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     });
 
-builder.Services.Configure<KestrelServerOptions>(builder.Configuration.GetSection("ServerConfigurations"));
+builder.Services.AddGrpc();
 
-builder.Services.AddOptionsWithValidation<MessageBrokerConfigurations>(builder.Configuration.GetSection("MessageBrokerConfigurations"));
-builder.Services.AddOptionsWithValidation<ServerConfigurations>(builder.Configuration.GetSection("ServerConfigurations"));
+builder.Services.Configure<KestrelServerOptions>(builder.Configuration.GetSection("Server"));
+builder.Services.AddOptionsWithValidation<MessageBrokerConfigurations>(builder.Configuration.GetSection("MessageBroker"));
+builder.Services.AddOptionsWithValidation<AuthorizationConfiguration>(builder.Configuration.GetSection("Authorization"));
 
 if (builder.Environment.IsDevelopment())
     builder.Services.AddSwaggerServices();
@@ -28,9 +30,10 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
 builder.Services.AddSingleton<IUserContextAccessor, UserContextAccessor>();
+builder.Services.AddSingleton<IAuthorizationManager, AuthorizationManager>();
 
 builder.Services.AddSingleton<IMessageBrokerChannelManager, RabbitMqChannelManager>();
-builder.Services.AddSingleton<IMessageBrokerProvider, MessageBrokerProvider>();
+builder.Services.AddSingleton<IMessageBrokerManager, MessageBrokerManager>();
 
 builder.Services.AddSingleton<ISubscriptionManager, SubscriptionManager>();
 builder.Services.AddSingleton<ISubscriptionRepository, SubscriptionRepository>();
@@ -62,6 +65,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.MapGrpcService<GrpcScreenshotService>();
 
 app.UseCors(builder => builder.WithOrigins(app.Configuration.GetValue<string>("FrontUrl")!)
                  .AllowAnyHeader()

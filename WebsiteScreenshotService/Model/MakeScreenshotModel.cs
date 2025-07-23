@@ -4,13 +4,12 @@ namespace WebsiteScreenshotService.Model;
 
 public class MakeScreenshotModel
 {
-    [Required]
+    public required string ConfirmationToken { get; set; }
+
     public required string ScreenshotId { get; set; }
 
-    [Required]
     public required ScreenshotOptionsModel ScreenshotOptionsModel { get; set; }
 
-    [Required]
     public required UserInformation UserInformation { get; set; }
 }
 

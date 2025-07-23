@@ -1,0 +1,17 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "WebsiteScreenshotService";
+
+service GeneratedGrpcScreenshotService {
+  rpc ConfirmScreenshot(ConfirmationRequest) returns (ConfirmationResponse);
+  rpc RedeemScreenshotAttempt(ConfirmationRequest) returns (ConfirmationResponse);
+}
+
+message ConfirmationRequest {
+  string token = 1;
+}
+
+message ConfirmationResponse {
+  bool success = 1;
+  string message = 2;
+}

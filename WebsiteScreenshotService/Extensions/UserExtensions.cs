@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Services;
 
 namespace WebsiteScreenshotService.Extensions;
 
@@ -15,7 +16,14 @@ public static class UserExtensions
     /// <returns>A list of <see cref="Claim"/> objects representing the user's claims.</returns>
     public static IEnumerable<Claim> GetUserClaims(this User user)
     {
-        yield return new(ClaimTypes.NameIdentifier, user.Id.ToString());
+        yield return new(Constants.Claims.UserId, user.Id.ToString());
+    }
+
+    public static IEnumerable<Claim> GetConfirmationTokenClaims(this ConfirmationData confirmationData)
+    {
+        yield return new(Constants.Claims.UserId, confirmationData.UserId.ToString());
+        yield return new(Constants.Claims.WebsiteUrl, confirmationData.WebsiteUrl);
+        yield return new(Constants.Claims.ScreenshotId, confirmationData.ScreenshotId);
     }
 }
 
