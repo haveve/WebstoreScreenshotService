@@ -1,4 +1,4 @@
-﻿namespace ScreenshotWorker;
+﻿namespace ScreenshotWorker.Utils;
 
 public record Result<T>(IEnumerable<string> Errors, T? ParsedValue)
 {

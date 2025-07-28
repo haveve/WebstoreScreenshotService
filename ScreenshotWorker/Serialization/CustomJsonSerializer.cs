@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ScreenshotWorker.Utils;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
 namespace ScreenshotWorker.Serialization;

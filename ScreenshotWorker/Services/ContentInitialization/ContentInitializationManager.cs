@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using ScreenshotWorker.Model;
+using ScreenshotWorker.Settings;
+using ScreenshotWorker.Settings.InitializationStep;
 
 namespace ScreenshotWorker.Services.ContentInitialization;
 

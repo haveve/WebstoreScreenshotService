@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ScreenshotWorker;
+namespace ScreenshotWorker.Settings;
 
 public class MessageBrokerSettings
 {
@@ -34,6 +34,6 @@ public class ConnectionSettings
     public string VirtualHost { get; set; } = "/";
 
     public ushort ConsumerDispatchConcurrency { get; set; } = 1;
-    
+
     public ushort PrefetchCount { get; set; } = 1;
 }

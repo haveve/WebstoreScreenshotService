@@ -10,6 +10,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats;
 using Microsoft.Extensions.Options;
+using ScreenshotWorker.Settings;
 
 namespace ScreenshotWorker.Services;
 

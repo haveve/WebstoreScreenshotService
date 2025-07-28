@@ -2,8 +2,11 @@
 using Microsoft.Extensions.Hosting;
 using ScreenshotWorker.Services;
 using ScreenshotWorker.Services.ContentInitialization;
-using ScreenshotWorker;
 using Microsoft.Extensions.Logging;
+using ScreenshotWorker.Settings;
+using ScreenshotWorker.Repositories;
+using ScreenshotWorker.Managers;
+using ScreenshotWorker.Extensions;
 
 var builder = Host.CreateDefaultBuilder(args);
 
@@ -14,12 +17,14 @@ builder.ConfigureServices((context, services) =>
                services.AddSingleton<IContentInitializationStep, ScrollToPageEndStep>();
                services.AddSingleton<IContentInitializationStep, WaitForRequestsToCompleteStep>();
 
+               services.AddSingleton<IScreenshotService, ScreenshotService>();
                services.AddSingleton<IBrowserService, BrowserService>();
 
                services.AddSingleton<IApplicationLifetimeManager, ApplicationLifetimeManager>();
 
                services.AddOptionsWithValidation<BrowserServiceSettings>(context.Configuration.GetSection("BrowserServiceOptions"));
                services.AddOptionsWithValidation<MessageBrokerSettings>(context.Configuration.GetSection("MessageBrokerSettings"));
+               services.AddOptionsWithValidation<ScreenshotServiceSettings>(context.Configuration.GetSection("ScreenshotServiceSettings"));
 
                if (context.HostingEnvironment.IsDevelopment())
                {
@@ -27,7 +32,8 @@ builder.ConfigureServices((context, services) =>
                    services.AddOptionsWithValidation<InMemoryScreenshotStorageSettings>(context.Configuration.GetSection("ScreenshotStorageSettings"));
                }
 
-               services.AddHttpClient();
+               //services.AddHttpClient();
+               services.RegisterServiceRepositoryHttpClient();
            });
 
 builder.ConfigureLogging(logging =>

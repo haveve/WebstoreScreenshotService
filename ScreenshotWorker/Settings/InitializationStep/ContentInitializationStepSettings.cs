@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ScreenshotWorker;
+namespace ScreenshotWorker.Settings.InitializationStep;
 
 public class ContentInitializationStepSettings
 {

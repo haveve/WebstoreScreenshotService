@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ScreenshotWorker;
+namespace ScreenshotWorker.Settings.InitializationStep;
 
-public class ScrollInitializationStepSettings: ContentInitializationStepSettings
+public class ScrollInitializationStepSettings : ContentInitializationStepSettings
 {
     [Required]
     [Range(0, 360)]

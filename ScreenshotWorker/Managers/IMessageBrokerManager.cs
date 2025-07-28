@@ -1,4 +1,4 @@
-﻿namespace ScreenshotWorker;
+﻿namespace ScreenshotWorker.Managers;
 
 public interface IMessageBrokerManager
 {

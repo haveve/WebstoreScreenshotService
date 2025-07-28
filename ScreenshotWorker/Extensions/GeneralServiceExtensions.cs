@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace ScreenshotWorker;
+namespace ScreenshotWorker.Extensions;
 
 public static class GeneralServiceExtensions
 {

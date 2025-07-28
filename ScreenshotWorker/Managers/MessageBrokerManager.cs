@@ -7,21 +7,26 @@ using Microsoft.Extensions.Logging;
 using System.Text;
 using ScreenshotWorker.Services;
 using Microsoft.Extensions.Options;
+using ScreenshotWorker.Settings;
+using ScreenshotWorker.Repositories;
 
-namespace ScreenshotWorker;
+namespace ScreenshotWorker.Managers;
 
-public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowserService browserService, IScreenshotRepository screenshotRepository, IOptions<MessageBrokerSettings> configuration) : IMessageBrokerManager
+public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowserService browserService, IScreenshotRepository screenshotRepository, IScreenshotService screenshotServiceCommunicator, IOptions<MessageBrokerSettings> configuration) : IMessageBrokerManager
 {
     private readonly ILogger<MessageBrokerManager> _logger = logger;
     private readonly IBrowserService _browserService = browserService;
     private readonly MessageBrokerSettings _configuration = configuration.Value;
     private readonly IScreenshotRepository _screenshotRepository = screenshotRepository;
+    private readonly IScreenshotService _screenshotServiceCommunicator = screenshotServiceCommunicator;
 
     public async Task InitializeAsync()
     {
         var channel = await ConfigureAsync();
 
         var consumer = new AsyncEventingBasicConsumer(channel);
+
+        string? confirmationToken = null;
 
         consumer.ReceivedAsync += async (_, ea) =>
         {
@@ -35,16 +40,27 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowser
                     return;
                 }
 
+                confirmationToken = parsedValue.ConfirmationToken;
+
                 await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
 
                 var screenshotData = await _browserService.MakeScreenshotAsync(parsedValue.ScreenshotOptionsModel);
 
-                // this should be executed on separate task thread to save screenshot data into the storage and notify user
-                var savedSuccessfully = await _screenshotRepository.SaveScreenshot(
-                     parsedValue.ScreenshotId,
-                     parsedValue.UserInformation.UserId.ToString(),
-                     screenshotData,
-                     parsedValue.ScreenshotOptionsModel.ScreenshotType);
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var savedSuccessfully = await _screenshotRepository.SaveScreenshot(
+                             parsedValue.ScreenshotId,
+                             parsedValue.UserInformation.UserId.ToString(),
+                             screenshotData,
+                             parsedValue.ScreenshotOptionsModel.ScreenshotType);
+                    }
+                    catch
+                    {
+                        await _screenshotServiceCommunicator.RedeemScreenshotAttemptAsync(parsedValue.ConfirmationToken);
+                    }
+                });
 
             }
             catch (JsonException ex)
@@ -53,7 +69,14 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowser
                 var errors = new string[] { ex.Message };
 
                 await NackAsync(channel, ea.DeliveryTag, messageJsonAsString, errors);
-                return;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while processing the message: {Message}", Encoding.UTF8.GetString(ea.Body.ToArray()));
+
+                await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
+                if (confirmationToken is not null)
+                    await _screenshotServiceCommunicator.RedeemScreenshotAttemptAsync(confirmationToken);
             }
         };
 

@@ -1,7 +1,8 @@
 ﻿using ScreenshotWorker.Services.ContentInitialization;
+using ScreenshotWorker.Settings.InitializationStep;
 using System.ComponentModel.DataAnnotations;
 
-namespace ScreenshotWorker;
+namespace ScreenshotWorker.Settings;
 
 public class BrowserServiceSettings : IValidatableObject
 {

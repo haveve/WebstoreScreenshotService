@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.Json;
 using ScreenshotWorker.Services.ContentInitialization;
+using ScreenshotWorker.Settings.InitializationStep;
 
 namespace ScreenshotWorker.Serialization;
 

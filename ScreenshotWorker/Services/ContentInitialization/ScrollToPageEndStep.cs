@@ -1,6 +1,7 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using ScreenshotWorker.Model;
+using ScreenshotWorker.Settings.InitializationStep;
 
 namespace ScreenshotWorker.Services.ContentInitialization;
 

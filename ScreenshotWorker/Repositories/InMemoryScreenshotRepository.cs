@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Options;
+using ScreenshotWorker.Extensions;
 using ScreenshotWorker.Model;
+using ScreenshotWorker.Settings;
 using System.Net.Http.Json;
 
-namespace ScreenshotWorker;
+namespace ScreenshotWorker.Repositories;
 
 public class InMemoryScreenshotRepository(IOptions<InMemoryScreenshotStorageSettings> options, IHttpClientFactory httpClientFactory) : IScreenshotRepository
 {
@@ -10,7 +12,7 @@ public class InMemoryScreenshotRepository(IOptions<InMemoryScreenshotStorageSett
 
     public async Task<bool> SaveScreenshot(string screenshotId, string userId, byte[] screenshotData, ScreenshotType contentType, CancellationToken cancellationToken = default)
     {
-        using var client = httpClientFactory.CreateClient();
+        using var client = httpClientFactory.GetServiceRepositoryHttpClient();
 
         var formattedUrl = $"{_settings.Url}/screenshot/{userId}/{screenshotId}";
         var requestData = new ScreenshotData(screenshotData, GetContentType(contentType));

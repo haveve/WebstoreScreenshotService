@@ -1,6 +1,6 @@
 ﻿using ScreenshotWorker.Model;
 
-namespace ScreenshotWorker;
+namespace ScreenshotWorker.Repositories;
 
 public interface IScreenshotRepository
 {

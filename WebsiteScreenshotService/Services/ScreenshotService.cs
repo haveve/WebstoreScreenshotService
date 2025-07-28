@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using WebsiteScreenshotService.Configurations;
+using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Model;
+using WebsiteScreenshotService.Repositories;
 using WebsiteScreenshotService.Services.Messaging;
 using WebsiteScreenshotService.Utils;
 
@@ -9,11 +11,12 @@ namespace WebsiteScreenshotService.Services;
 /// <summary>
 /// Provides services for browser operations, including taking screenshots.
 /// </summary>
-public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessageBrokerManager messageBrokerManager, IOptions<MessageBrokerConfigurations> options, IAuthorizationManager authorizationManager) : IScreenshotService
+public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessageBrokerManager messageBrokerManager, IOptions<MessageBrokerConfigurations> options, IAuthorizationManager authorizationManager, IScreenshotManager screenshotManager) : IScreenshotService
 {
     private readonly IUserContextAccessor _userContextAccessor = userContextAccessor;
     private readonly IMessageBrokerManager _messageBrokerManager = messageBrokerManager;
     private readonly IAuthorizationManager _authorizationManager = authorizationManager;
+    private readonly IScreenshotManager _screenshotManager = screenshotManager;
     private readonly QueueConfig _queueConfig = options.Value.Queue;
 
     private readonly Result<string> defaultErrorMessage = Result<string>.Error("Failed to send screenshot request. Please, try again later");
@@ -35,7 +38,7 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
                 ScreenshotId: screenshotId
             ));
 
-        if(confirmationToken is null)
+        if (confirmationToken is null)
             return defaultErrorMessage;
 
         var model = new MakeScreenshotModel
@@ -51,10 +54,22 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
 
         var routingKey = _queueConfig.QueuePerSubscription[userContext.SubscriptionPlan.Type];
 
+        await _screenshotManager.CreateAsync(new
+        (
+            Id: screenshotId,
+            UserId: userContext.Id,
+            WebsiteUrl: screenshotOptionsModel.Url,
+            CreatedAt: DateTime.UtcNow,
+            State: ScreenshotState.Loading
+        ));
+
         var successfullySent = await _messageBrokerManager.SendMessageAsync(model, routingKey);
 
         if (!successfullySent)
+        {
+            await _screenshotManager.DeleteAsync(screenshotId);
             return defaultErrorMessage;
+        }
 
         return Result<string>.Success(screenshotId);
     }

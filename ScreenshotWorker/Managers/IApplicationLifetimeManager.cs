@@ -1,6 +1,6 @@
-﻿namespace ScreenshotWorker;
+﻿namespace ScreenshotWorker.Managers;
 
-public interface IApplicationLifetimeManager: IDisposable
+public interface IApplicationLifetimeManager : IDisposable
 {
     public CancellationToken CancellationToken { get; }
 

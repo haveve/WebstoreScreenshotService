@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ScreenshotWorker;
+namespace ScreenshotWorker.Settings;
 
 public class InMemoryScreenshotStorageSettings
 {
