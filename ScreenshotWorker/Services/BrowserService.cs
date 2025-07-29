@@ -1,16 +1,8 @@
 ﻿using ScreenshotWorker.Model;
 using ScreenshotWorker.Services.ContentInitialization;
-
-using OpenQA.Selenium;
-using OpenQA.Selenium.Firefox;
-
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Formats;
 using Microsoft.Extensions.Options;
 using ScreenshotWorker.Settings;
+using Microsoft.Playwright;
 
 namespace ScreenshotWorker.Services;
 
@@ -29,71 +21,81 @@ public class BrowserService(IContentInitializationManager contentInitializationM
     /// <returns>A task that represents the asynchronous operation. The task result contains the screenshot as a stream.</returns>
     public async Task<byte[]> MakeScreenshotAsync(ScreenshotOptionsModel screenshotOptionsModel)
     {
-        var screenshot = await TakeScreenshot(screenshotOptionsModel);
+        await using var context = await CreateBrowserContextAsync(screenshotOptionsModel);
+        var page = await context.NewPageAsync();
 
-        var screenshotResult = screenshotOptionsModel.Clip.Height.HasValue
-            ? ResizeScreenshot(screenshot, screenshotOptionsModel)
-            : screenshot;
-
-        return screenshotResult;
-    }
-
-    private async Task<byte[]> TakeScreenshot(ScreenshotOptionsModel screenshotOptionsModel)
-    {
-        using var driver = CreateDriver();
-
-        var window = driver.Manage().Window;
-        window.Size = new(screenshotOptionsModel.Clip.Width, window.Size.Height);
-
-        driver.Navigate().GoToUrl(screenshotOptionsModel.Url);
-
-        await _contentInitializationManager.InitializeContentAsync(driver, screenshotOptionsModel);
-
-        var screenshot = driver.GetFullPageScreenshot();
-
-        return screenshot.AsByteArray;
-    }
-
-    private FirefoxDriver CreateDriver()
-    {
-        var service = FirefoxDriverService.CreateDefaultService();
-        var options = new FirefoxOptions
+        await page.GotoAsync(screenshotOptionsModel.Url, new()
         {
-            AcceptInsecureCertificates = true,
-            PageLoadStrategy = PageLoadStrategy.Normal
+            WaitUntil = WaitUntilState.Load,
+            Timeout = _browserServiceSettings.PageLoadTimeout * 1000,
+        });
+
+        await _contentInitializationManager.InitializeContentAsync(page, screenshotOptionsModel);
+
+        return await page.ScreenshotAsync(FormatScreenshotOptions(screenshotOptionsModel));
+    }
+
+    private static PageScreenshotOptions FormatScreenshotOptions(ScreenshotOptionsModel screenshotOptionsModel)
+    {
+        var options = new PageScreenshotOptions()
+        {
+            FullPage = true,
+            Type = MatchScreenshotType(screenshotOptionsModel),
         };
 
-        options.AddArgument("--headless");
+        if (!screenshotOptionsModel.Clip.Height.HasValue)
+            return options;
 
-        var driver = new FirefoxDriver(service, options);
+        options.Clip = new()
+        {
+            Width = screenshotOptionsModel.Clip.Width,
+            Height = screenshotOptionsModel.Clip.Height.Value
+        };
 
-        driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(_browserServiceSettings.PageLoadTimeout);
-        driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(_browserServiceSettings.ScriptLoadTimeout);
+        options.FullPage = false;
 
-        return driver;
+        return options;
     }
 
-    private static byte[] ResizeScreenshot(byte[] inputStream, ScreenshotOptionsModel screenshotOptionsModel)
+    private static Microsoft.Playwright.ScreenshotType MatchScreenshotType(ScreenshotOptionsModel screenshotOptionsModel)
     {
-        using var image = Image.Load(inputStream);
-
-        if (image.Height <= screenshotOptionsModel.Clip.Height)
-            return inputStream;
-
-        image.Mutate(x => x.Crop(image.Width, screenshotOptionsModel.Clip.Height!.Value));
-
-        IImageEncoder imageEncoder = screenshotOptionsModel.ScreenshotType switch
+        return screenshotOptionsModel.ScreenshotType switch
         {
-            ScreenshotType.Png => new PngEncoder(),
-            ScreenshotType.Jpeg => new JpegEncoder(),
+            Model.ScreenshotType.Png => Microsoft.Playwright.ScreenshotType.Png,
+            Model.ScreenshotType.Jpeg => Microsoft.Playwright.ScreenshotType.Jpeg,
             _ => throw new NotImplementedException("Invalid image type")
         };
+    }
 
-        var outputStream = new MemoryStream();
-        image.Save(outputStream, imageEncoder);
+    private async Task<IBrowserContext> CreateBrowserContextAsync(ScreenshotOptionsModel screenshotOptionsModel)
+    {
+        var playwright = await Playwright.CreateAsync();
 
-        outputStream.Seek(0, SeekOrigin.Begin);
+        var browser = await playwright.Chromium.LaunchAsync(new()
+        {
+            Headless = true,
+            Args = [
+            "--disable-gpu",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-setuid-sandbox",
+            //"--ignore-certificate-errors"
+            ],
+        });
 
-        return outputStream.ToArray();
+        var context = await browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            IgnoreHTTPSErrors = false,
+            ViewportSize = new ViewportSize()
+            {
+                Width = screenshotOptionsModel.Clip.Width,
+                Height = 720
+            },
+        });
+
+        context.SetDefaultNavigationTimeout(_browserServiceSettings.PageLoadTimeout * 1000);
+        context.SetDefaultTimeout(_browserServiceSettings.ScriptLoadTimeout * 1000);
+
+        return context;
     }
 }

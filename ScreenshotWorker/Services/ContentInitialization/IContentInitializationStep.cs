@@ -1,4 +1,4 @@
-﻿using OpenQA.Selenium;
+﻿using Microsoft.Playwright;
 using ScreenshotWorker.Model;
 using ScreenshotWorker.Settings.InitializationStep;
 
@@ -8,8 +8,8 @@ public interface IContentInitializationStep
 {
     public string StepName { get; }
 
-    public Task InitializeScriptsAsync(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions)
-       => Task.CompletedTask;
+    public ValueTask<bool> IsAvailable(IPage page, ScreenshotOptionsModel screenshotOptions)
+        => ValueTask.FromResult(true);
 
-    public Task InitializeAsync(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions, ContentInitializationStepSettings Settings);
+    public Task InitializeAsync(IPage page, ScreenshotOptionsModel screenshotOptions, ContentInitializationStepSettings Settings);
 }

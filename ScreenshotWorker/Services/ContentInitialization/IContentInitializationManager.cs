@@ -1,9 +1,9 @@
-﻿using OpenQA.Selenium;
+﻿using Microsoft.Playwright;
 using ScreenshotWorker.Model;
 
 namespace ScreenshotWorker.Services.ContentInitialization;
 
 public interface IContentInitializationManager
 {
-    public Task InitializeContentAsync(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions);
+    public Task InitializeContentAsync(IPage page, ScreenshotOptionsModel screenshotOptions);
 }

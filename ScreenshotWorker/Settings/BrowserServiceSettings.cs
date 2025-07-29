@@ -11,19 +11,19 @@ public class BrowserServiceSettings : IValidatableObject
 
     [Required]
     [Range(0, 720)]
-    public double PageLoadTimeout { get; set; }
+    public float PageLoadTimeout { get; set; }
 
     [Required]
     [Range(0, 720)]
-    public double ScriptLoadTimeout { get; set; }
+    public float ScriptLoadTimeout { get; set; }
 
     [Required]
     [Range(0, 720)]
-    public double DefaultWaitTimeout { get; set; }
+    public float RequestsIdleTimeout { get; set; }
 
     [Required]
     [Range(0, 720)]
-    public double InitialPageLoadTimeout { get; set; }
+    public float DefaultWaitTimeout { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext _)
        => ValidateContentInitializationStepsSettings();

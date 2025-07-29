@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
-using OpenQA.Selenium;
+using Microsoft.Playwright;
 using ScreenshotWorker.Model;
 using ScreenshotWorker.Settings;
 using ScreenshotWorker.Settings.InitializationStep;
@@ -10,19 +10,19 @@ public class ContentInitializationManager(IEnumerable<IContentInitializationStep
 {
     private readonly BrowserServiceSettings _browserServiceSettings = browserServiceSettings.Value;
 
-    public async Task InitializeContentAsync(WebDriver webDriver, ScreenshotOptionsModel screenshotOptions)
+    public async Task InitializeContentAsync(IPage page, ScreenshotOptionsModel screenshotOptions)
     {
-        ArgumentNullException.ThrowIfNull(webDriver, nameof(webDriver));
+        ArgumentNullException.ThrowIfNull(page, nameof(page));
 
-        foreach (var step in contentInitializationSteps)
-           await step.InitializeScriptsAsync(webDriver, screenshotOptions);
-
-        await Task.Delay(TimeSpan.FromSeconds(_browserServiceSettings.InitialPageLoadTimeout));
+        await Task.Delay(TimeSpan.FromSeconds(_browserServiceSettings.DefaultWaitTimeout));
 
         foreach (var step in contentInitializationSteps)
         {
+            if (!await step.IsAvailable(page, screenshotOptions))
+                continue;
+
             var setting = GetSettings(step.StepName, _browserServiceSettings);
-            await step.InitializeAsync(webDriver, screenshotOptions, setting);
+            await step.InitializeAsync(page, screenshotOptions, setting);
             await Task.Delay(TimeSpan.FromSeconds(_browserServiceSettings.DefaultWaitTimeout));
         }
     }
