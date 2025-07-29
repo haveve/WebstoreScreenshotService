@@ -1,4 +1,5 @@
 ﻿using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories;
 
@@ -10,5 +11,7 @@ public interface IScreenshotManager
 
     public Task DeleteAsync(string screenshotId);
 
-    public ValueTask<string> GetScreenshotUrl(Screenshot screenshot);
+    public ValueTask<PaginationResult<Screenshot>> GetScreenshots(Paging? paging);
+
+    public ValueTask<Screenshot> GetScreenshot(string screenshotId);
 }

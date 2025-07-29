@@ -2,16 +2,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Filters;
 using WebsiteScreenshotService.Controllers.Examples.Indentity;
+using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Model;
 using WebsiteScreenshotService.Repositories;
 using WebsiteScreenshotService.Services;
+using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Controllers;
 
 [Authorize]
 [ApiController]
 [Route("[action]")]
-public class ScreenshotController(ISubscriptionManager subscriptionManager, IScreenshotService screenshotService) : ControllerBase
+public class ScreenshotController(ISubscriptionManager subscriptionManager, IScreenshotService screenshotService, IScreenshotManager screenshotManager, IScreenshotStorageManager screenshotStorageManager) : ControllerBase
 {
     private readonly ISubscriptionManager _subscriptionManager = subscriptionManager;
     private readonly IScreenshotService _screenshotService = screenshotService;
@@ -49,5 +51,30 @@ public class ScreenshotController(ISubscriptionManager subscriptionManager, IScr
         }
 
         return Ok(new { screenshotId = screenshotResult.Value });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetScreenshots(Paging paging)
+    {
+        var screenshotResult = await screenshotManager.GetScreenshots(paging);
+
+        var paginationResult = new PaginationResult<ScreenshotModel>
+        (
+            TotalCount: screenshotResult.TotalCount,
+            Items: screenshotResult.Items
+                .Select(screenshot => new ScreenshotModel(screenshot, screenshotStorageManager.GetScreenshotUrl(screenshot)))
+        );
+
+        return Ok(paginationResult);
+    }
+
+
+    [HttpGet]
+    public async Task<IActionResult> GetScreenshot(string id)
+    {
+        var storedScreenshot = await screenshotManager.GetScreenshot(id);
+        var screenshot = new ScreenshotModel(storedScreenshot, screenshotStorageManager.GetScreenshotUrl(storedScreenshot));
+
+        return Ok(screenshot);
     }
 }
