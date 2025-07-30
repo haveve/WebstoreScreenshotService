@@ -28,8 +28,8 @@ builder.ConfigureServices((context, services) =>
 
                if (context.HostingEnvironment.IsDevelopment())
                {
-                   services.AddSingleton<IScreenshotRepository, InMemoryScreenshotRepository>();
-                   services.AddOptionsWithValidation<InMemoryScreenshotStorageSettings>(context.Configuration.GetSection("ScreenshotStorageSettings"));
+                   services.AddSingleton<IScreenshotRepository, LocalScreenshotRepository>();
+                   services.AddOptionsWithValidation<LocalScreenshotStorageSettings>(context.Configuration.GetSection("ScreenshotStorageSettings"));
                }
 
                //services.AddHttpClient();

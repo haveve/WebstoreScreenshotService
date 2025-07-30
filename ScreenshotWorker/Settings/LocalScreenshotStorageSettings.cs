@@ -2,7 +2,7 @@
 
 namespace ScreenshotWorker.Settings;
 
-public class InMemoryScreenshotStorageSettings
+public class LocalScreenshotStorageSettings
 {
     [Required]
     public required string Url { get; set; }

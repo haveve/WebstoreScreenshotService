@@ -6,9 +6,9 @@ using System.Net.Http.Json;
 
 namespace ScreenshotWorker.Repositories;
 
-public class InMemoryScreenshotRepository(IOptions<InMemoryScreenshotStorageSettings> options, IHttpClientFactory httpClientFactory) : IScreenshotRepository
+public class LocalScreenshotRepository(IOptions<LocalScreenshotStorageSettings> options, IHttpClientFactory httpClientFactory) : IScreenshotRepository
 {
-    private readonly InMemoryScreenshotStorageSettings _settings = options.Value;
+    private readonly LocalScreenshotStorageSettings _settings = options.Value;
 
     public async Task<bool> SaveScreenshot(string screenshotId, string userId, byte[] screenshotData, ScreenshotType contentType, CancellationToken cancellationToken = default)
     {
