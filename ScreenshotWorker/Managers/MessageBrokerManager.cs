@@ -26,10 +26,9 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowser
 
         var consumer = new AsyncEventingBasicConsumer(channel);
 
-        string? confirmationToken = null;
-
         consumer.ReceivedAsync += async (_, ea) =>
         {
+            string? confirmationToken = null;
             try
             {
                 var (errors, parsedValue) = CustomJsonSerializer.TryDeserialize<MakeScreenshotModel>(ea.Body.Span);
