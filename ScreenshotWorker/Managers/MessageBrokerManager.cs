@@ -54,6 +54,8 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowser
                              parsedValue.UserInformation.UserId.ToString(),
                              screenshotData,
                              parsedValue.ScreenshotOptionsModel.ScreenshotType);
+
+                        await _screenshotServiceCommunicator.ConfirmScreenshotAttemptAsync(parsedValue.ConfirmationToken);
                     }
                     catch
                     {

@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using WebsiteScreenshotService.Repositories;
 using Microsoft.AspNetCore.Authentication;
 using WebsiteScreenshotService.Model;
 using WebsiteScreenshotService.Extensions;
 using WebsiteScreenshotService.Entities;
 using Swashbuckle.AspNetCore.Filters;
 using WebsiteScreenshotService.Controllers.Examples.Indentity;
+using WebsiteScreenshotService.Repositories.UserRepository;
 
 namespace WebsiteScreenshotService.Controllers;
 

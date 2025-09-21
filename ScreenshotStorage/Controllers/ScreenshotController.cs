@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using ScreenshotStorage;
 using ScreenshotStorage.Services;
+
+namespace ScreenshotStorage.Controllers;
 
 [ApiController]
 [Route("screenshot")]

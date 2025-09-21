@@ -11,5 +11,5 @@ public class UserContextAccessor(IHttpContextAccessor httpContextAccessor) : IUs
 
     public UserContext GetCurrentUser()
         => _httpContextAccessor.HttpContext?.GetUserContext()
-        ?? throw new InvalidOperationException("User context was not set. This may indicate an invalid or missing authentication token.");
+            ?? throw new InvalidOperationException("User context was not set. This may indicate an invalid or missing authentication token.");
 }

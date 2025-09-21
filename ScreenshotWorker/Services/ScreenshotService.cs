@@ -1,22 +1,21 @@
-﻿using Grpc.Net.Client;
-using Microsoft.Extensions.Options;
-using ScreenshotWorker.Settings;
-using ScreenshotWorker.Utils;
-using WebsiteScreenshotService;
+﻿using WebsiteScreenshotService;
 
 namespace ScreenshotWorker.Services;
 
-public class ScreenshotService(IOptions<ScreenshotServiceSettings> options) : IScreenshotService
+public class ScreenshotService(GeneratedGrpcScreenshotService.GeneratedGrpcScreenshotServiceClient client) : IScreenshotService
 {
-    private ConcurrentLazy<GrpcChannel> _grpcChannel = new(() => GrpcChannel.ForAddress(options.Value.Url));
+    private readonly GeneratedGrpcScreenshotService.GeneratedGrpcScreenshotServiceClient _client = client;
 
     public async Task RedeemScreenshotAttemptAsync(string token)
-    {
-        var grpcClient = new GeneratedGrpcScreenshotService.GeneratedGrpcScreenshotServiceClient(_grpcChannel.GetValue());
+     => await _client.RedeemScreenshotAttemptAsync(new()
+     {
+         Token = token,
+     });
 
-        await grpcClient.RedeemScreenshotAttemptAsync(new ConfirmationRequest
-        {
-            Token = token,
-        });
-    }
+
+    public async Task ConfirmScreenshotAttemptAsync(string token)
+    => await _client.ConfirmScreenshotAttemptAsync(new()
+    {
+        Token = token,
+    });
 }

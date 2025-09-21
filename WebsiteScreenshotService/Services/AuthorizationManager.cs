@@ -29,6 +29,9 @@ public class AuthorizationManager(IOptions<AuthorizationConfiguration> options, 
             var tokenHandler = new JwtSecurityTokenHandler();
             var userClaims = tokenHandler.ValidateToken(token, validationParameters, out _);
 
+            if (userClaims.GetTokenType() is not Constants.Claims.TokenTypes.Confirmation)
+                return null;
+
             return new(
                 userClaims.GetUserId()!.Value,
                 userClaims.GetClaimValue(Constants.Claims.WebsiteUrl)!,

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using WebsiteScreenshotService.Configurations;
-using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Model;
-using WebsiteScreenshotService.Repositories;
+using WebsiteScreenshotService.Repositories.ScreenshotRepository;
+using WebsiteScreenshotService.Repositories.Subscription;
 using WebsiteScreenshotService.Services.Messaging;
 using WebsiteScreenshotService.Utils;
 
@@ -11,8 +11,9 @@ namespace WebsiteScreenshotService.Services;
 /// <summary>
 /// Provides services for browser operations, including taking screenshots.
 /// </summary>
-public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessageBrokerManager messageBrokerManager, IOptions<MessageBrokerConfigurations> options, IAuthorizationManager authorizationManager, IScreenshotManager screenshotManager) : IScreenshotService
+public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessageBrokerManager messageBrokerManager, IOptions<MessageBrokerConfigurations> options, IAuthorizationManager authorizationManager, IScreenshotManager screenshotManager, ISubscriptionManager subscriptionManager) : IScreenshotService
 {
+    private readonly ISubscriptionManager _subscriptionManager = subscriptionManager;
     private readonly IUserContextAccessor _userContextAccessor = userContextAccessor;
     private readonly IMessageBrokerManager _messageBrokerManager = messageBrokerManager;
     private readonly IAuthorizationManager _authorizationManager = authorizationManager;
@@ -41,9 +42,26 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
         if (confirmationToken is null)
             return defaultErrorMessage;
 
+        //var screenshotResult = await _subscriptionManager.ScreenshotWasMadeAsync();
+
+        //if (!screenshotResult.IsSuccess)
+        //    return Result<string>.Error(screenshotResult.ErrorMessage!);
+
+        var savedScreenshotResult = await _screenshotManager.MakeAsync(new
+        (
+            Id: screenshotId,
+            UserId: userContext.Id,
+            WebsiteUrl: screenshotOptionsModel.Url
+        ));
+
+        if(!savedScreenshotResult.IsSuccess)
+            return Result<string>.Error(savedScreenshotResult.ErrorMessage!);
+
+        var savedScreenshot = savedScreenshotResult.Value!;
+
         var model = new MakeScreenshotModel
         {
-            ScreenshotId = screenshotId,
+            ScreenshotId = savedScreenshot.Id,
             ScreenshotOptionsModel = screenshotOptionsModel,
             ConfirmationToken = confirmationToken,
             UserInformation = new UserInformation
@@ -54,20 +72,11 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
 
         var routingKey = _queueConfig.QueuePerSubscription[userContext.SubscriptionPlan.Type];
 
-        await _screenshotManager.CreateAsync(new
-        (
-            Id: screenshotId,
-            UserId: userContext.Id,
-            WebsiteUrl: screenshotOptionsModel.Url,
-            CreatedAt: DateTime.UtcNow,
-            State: ScreenshotState.Loading
-        ));
-
         var successfullySent = await _messageBrokerManager.SendMessageAsync(model, routingKey);
 
         if (!successfullySent)
         {
-            await _screenshotManager.DeleteAsync(screenshotId);
+            await _subscriptionManager.RedeemScreenshotAsync(savedScreenshot.Id);
             return defaultErrorMessage;
         }
 

@@ -1,5 +1,5 @@
 ﻿using WebsiteScreenshotService.Extensions;
-using WebsiteScreenshotService.Repositories;
+using WebsiteScreenshotService.Repositories.Subscription;
 
 namespace WebsiteScreenshotService;
 

@@ -1,21 +1,19 @@
-﻿using System.Collections.Concurrent;
-using WebsiteScreenshotService.Entities;
-using WebsiteScreenshotService.Utils.Synchronization;
+﻿using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Utils;
 
-namespace WebsiteScreenshotService.Repositories;
+namespace WebsiteScreenshotService.Repositories.Subscription;
 
-public class SubscriptionManager(ISubscriptionRepository screenshotRepository, IUserContextAccessor userContextAccessor) : ISubscriptionManager
+public class InMemorySubscriptionManager(ISubscriptionRepository screenshotRepository, IUserContextAccessor userContextAccessor) : ISubscriptionManager
 {
     private readonly ISubscriptionRepository _screenshotRepository = screenshotRepository;
 
-    private readonly ConcurrentDictionary<Guid, AsyncSlimReaderWriterLock> LockPerUser = new();
+    private readonly AsyncLockManager<Guid> _lockPerUser = new();
 
     private Task<IDisposable> EnterLockAsync(Guid userId, bool isRead = true)
     {
-        var userLock = LockPerUser.GetOrAdd(userId, _ => new AsyncSlimReaderWriterLock());
         return isRead
-            ? userLock.EnterReadLockAsync()
-            : userLock.EnterWriteLockAsync();
+            ? _lockPerUser.EnterReadAsync(userId)
+            : _lockPerUser.EnterWriteAsync(userId);
     }
 
     public async Task<SubscriptionPlan> GetUserSubscriptionAsync(Guid userId = default)
@@ -38,23 +36,28 @@ public class SubscriptionManager(ISubscriptionRepository screenshotRepository, I
         return await _screenshotRepository.CanMakeScreenshotAsync(userId);
     }
 
-    public async Task<SubscriptionPlan> ScreenshotWasMadeAsync(Guid userId = default)
+    public async Task<Result<SubscriptionPlan>> ScreenshotWasMadeAsync(Guid userId = default)
     {
         if (userId == default)
             userId = userContextAccessor.GetCurrentUser().Id;
 
         using var _ = await EnterLockAsync(userId, isRead: false);
 
-        return await _screenshotRepository.ScreenshotWasMadeAsync(userId)
+        if (!await _screenshotRepository.CanMakeScreenshotAsync(userId))
+            return Result<SubscriptionPlan>.Error("You cannot make screenshot any more because you ran out of available screenshots");
+
+        var subscriptionPlan = await _screenshotRepository.ScreenshotWasMadeAsync(userId)
             ?? throw new InvalidOperationException("User subscription not found.");
+
+        return Result<SubscriptionPlan>.Success(subscriptionPlan);
     }
 
-    public async Task IncrementScreenshotCountAsync(Guid userId = default)
+    public async Task RedeemScreenshotAsync(string screenshotId, Guid userId = default)
     {
         if (userId == default)
             userId = userContextAccessor.GetCurrentUser().Id;
 
         using var _ = await EnterLockAsync(userId, isRead: false);
-        await _screenshotRepository.IncrementScreenshotCountAsync(userId);
+        await _screenshotRepository.RedeemScreenshotAsync(screenshotId, userId);
     }
 }

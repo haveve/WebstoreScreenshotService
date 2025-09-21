@@ -1,8 +1,11 @@
 ﻿using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Repositories.ScreenshotRepository;
+using WebsiteScreenshotService.Repositories.Subscription;
+using WebsiteScreenshotService.Repositories.UserRepository;
 
 namespace WebsiteScreenshotService.Repositories;
 
-public class SubscriptionRepository(IUserRepository userRepository): ISubscriptionRepository
+public class InMemorySubscriptionRepository(IUserRepository userRepository, IScreenshotManager screenshotManager): ISubscriptionRepository
 {
     private readonly IUserRepository _userRepository = userRepository;
 
@@ -50,9 +53,10 @@ public class SubscriptionRepository(IUserRepository userRepository): ISubscripti
         return subscriptionPlan;
     }
 
-    public async Task IncrementScreenshotCountAsync(Guid userId)
+    public async Task RedeemScreenshotAsync(string screenshotId ,Guid userId)
     {
         var user = await _userRepository.GetUserByIdAsync(userId);
         user?.SubscriptionPlan.IncrementScreenshotCount();
+        await screenshotManager.UpdateStateAsync(screenshotId, ScreenshotState.Failed);
     }
 }

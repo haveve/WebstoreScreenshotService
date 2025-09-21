@@ -4,7 +4,8 @@ using Swashbuckle.AspNetCore.Filters;
 using WebsiteScreenshotService.Controllers.Examples.Indentity;
 using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Model;
-using WebsiteScreenshotService.Repositories;
+using WebsiteScreenshotService.Repositories.ScreenshotRepository;
+using WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
 using WebsiteScreenshotService.Services;
 using WebsiteScreenshotService.Utils;
 
@@ -13,10 +14,11 @@ namespace WebsiteScreenshotService.Controllers;
 [Authorize]
 [ApiController]
 [Route("[action]")]
-public class ScreenshotController(ISubscriptionManager subscriptionManager, IScreenshotService screenshotService, IScreenshotManager screenshotManager, IScreenshotStorageManager screenshotStorageManager) : ControllerBase
+public class ScreenshotController(IScreenshotService screenshotService, IScreenshotManager screenshotManager, IScreenshotStorageManager screenshotStorageManager) : ControllerBase
 {
-    private readonly ISubscriptionManager _subscriptionManager = subscriptionManager;
     private readonly IScreenshotService _screenshotService = screenshotService;
+    private readonly IScreenshotManager _screenshotManager = screenshotManager;
+    private readonly IScreenshotStorageManager _screenshotStorageManager = screenshotStorageManager;
 
     /// <summary>
     /// Captures a screenshot based on the specified options and returns the image file.
@@ -34,21 +36,10 @@ public class ScreenshotController(ISubscriptionManager subscriptionManager, IScr
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(MakeScreenshotResponseExample))]
     public async Task<IActionResult> MakeScreenshot(ScreenshotOptionsModel screenshotOptions)
     {
-        if (!await _subscriptionManager.CanMakeScreenshotAsync())
-            return BadRequest(new ErrorResponse("You cannot make screenshot any more because you ran out of available screenshots"));
-
-        var subscriptionPlan = await _subscriptionManager.ScreenshotWasMadeAsync();
-
-        if (subscriptionPlan is null)
-            return BadRequest(new ErrorResponse("User does not exist"));
-
         var screenshotResult = await _screenshotService.MakeScreenshotAsync(screenshotOptions);
 
         if (!screenshotResult.IsSuccess)
-        {
-            await _subscriptionManager.IncrementScreenshotCountAsync();
             return BadRequest(new ErrorResponse(screenshotResult.ErrorMessage!));
-        }
 
         return Ok(new { screenshotId = screenshotResult.Value });
     }
@@ -56,13 +47,18 @@ public class ScreenshotController(ISubscriptionManager subscriptionManager, IScr
     [HttpGet]
     public async Task<IActionResult> GetScreenshots(Paging paging)
     {
-        var screenshotResult = await screenshotManager.GetScreenshots(paging);
+        var screenshotResult = await _screenshotManager.GetScreenshots(paging);
+
+        if (!screenshotResult.IsSuccess)
+            return BadRequest(new ErrorResponse(screenshotResult.ErrorMessage!));
+
+        var screenshotPaging = screenshotResult.Value!;
 
         var paginationResult = new PaginationResult<ScreenshotModel>
         (
-            TotalCount: screenshotResult.TotalCount,
-            Items: screenshotResult.Items
-                .Select(screenshot => new ScreenshotModel(screenshot, screenshotStorageManager.GetScreenshotUrl(screenshot)))
+            TotalCount: screenshotPaging.TotalCount,
+            Items: screenshotPaging.Items
+                .Select(screenshot => new ScreenshotModel(screenshot, _screenshotStorageManager.GetScreenshotUrl(screenshot)))
         );
 
         return Ok(paginationResult);
@@ -72,8 +68,14 @@ public class ScreenshotController(ISubscriptionManager subscriptionManager, IScr
     [HttpGet]
     public async Task<IActionResult> GetScreenshot(string id)
     {
-        var storedScreenshot = await screenshotManager.GetScreenshot(id);
-        var screenshot = new ScreenshotModel(storedScreenshot, screenshotStorageManager.GetScreenshotUrl(storedScreenshot));
+        var storedScreenshotResult = await _screenshotManager.GetScreenshot(id);
+        
+        if (!storedScreenshotResult.IsSuccess)
+            return BadRequest(new ErrorResponse(storedScreenshotResult.ErrorMessage!));
+
+        var storedScreenshot = storedScreenshotResult.Value!;
+
+        var screenshot = new ScreenshotModel(storedScreenshot, _screenshotStorageManager.GetScreenshotUrl(storedScreenshot));
 
         return Ok(screenshot);
     }

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using WebsiteScreenshotService.Entities;
 
-namespace WebsiteScreenshotService.Repositories;
+namespace WebsiteScreenshotService.Repositories.UserRepository;
 
 /// <summary>
 /// Provides an in-memory implementation of the <see cref="IUserRepository"/> interface for managing users and their subscriptions.
@@ -12,8 +12,6 @@ public class InMemoryUserRepository : IUserRepository
     {
         new User(new Guid("{bbb13e58-0cf0-4063-8b83-7e0bf15f7e4d}"),"Ivan","Pohoidash","i.pohoidash@gmail.com","abc123", SubscriptionPlan.GetRegularSubscriptionPlan())
     };
-
-    private ReaderWriterLockSlim _subscriptionLock = new();
 
     /// <summary>
     /// Retrieves a user by their unique identifier.

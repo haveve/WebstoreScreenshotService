@@ -1,6 +1,6 @@
 ﻿using WebsiteScreenshotService.Entities;
 
-namespace WebsiteScreenshotService.Repositories;
+namespace WebsiteScreenshotService.Repositories.UserRepository;
 
 /// <summary>
 /// Defines the contract for user repository operations, including user retrieval, creation, and subscription management.

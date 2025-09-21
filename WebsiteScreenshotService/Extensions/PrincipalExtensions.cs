@@ -49,5 +49,8 @@ public static class PrincipalExtensions
     /// <returns>The user ID if found and valid; otherwise, null.</returns>
     public static Guid? GetUserId(this ClaimsPrincipal currentPrincipal)
         => Guid.TryParse(currentPrincipal.GetClaimValue(Constants.Claims.UserId), out Guid Id) ? Id : null;
+
+    public static Constants.Claims.TokenTypes? GetTokenType(this ClaimsPrincipal currentPrincipal)
+        => Enum.TryParse(currentPrincipal.GetClaimValue(Constants.Claims.TokenType), out Constants.Claims.TokenTypes type) ? type : null;
 }
 

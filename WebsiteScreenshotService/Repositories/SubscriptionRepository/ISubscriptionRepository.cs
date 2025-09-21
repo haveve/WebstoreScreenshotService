@@ -1,6 +1,6 @@
 ﻿using WebsiteScreenshotService.Entities;
 
-namespace WebsiteScreenshotService.Repositories;
+namespace WebsiteScreenshotService.Repositories.Subscription;
 
 public interface ISubscriptionRepository
 {
@@ -21,5 +21,5 @@ public interface ISubscriptionRepository
 
     public Task<bool> CanMakeScreenshotAsync(Guid userId);
 
-    public Task IncrementScreenshotCountAsync(Guid userId);
+    public Task RedeemScreenshotAsync(string screenshotId, Guid userId);
 }

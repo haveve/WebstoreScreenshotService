@@ -1,6 +1,6 @@
 ﻿using WebsiteScreenshotService.Entities;
 
-namespace WebsiteScreenshotService.Repositories;
+namespace WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
 
 public interface IScreenshotStorageManager
 {

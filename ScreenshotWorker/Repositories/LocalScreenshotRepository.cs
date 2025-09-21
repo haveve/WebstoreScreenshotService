@@ -19,7 +19,7 @@ public class LocalScreenshotRepository(IOptions<LocalScreenshotStorageSettings> 
 
         var result = await client.PostAsJsonAsync(formattedUrl, requestData, cancellationToken);
 
-        return true;
+        return result.IsSuccessStatusCode;
     }
 
     private static string GetContentType(ScreenshotType screenshotType)

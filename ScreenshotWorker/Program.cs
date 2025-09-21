@@ -7,6 +7,8 @@ using ScreenshotWorker.Settings;
 using ScreenshotWorker.Repositories;
 using ScreenshotWorker.Managers;
 using ScreenshotWorker.Extensions;
+using WebsiteScreenshotService;
+using Microsoft.Extensions.Options;
 
 var builder = Host.CreateDefaultBuilder(args);
 
@@ -32,8 +34,13 @@ builder.ConfigureServices((context, services) =>
                    services.AddOptionsWithValidation<LocalScreenshotStorageSettings>(context.Configuration.GetSection("ScreenshotStorageSettings"));
                }
 
-               //services.AddHttpClient();
                services.RegisterServiceRepositoryHttpClient();
+
+               services.AddGrpcClient<GeneratedGrpcScreenshotService.GeneratedGrpcScreenshotServiceClient>((sp, o) =>
+               {
+                   var settings = sp.GetRequiredService<IOptions<ScreenshotServiceSettings>>().Value;
+                   o.Address = new Uri(settings.Url);
+               });
            });
 
 builder.ConfigureLogging(logging =>

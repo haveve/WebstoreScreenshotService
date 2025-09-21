@@ -17,6 +17,7 @@ public static class UserExtensions
     public static IEnumerable<Claim> GetUserClaims(this User user)
     {
         yield return new(Constants.Claims.UserId, user.Id.ToString());
+        yield return new(Constants.Claims.TokenType, Constants.Claims.TokenTypes.Authorization.ToString());
     }
 
     public static IEnumerable<Claim> GetConfirmationTokenClaims(this ConfirmationData confirmationData)
@@ -24,6 +25,7 @@ public static class UserExtensions
         yield return new(Constants.Claims.UserId, confirmationData.UserId.ToString());
         yield return new(Constants.Claims.WebsiteUrl, confirmationData.WebsiteUrl);
         yield return new(Constants.Claims.ScreenshotId, confirmationData.ScreenshotId);
+        yield return new(Constants.Claims.TokenType, Constants.Claims.TokenTypes.Confirmation.ToString());
     }
 }
 

@@ -4,7 +4,7 @@ public record Screenshot(string Id, string WebsiteUrl, Guid UserId, DateTime Cre
 
 public enum ScreenshotState
 {
-    Successful = 1,
-    Loading = 2,
+    New = 1,
+    Successful = 2,
     Failed = 3,
 }

@@ -4,6 +4,7 @@ option csharp_namespace = "WebsiteScreenshotService";
 
 service GeneratedGrpcScreenshotService {
   rpc RedeemScreenshotAttempt(ConfirmationRequest) returns (ConfirmationResponse);
+  rpc ConfirmScreenshotAttempt(ConfirmationRequest) returns (ConfirmationResponse);
 }
 
 message ConfirmationRequest {

@@ -1,10 +1,15 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using ScreenshotWorker.Settings;
 using System.Text.Json;
 using WebsiteScreenshotService;
 using WebsiteScreenshotService.Configurations;
 using WebsiteScreenshotService.Extensions.ServiceExtensions;
 using WebsiteScreenshotService.Repositories;
+using WebsiteScreenshotService.Repositories.ScreenshotRepository;
+using WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
+using WebsiteScreenshotService.Repositories.Subscription;
+using WebsiteScreenshotService.Repositories.UserRepository;
 using WebsiteScreenshotService.Services;
 using WebsiteScreenshotService.Services.Messaging;
 
@@ -22,6 +27,7 @@ builder.Services.AddGrpc();
 builder.Services.Configure<KestrelServerOptions>(builder.Configuration.GetSection("Server"));
 builder.Services.AddOptionsWithValidation<MessageBrokerConfigurations>(builder.Configuration.GetSection("MessageBroker"));
 builder.Services.AddOptionsWithValidation<AuthorizationConfiguration>(builder.Configuration.GetSection("Authorization"));
+builder.Services.AddOptionsWithValidation<ScreenshotStorageConfigurations>(builder.Configuration.GetSection("ScreenshotStorageSettings"));
 
 if (builder.Environment.IsDevelopment())
     builder.Services.AddSwaggerServices();
@@ -35,8 +41,13 @@ builder.Services.AddSingleton<IAuthorizationManager, AuthorizationManager>();
 builder.Services.AddSingleton<IMessageBrokerChannelManager, RabbitMqChannelManager>();
 builder.Services.AddSingleton<IMessageBrokerManager, MessageBrokerManager>();
 
-builder.Services.AddSingleton<ISubscriptionManager, SubscriptionManager>();
-builder.Services.AddSingleton<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddSingleton<ISubscriptionManager, InMemorySubscriptionManager>();
+builder.Services.AddSingleton<ISubscriptionRepository, InMemorySubscriptionRepository>();
+
+builder.Services.AddSingleton<IScreenshotManager, InMemoryScreenshotManager>();
+builder.Services.AddSingleton<IScreenshotRepository, InMemoryScreenshotRepository>();
+
+builder.Services.AddSingleton<IScreenshotStorageManager, ScreenshotStorageManager>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
