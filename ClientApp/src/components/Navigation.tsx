@@ -1,49 +1,148 @@
-import { Link } from "react-router-dom";
-import { Container, Navbar, Nav, Button, Alert, Row, Col } from "react-bootstrap";
 import { useState } from "react";
-import { useDispatch } from 'react-redux'
+import { Link as RouterLink } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { useAppSelector } from "../behavior/rootReducer";
 import { getLogoutAction } from "../behavior/epic";
-import Cookiebar from "./Cookiebar";
-import cookieStore from '../behavior/cookie/store';
+import cookieStore from "../behavior/cookie/store";
 import { BarLoader } from "react-spinners";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
+import { useThemeMode } from "./ThemeSettings";
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Button,
+    IconButton,
+    Box,
+    Alert,
+    Container,
+    Drawer,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    Divider,
+} from "@mui/material";
+import { Menu as MenuIcon, Brightness4 as DarkModeIcon, Brightness7 as LightModeIcon } from "@mui/icons-material";
+
+type NavItem = {
+    label: string;
+    path?: string;
+    action?: () => void;
+};
 
 const Navigation = () => {
     const dispatch = useDispatch();
-    const user = useAppSelector(state => state.user);
-    const loaded = useAppSelector(state => state.loaded);
-    const cookieCosent = cookieStore.getCookieConsent();
-    const [isVisible, setIsVisible] = useState(cookieCosent === null);
+    const user = useAppSelector((state) => state.user);
+    const loaded = useAppSelector((state) => state.loaded);
+    const cookieConsent = cookieStore.getCookieConsent();
+    const [drawerOpen, setDrawerOpen] = useState(false);
     const { t } = useTranslation();
+    const { mode, toggleTheme } = useThemeMode();
 
     const handleLogout = () => dispatch(getLogoutAction());
 
+    const navItems: NavItem[] = [
+        { label: t("Navigation.home"), path: "/" },
+        { label: t("Navigation.privacyPolicy"), path: "/privacy-policy" },
+    ];
+
+    const userItems: NavItem[] = user
+        ? [
+            { label: t("Navigation.makeScreenshot"), path: "/make-screenshot" },
+            { label: t("Navigation.myAccount"), path: "/my-account" },
+            { label: t("Navigation.logout"), action: handleLogout },
+        ]
+        : [
+            { label: t("Navigation.login"), path: "/login" },
+            { label: t("Navigation.register"), path: "/register" },
+        ];
+
+    const allItems = [...navItems, ...userItems];
+
     return (
         <>
-            <Navbar bg="dark" variant="dark" expand="lg">
-                <Container>
-                    <Navbar.Brand as={Link} to="/">{t('Navigation.screenshotService')}</Navbar.Brand>
-                    {!isVisible && <Button onClick={() => setIsVisible(true)} variant="outline-secondary" >{t('Navigation.cookiebar')}</Button>}
-                    <Nav className="ms-auto">
-                        <Nav.Link as={Link} to="/">{t('Navigation.home')}</Nav.Link>
-                        <Nav.Link as={Link} to="/privacy-policy" >{t('Navigation.privacyPolicy')}</Nav.Link>
-                        {!user && <Nav.Link as={Link} to="/login">{t('Navigation.login')}</Nav.Link>}
-                        {!user && <Nav.Link as={Link} to="/register">{t('Navigation.register')}</Nav.Link>}
-                        {user && <Nav.Link as={Link} to="/my-account" >{t('Navigation.myAccount')}</Nav.Link>}
-                        {user && <Button variant="outline-secondary" onClick={handleLogout}>{t('Navigation.logout')}</Button>}
-                    </Nav>
+            <AppBar position="static" color="primary">
+                <Container maxWidth="lg">
+                    <Toolbar sx={{ justifyContent: "space-between" }}>
+                        {/* Logo and Title */}
+                        <Typography
+                            variant="h6"
+                            component={RouterLink}
+                            to="/"
+                            sx={{
+                                textDecoration: "none",
+                                color: "inherit",
+                                display: "flex",
+                                alignItems: "center",
+                            }}
+                        >
+                            <Box component="img" src="/logo.png" alt="Logo" sx={{ height: 50, mr: 1 }} />
+                            {t("Navigation.screenshotService")}
+                        </Typography>
+
+                        {/* Desktop Navigation */}
+                        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
+                            {allItems.map((item, index) =>
+                                item.path ? (
+                                    <Button component={RouterLink} to={item.path} key={index} color="inherit">
+                                        {item.label}
+                                    </Button>
+                                ) : (
+                                    <Button key={index} color="inherit" variant="outlined" onClick={item.action}>
+                                        {item.label}
+                                    </Button>
+                                )
+                            )}
+                            <LanguageSelector />
+                            <IconButton onClick={toggleTheme} color="inherit" aria-label="toggle theme">
+                                {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+                            </IconButton>
+                        </Box>
+
+                        {/* Mobile Burger Menu */}
+                        <Box sx={{ display: { xs: "flex", md: "none" } }}>
+                            <IconButton color="inherit" onClick={() => setDrawerOpen(true)}>
+                                <MenuIcon />
+                            </IconButton>
+                        </Box>
+                    </Toolbar>
                 </Container>
-                <Cookiebar setVisibility={setIsVisible} showCookieBar={isVisible} />
-            </Navbar>
-            <BarLoader width={'100vw'} color="#1370f2" height={5} loading={!loaded} />
-            {loaded && cookieCosent === false &&
-                <Row className="p-0 m-0 justify-content-center">
-                    <Col sm={9}>
-                        <Alert variant="danger" className="mt-3">{t('Navigation.cookiesDeclined')}</Alert>
-                    </Col>
-                </Row>
-            }
+            </AppBar>
+
+            {/* Mobile Drawer */}
+            <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+                <Box sx={{ width: 250 }} role="presentation" onClick={() => setDrawerOpen(false)}>
+                    <List>
+                        {allItems.map((item, index) => (
+                            <ListItem key={index} disablePadding>
+                                <ListItemButton
+                                    component={item.path ? RouterLink : "button"}
+                                    to={item.path}
+                                    onClick={item.action}
+                                >
+                                    <ListItemText primary={item.label} />
+                                </ListItemButton>
+                            </ListItem>
+                        ))}
+                    </List>
+                    <Divider />
+                    <Box sx={{ p: 2 }}>
+                        <LanguageSelector />
+                        <IconButton onClick={toggleTheme} color="inherit" aria-label="toggle theme">
+                            {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+                        </IconButton>
+                    </Box>
+                </Box>
+            </Drawer>
+            <BarLoader width={"100%"} color="#1370f2" height={5} loading={!loaded} />
+            {loaded && cookieConsent === false && (
+                <Container maxWidth="md" sx={{ mt: 3 }}>
+                    <Alert severity="error">{t("Navigation.cookiesDeclined")}</Alert>
+                </Container>
+            )}
+            <Container sx={{ mb: 6 }} />
         </>
     );
 };

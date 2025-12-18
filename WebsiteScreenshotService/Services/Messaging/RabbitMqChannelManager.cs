@@ -42,6 +42,7 @@ public class RabbitMqChannelManager : IMessageBrokerChannelManager, IAsyncDispos
 
     public async Task<IBrokerChannel> GetChannelAsync(CancellationToken cancellationToken = default)
     {
+        var lockTaken = false;
         try
         {
             if (_disposed)
@@ -51,6 +52,7 @@ public class RabbitMqChannelManager : IMessageBrokerChannelManager, IAsyncDispos
                 return await CreateChannel(cancellationToken);
 
             await _connectionLock.WaitAsync(cancellationToken);
+            lockTaken = true;
 
             if (_disposed)
                 throw new ObjectDisposedException(nameof(RabbitMqChannelManager));
@@ -80,7 +82,8 @@ public class RabbitMqChannelManager : IMessageBrokerChannelManager, IAsyncDispos
         }
         finally
         {
-            _connectionLock.Release();
+            if (lockTaken)
+                _connectionLock.Release();
         }
     }
 

@@ -1,22 +1,27 @@
-import { Container, Row, Col, Card } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import {
+  Container,
+  Card,
+  CardContent,
+  Typography,
+  Box
+} from '@mui/material';
+import SafeHtml from './SafeHtml';
 
 const PrivacyPolicy = () => {
   const { t } = useTranslation();
 
   return (
-    <Container fluid="md" className="my-5">
-      <Row>
-        <Col>
-          <Card className="shadow-lg">
-            <Card.Body>
-              <Card.Text>
-                <div dangerouslySetInnerHTML={{ __html: t('TermsAndConditions.fullPageContent') }} />
-              </Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+    <Container maxWidth="md">
+      <Card sx={{ boxShadow: 6 }}>
+        <CardContent>
+          <Box>
+            <Typography component="div">
+              <SafeHtml html={t('TermsAndConditions.fullPageContent')} />
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
     </Container>
   );
 };

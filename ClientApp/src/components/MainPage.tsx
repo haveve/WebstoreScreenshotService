@@ -1,177 +1,166 @@
-import { Container, Button, Form, Row, Col } from "react-bootstrap";
-import React, { useEffect, useState } from 'react';
-import { Clip, ScreenshotType } from "../behavior/types";
-import { useAppSelector } from "../behavior/rootReducer";
-import { useDispatch } from "react-redux";
-import { getMakeScreenshotAction } from "../behavior/epic";
-import { useTranslation } from 'react-i18next';
+import { Container, Grid, Typography, Button, Box, Paper, AccordionSummary, AccordionDetails, Accordion, Stack } from "@mui/material";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import RocketIcon from '@mui/icons-material/Rocket';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DevicesIcon from '@mui/icons-material/Devices';
+import ApiIcon from '@mui/icons-material/Api';
+import SecurityIcon from '@mui/icons-material/Security';
+import { Link as RouterLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useThemeMode } from "./ThemeSettings";
 
-const $4kClipName = "Desktop 4K (3840x2160)";
+const HomePage = () => {
+  const { t } = useTranslation();
+  const { mode } = useThemeMode();
 
-const clipModels: Record<string, Clip> = {
-    "iPhone SE (375x667)": { width: 375, height: 667 },
-    "iPhone 12 (390x844)": { width: 390, height: 844 },
-    "iPhone 14 Pro Max (430x932)": { width: 430, height: 932 },
-    "iPad Mini (768x1024)": { width: 768, height: 1024 },
-    "iPad Pro 11\" (834x1194)": { width: 834, height: 1194 },
-    "Galaxy S21 (360x800)": { width: 360, height: 800 },
-    "Galaxy Fold (280x653)": { width: 280, height: 653 },
-    "Pixel 7 (412x915)": { width: 412, height: 915 },
-    "Surface Pro 7 (912x1368)": { width: 912, height: 1368 },
-    "Laptop 13\" (1280x800)": { width: 1280, height: 800 },
-    "Laptop 15\" (1440x900)": { width: 1440, height: 900 },
-    "Desktop HD (1366x768)": { width: 1366, height: 768 },
-    "Desktop Full HD (1920x1080)": { width: 1920, height: 1080 },
-    "Desktop 4K (3840x2160)": { width: 3840, height: 2160 }
+  const features = [
+    { title: t("Home.Features.fast.title"), desc: t("Home.Features.fast.desc"), icon: <RocketIcon sx={{ fontSize: 60, color: '#1976d2' }} /> },
+    { title: t("Home.Features.quality.title"), desc: t("Home.Features.quality.desc"), icon: <CheckCircleIcon sx={{ fontSize: 60, color: '#1976d2' }} /> },
+    { title: t("Home.Features.flexibility.title"), desc: t("Home.Features.flexibility.desc"), icon: <DevicesIcon sx={{ fontSize: 60, color: '#1976d2' }} /> },
+    { title: t("Home.Features.api.title"), desc: t("Home.Features.api.desc"), icon: <ApiIcon sx={{ fontSize: 60, color: '#1976d2' }} /> },
+    { title: t("Home.Features.security.title"), desc: t("Home.Features.security.desc"), icon: <SecurityIcon sx={{ fontSize: 60, color: '#1976d2' }} /> },
+  ];
+
+  const faqs = [
+    { q: t("Home.FAQs.0.q"), a: t("Home.FAQs.0.a") },
+    { q: t("Home.FAQs.1.q"), a: t("Home.FAQs.1.a") },
+    { q: t("Home.FAQs.2.q"), a: t("Home.FAQs.2.a") },
+    { q: t("Home.FAQs.3.q"), a: t("Home.FAQs.3.a") },
+    { q: t("Home.FAQs.4.q"), a: t("Home.FAQs.4.a") },
+  ];
+
+  const subscriptions = [
+    {
+      plan: t("Home.Subscriptions.free.plan"),
+      price: t("Home.Subscriptions.free.price"),
+      desc: t("Home.Subscriptions.free.desc"),
+      benefits: t("Home.Subscriptions.free.benefits").split('\n'),
+    },
+    {
+      plan: t("Home.Subscriptions.premium.plan"),
+      price: t("Home.Subscriptions.premium.price"),
+      desc: t("Home.Subscriptions.premium.desc"),
+      benefits: t("Home.Subscriptions.premium.benefits").split('\n'),
+    },
+  ];
+
+  return (
+    <Container maxWidth="lg">
+      {/* Hero Section */}
+      <Grid container spacing={4} alignItems="center">
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Typography variant="h2" component="h1" gutterBottom>
+            {t("Home.Hero.title")}
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            {t("Home.Hero.subtitle")}
+          </Typography>
+          <Button component={RouterLink} to="/make-screenshot" variant="contained" color="primary" size="large">
+            {t("Home.Hero.cta")}
+          </Button>
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Box
+            component="img"
+            src={`/images/hero-${mode}.jpg`}
+            alt={t("Home.Hero.imgAlt") as string}
+            loading="lazy"
+            sx={{ width: "100%", borderRadius: 2 }}
+          />
+        </Grid>
+      </Grid>
+
+      {/* Features Section */}
+      <Grid
+        container
+        spacing={4}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'top', mt: 8 }}
+      >
+        {features.map((feature, index) => (
+          <Grid
+            size={{ xs: 12, md: 4 }}
+            key={index}
+            sx={{ display: 'flex', justifyContent: 'center' }}
+          >
+            <Paper
+              elevation={3}
+              sx={{
+                p: 3,
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                height: '100%',
+                width: '100%'
+              }}
+            >
+              <Box sx={{ mb: 2 }}>{feature.icon}</Box>
+              <Typography variant="h6" gutterBottom>
+                {feature.title}
+              </Typography>
+              <Typography variant="body2">{feature.desc}</Typography>
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* CTA Section */}
+      <Grid container spacing={4} sx={{ mt: 8, mb: 6 }} justifyContent="center">
+        <Grid size={{ xs: 12, md: 8 }} textAlign="center">
+          <Typography variant="h4" gutterBottom>
+            {t("Home.CTA.title")}
+          </Typography>
+          <Button component={RouterLink} to="/make-screenshot" variant="contained" color="primary" size="large">
+            {t("Home.CTA.button")}
+          </Button>
+        </Grid>
+      </Grid>
+
+      <Typography variant="h4" gutterBottom sx={{ mt: 6 }}>
+        {t("Home.Subscriptions.title")}
+      </Typography>
+      <Grid container spacing={4}>
+        {subscriptions.map((sub, i) => (
+          <Grid size={{ xs: 12, md: 6 }} key={i}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 3,
+                height: '100%'
+              }}
+            >
+              <Typography variant="h5">{sub.plan} — {sub.price}</Typography>
+              <Typography variant="body2" mb={2}>{sub.desc}</Typography>
+              <ul>
+                {sub.benefits.map((b, idx) => (
+                  <li key={idx}><Typography variant="body2">{b}</Typography></li>
+                ))}
+              </ul>
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* FAQ */}
+      <Typography variant="h4" gutterBottom sx={{ mt: 6 }}>
+        {t("Home.FAQs.title")}
+      </Typography>
+      {faqs.map((faq, index) => (
+        <Accordion key={index} sx={{ mt: 2 }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1">{faq.q}</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={1}>
+              <Typography variant="body2">{faq.a}</Typography>
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+      ))}
+
+    </Container>
+  );
 };
 
-export default () => {
-    const [url, setUrl] = useState('');
-    const [screenshotType, setScreenshotType] = useState<ScreenshotType>(ScreenshotType.Png);
-    const [clip, setClip] = useState<Clip>(clipModels[$4kClipName]);
-    const [preset, setPreset] = useState($4kClipName);
-    const [useFullHeight, setUseFullHeight] = useState(false);
-    const [error, setError] = useState('');
-    const { error: serverError, image } = useAppSelector(state => state);
-    const dispatch = useDispatch();
-    const { t } = useTranslation();
-
-    useEffect(() => {
-        setError(serverError ?? '');
-    }, [serverError]);
-
-    const validateUrl = (url: string) => {
-        const urlPattern = new RegExp('^(https?:\\/\\/)' + // protocol
-            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain
-            '((\\d{1,3}\\.){3}\\d{1,3}))' + // or IP
-            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port/path
-            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query
-            '(\\#[-a-z\\d_]*)?$', 'i');
-        return urlPattern.test(url);
-    };
-
-    const handlePresetChange = (presetLabel: string) => {
-        setPreset(presetLabel);
-        const selected = clipModels[presetLabel];
-        setClip({ width: selected.width, height: selected.height });
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!validateUrl(url)) {
-            setError(t('MainPage.enterValidURL'));
-            return;
-        }
-        if (!clip.width || clip.width < 1 || clip.width > 10000 || (clip.height !== null && (clip.height < 1 || clip.height > 10000))) {
-            setError(t('MainPage.enterValidDimensions'));
-            return;
-        }
-
-        dispatch(getMakeScreenshotAction({
-            url,
-            screenshotType,
-            clip: useFullHeight ? { ...clip, height: null } : clip,
-        }));
-    };
-
-    return (
-        <Container className="mt-4">
-            <h2 className="text-center">{t('MainPage.screenshotService')}</h2>
-            <p className="text-center">{t('MainPage.captureManageScreenshots')}</p>
-            <Form onSubmit={handleSubmit}>
-
-                <Form.Group controlId="formUrl" className="mb-3">
-                    <Form.Label>{t('MainPage.url')}</Form.Label>
-                    <Form.Control
-                        type="text"
-                        placeholder={t('MainPage.urlPlaceholder')}
-                        value={url}
-                        onChange={(e) => setUrl(e.target.value)}
-                    />
-                </Form.Group>
-
-                <Form.Group controlId="formScreenshotType" className="mb-3">
-                    <Form.Label>{t('MainPage.screenshotType')}</Form.Label>
-                    <Form.Select
-                        value={screenshotType}
-                        onChange={(e) => setScreenshotType(e.target.value as ScreenshotType)}
-                    >
-                        <option value={ScreenshotType.Png}>{t('MainPage.png')}</option>
-                        <option value={ScreenshotType.Jpeg}>{t('MainPage.jpeg')}</option>
-                    </Form.Select>
-                </Form.Group>
-
-                <Form.Group controlId="formPreset" className="mb-3">
-                    <Form.Label>{t('MainPage.screenPreset')}</Form.Label>
-                    <Form.Select
-                        value={preset}
-                        onChange={(e) => handlePresetChange(e.target.value)}
-                    >
-                        {Object.keys(clipModels).map(label => (
-                            <option key={label} value={label}>{label}</option>
-                        ))}
-                    </Form.Select>
-                </Form.Group>
-
-                <Form.Group controlId="formFullHeight" className="mb-3">
-                    <Form.Check
-                        type="checkbox"
-                        label={t('MainPage.useFullHeight')}
-                        checked={useFullHeight}
-                        onChange={(e) => setUseFullHeight(e.target.checked)}
-                    />
-                </Form.Group>
-
-                <Row className="mb-3">
-                    <Col>
-                        <Form.Label>{t('MainPage.widthPx')}</Form.Label>
-                        <Form.Control
-                            type="number"
-                            min={1}
-                            max={10000}
-                            value={clip.width}
-                            onChange={(e) => setClip({ ...clip, width: Number(e.target.value) })}
-                        />
-                    </Col>
-                    <Col>
-                        <Form.Label>{t('MainPage.heightPx')}</Form.Label>
-                        <Form.Control
-                            type="number"
-                            min={1}
-                            max={10000}
-                            value={clip.height ?? ''}
-                            disabled={useFullHeight}
-                            onChange={(e) => setClip({ ...clip, height: Number(e.target.value) })}
-                        />
-                    </Col>
-                </Row>
-
-                {error && <Form.Text className="text-danger">{error}</Form.Text>}
-
-                <Button variant="primary" type="submit">{t('MainPage.getScreenshot')}</Button>
-                {image && (
-                    <Button variant="success" className="ms-3" onClick={() => {
-                        const link = document.createElement('a');
-                        link.download = `screenshot.${screenshotType.toLowerCase()}`;
-                        link.href = image;
-                        link.click();
-                    }}>
-                        {t('MainPage.downloadScreenshot')}
-                    </Button>
-                )}
-            </Form>
-
-            {image && (
-                <div className="mt-4 text-center">
-                    <h3>{t('MainPage.screenshot')}:</h3>
-                    <img
-                        src={image}
-                        alt="Screenshot"
-                        className="screenshot-thumbnail cursor-pointer"
-                        onClick={() => window.open(image, '_blank')}
-                    />
-                </div>
-            )}
-        </Container>
-    );
-};
+export default HomePage;

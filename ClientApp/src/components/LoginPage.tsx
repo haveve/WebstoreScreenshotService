@@ -1,56 +1,70 @@
-import { Container, Button, Form } from "react-bootstrap";
-import React, { useEffect, useState } from 'react';
-import { useAppSelector } from "../behavior/rootReducer";
-import { useDispatch } from "react-redux";
-import { getLoginAction } from "../behavior/epic";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect } from 'react';
+import { useAppSelector } from '../behavior/rootReducer';
+import { useDispatch } from 'react-redux';
+import { getLoginAction } from '../behavior/epic';
+import { useNavigate } from 'react-router-dom';
 import cookieStore from '../behavior/cookie/store';
 import { useTranslation } from 'react-i18next';
+import { Container, Button, Typography, Alert, Stack } from '@mui/material';
+import * as Yup from 'yup';
+import Form from './form/Form';
+import TextField from './form/TextField';
 
-export default () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+type LoginFormValues = {
+  email: string;
+  password: string;
+};
+
+const LoginPage = () => {
   const { error, loaded, user } = useAppSelector(state => state);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const initialValues: LoginFormValues = { email: '', password: '' };
 
-    if (!cookieStore.declinedCookieConsent())
-      dispatch(getLoginAction({ email, password }));
+  const validationSchema = Yup.object({
+    email: Yup.string()
+      .email(t('Validation.email', { field: t('LoginPage.email') }))
+      .required(t('Validation.required', { field: t('LoginPage.email') })),
+    password: Yup.string()
+      .min(6, t('Validation.minLength', { field: t('LoginPage.password'), min: 6 }))
+      .required(t('Validation.required', { field: t('LoginPage.password') })),
+  });
+
+  const handleSubmit = (values: LoginFormValues) => {
+    if (!cookieStore.declinedCookieConsent()) {
+      dispatch(getLoginAction(values));
+    }
   };
 
   useEffect(() => {
-    loaded && user && navigate('/');
+    // loaded && user && navigate('/');
   }, [loaded, user, navigate]);
 
   return (
-    <Container className="mt-4">
-      <h2>{t('LoginPage.login')}</h2>
-      <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-3">
-          <Form.Label>{t('LoginPage.email')}</Form.Label>
-          <Form.Control
-            type="email"
-            placeholder={t('LoginPage.enterEmail')}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>{t('LoginPage.password')}</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder={t('LoginPage.enterPassword')}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </Form.Group>
-        {error && <Form.Text className="text-danger">{error}</Form.Text>}
-        <Button variant="primary" type="submit">{t('LoginPage.loginButton')}</Button>
+    <Container maxWidth="sm">
+      <Typography variant="h4" component="h1" gutterBottom>
+        {t('LoginPage.login')}
+      </Typography>
+      <Form
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+      >{() =>
+        <Stack spacing={2}>
+          <TextField name="email" label={t('LoginPage.email')} type="email" placeholder={t('LoginPage.enterEmail')} />
+          <TextField name="password" label={t('LoginPage.password')} type="password" placeholder={t('LoginPage.enterPassword')} />
+
+          {error && <Alert severity="error">{error}</Alert>}
+
+          <Button variant="contained" color="primary" type="submit">
+            {t('LoginPage.loginButton')}
+          </Button>
+        </Stack>}
       </Form>
     </Container>
   );
 };
+
+export default LoginPage;

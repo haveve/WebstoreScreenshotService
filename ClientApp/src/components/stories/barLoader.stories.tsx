@@ -1,6 +1,5 @@
 import { BarLoader } from 'react-spinners';
 import { Meta } from '@storybook/react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 const meta: Meta<typeof BarLoader> = {
     title: 'BarLoader',

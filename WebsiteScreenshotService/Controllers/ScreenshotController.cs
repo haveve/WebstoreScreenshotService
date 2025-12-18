@@ -34,7 +34,7 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
     [ProducesResponseType<FileStream>(StatusCodes.Status200OK, "image/png", "image/jpeg")]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, "application/json")]
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(MakeScreenshotResponseExample))]
-    public async Task<IActionResult> MakeScreenshot(ScreenshotOptionsModel screenshotOptions)
+    public async Task<IActionResult> MakeScreenshot([FromBody] ScreenshotOptionsModel screenshotOptions)
     {
         var screenshotResult = await _screenshotService.MakeScreenshotAsync(screenshotOptions);
 
@@ -45,7 +45,7 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetScreenshots(Paging paging)
+    public async Task<IActionResult> GetScreenshots([FromQuery] Paging paging)
     {
         var screenshotResult = await _screenshotManager.GetScreenshots(paging);
 
@@ -66,10 +66,10 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
 
 
     [HttpGet]
-    public async Task<IActionResult> GetScreenshot(string id)
+    public async Task<IActionResult> GetScreenshot([FromQuery] string id)
     {
         var storedScreenshotResult = await _screenshotManager.GetScreenshot(id);
-        
+
         if (!storedScreenshotResult.IsSuccess)
             return BadRequest(new ErrorResponse(storedScreenshotResult.ErrorMessage!));
 

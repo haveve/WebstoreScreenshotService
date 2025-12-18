@@ -1,7 +1,6 @@
 import { Button } from 'react-bootstrap';
 import { Meta } from '@storybook/react';
 import { fn } from '@storybook/test';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 const meta: Meta<typeof Button> = {
     title: 'Button',

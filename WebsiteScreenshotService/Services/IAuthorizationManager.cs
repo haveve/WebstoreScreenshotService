@@ -1,4 +1,6 @@
-﻿namespace WebsiteScreenshotService.Services;
+﻿using WebsiteScreenshotService.Model;
+
+namespace WebsiteScreenshotService.Services;
 
 public interface IAuthorizationManager
 {
@@ -7,4 +9,4 @@ public interface IAuthorizationManager
     public string? GenerateConfirmationToken(ConfirmationData confirmationData);
 }
 
-public record ConfirmationData(Guid UserId, string ScreenshotId, string WebsiteUrl);
+public record ConfirmationData(Guid UserId, string ScreenshotId);

@@ -34,6 +34,7 @@ if (builder.Environment.IsDevelopment())
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddSingleton<IScreenshotService, ScreenshotService>();
 builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
 builder.Services.AddSingleton<IUserContextAccessor, UserContextAccessor>();
 builder.Services.AddSingleton<IAuthorizationManager, AuthorizationManager>();

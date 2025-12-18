@@ -11,15 +11,11 @@ public class BrowserServiceSettings : IValidatableObject
 
     [Required]
     [Range(0, 720)]
-    public float PageLoadTimeout { get; set; }
+    public float DefaultTimeout { get; set; }
 
     [Required]
     [Range(0, 720)]
-    public float ScriptLoadTimeout { get; set; }
-
-    [Required]
-    [Range(0, 720)]
-    public float RequestsIdleTimeout { get; set; }
+    public float NavigationTimeout { get; set; }
 
     [Required]
     [Range(0, 720)]

@@ -1,3 +1,5 @@
-﻿namespace WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
+﻿using WebsiteScreenshotService.Model;
 
-public record ScreenshotCreateModel(string Id, string WebsiteUrl, Guid UserId, string? Title = null, string? Description = null);
+namespace WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
+
+public record ScreenshotCreateModel(string Id, string WebsiteUrl, Guid UserId, ScreenshotType Type, string? Title = null, string? Description = null);

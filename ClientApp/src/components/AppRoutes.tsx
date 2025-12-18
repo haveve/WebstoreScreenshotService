@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
-import 'bootstrap/dist/css/bootstrap.min.css';
 import MainPage from "./MainPage";
+import MakeScreenhsotPage from "./MakeScreenhsotPage";
 import RegisterPage from "./RegisterPage";
 import LoginPage from "./LoginPage";
 import { useEffect } from "react";
@@ -23,13 +23,14 @@ function AppRoutes() {
     if (user === undefined)
         return null;
 
-    var isUnauth = () => user === null;
-    var isAuth = () => user !== null;
+    const isUnauth = () => !user;
+    const isAuth = () => !!user;
 
     return <Routes>
         <Route path="/my-account" element={<PrivateRoute element={<MyAccount />} toPath="/login" validate={isAuth} />} />
         <Route path="/privacy-policy" element={<TermsAndConditions />} />
-        <Route path="/" element={<PrivateRoute element={<MainPage />} toPath="/login" validate={isAuth} />} />
+        <Route path="/" element={<MainPage />} />
+        <Route path="/make-screenshot" element={<PrivateRoute element={<MakeScreenhsotPage />} toPath="/login" validate={isAuth} />} />
         <Route path="/login" element={<PrivateRoute element={<LoginPage />} toPath="/" validate={isUnauth} />} />
         <Route path="/register" element={<PrivateRoute element={<RegisterPage />} toPath="/" validate={isUnauth} />} />
     </Routes>

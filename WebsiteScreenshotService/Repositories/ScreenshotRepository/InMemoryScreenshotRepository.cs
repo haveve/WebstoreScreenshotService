@@ -45,6 +45,7 @@ public class InMemoryScreenshotRepository : IScreenshotRepository
             screenshot.UserId,
             DateTime.UtcNow,
             ScreenshotState.New,
+            screenshot.Type,
             screenshot.Title,
             screenshot.Description);
 

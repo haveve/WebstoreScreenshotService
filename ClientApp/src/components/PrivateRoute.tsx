@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 type PrivateRouteProps = {
     validate: () => boolean;
@@ -7,11 +7,13 @@ type PrivateRouteProps = {
 }
 
 const PrivateRoute = ({ element, toPath, validate }: PrivateRouteProps) => {
-    return validate() ? (
-        element
-    ) : (
-        <Navigate to={toPath} replace />
-    )
+    const navigate = useNavigate();
+
+    if (validate())
+        return element;
+
+    navigate(toPath, { replace: true });
+    return null;
 };
 
 export default PrivateRoute;

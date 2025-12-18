@@ -27,7 +27,6 @@ public class BrowserService(IContentInitializationManager contentInitializationM
         await page.GotoAsync(screenshotOptionsModel.Url, new()
         {
             WaitUntil = WaitUntilState.Load,
-            Timeout = _browserServiceSettings.PageLoadTimeout * 1000,
         });
 
         await _contentInitializationManager.InitializeContentAsync(page, screenshotOptionsModel);
@@ -39,20 +38,9 @@ public class BrowserService(IContentInitializationManager contentInitializationM
     {
         var options = new PageScreenshotOptions()
         {
-            FullPage = true,
-            Type = MatchScreenshotType(screenshotOptionsModel),
+            FullPage = !screenshotOptionsModel.Clip.Height.HasValue,
+            Type = MatchScreenshotType(screenshotOptionsModel)
         };
-
-        if (!screenshotOptionsModel.Clip.Height.HasValue)
-            return options;
-
-        options.Clip = new()
-        {
-            Width = screenshotOptionsModel.Clip.Width,
-            Height = screenshotOptionsModel.Clip.Height.Value
-        };
-
-        options.FullPage = false;
 
         return options;
     }
@@ -73,28 +61,37 @@ public class BrowserService(IContentInitializationManager contentInitializationM
 
         var browser = await playwright.Chromium.LaunchAsync(new()
         {
-            Headless = true,
-            Args = [
-            "--disable-gpu",
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-setuid-sandbox",
-            //"--ignore-certificate-errors"
-            ],
+            Headless = false,
+            Args = new[]
+            {
+                "--start-maximized",
+                "--disable-blink-features=AutomationControlled" // Reduce bot detection
+            }
         });
 
         var context = await browser.NewContextAsync(new BrowserNewContextOptions
         {
-            IgnoreHTTPSErrors = false,
+            UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
+            BypassCSP = true, // Prevent fonts/styles from being blocked
+            JavaScriptEnabled = true,
+            Locale = "en-US",
+            HasTouch = false,
+            AcceptDownloads = true,
             ViewportSize = new ViewportSize()
             {
                 Width = screenshotOptionsModel.Clip.Width,
-                Height = 720
+                Height = screenshotOptionsModel.Clip.Height ?? 720
             },
         });
 
-        context.SetDefaultNavigationTimeout(_browserServiceSettings.PageLoadTimeout * 1000);
-        context.SetDefaultTimeout(_browserServiceSettings.ScriptLoadTimeout * 1000);
+        //await context.SetExtraHTTPHeadersAsync(new Dictionary<string, string>
+        //{
+        //    ["Accept-Language"] = "en-US,en;q=0.9",
+        //    ["Upgrade-Insecure-Requests"] = "1"
+        //});
+
+        context.SetDefaultNavigationTimeout(_browserServiceSettings.NavigationTimeout * 1000);
+        context.SetDefaultTimeout(_browserServiceSettings.DefaultTimeout * 1000);
 
         return context;
     }

@@ -4,6 +4,7 @@ import { PayloadAction, createAction } from "@reduxjs/toolkit";
 import { GetScreenshotApiObservable, PostScreenshotApiObservable } from "./api";
 import { LoginModel, RegisterModel, ScreenshotOptionsModel, UserModel } from "./types";
 import { setImage, setUser } from "./reducer";
+import { mockUser } from "./mocks";
 
 export const getLoginAction = createAction<LoginModel>("login");
 export const loginEpic: Epic<PayloadAction<LoginModel, "login">, any> = (action$) => action$.pipe(
@@ -59,13 +60,14 @@ export const makeScreenshotEpic: Epic<PayloadAction<ScreenshotOptionsModel, "mak
 export const getReceiveUserAction = createAction("getUser");
 export const receiveUserEpic: Epic<PayloadAction<void, "getUser">, any> = (action$) => action$.pipe(
     ofType("getUser"),
-    exhaustMap(_ => {
-        return GetScreenshotApiObservable<UserModel | null>("/Identity/GetUserInfo", true).pipe(
-            map(({ response: data, error }) => {
-                return setUser({ data, error });
-            })
-        );
-    })
+    map(_ => setUser({ data: mockUser, error: null })),
+    // exhaustMap(_ => {
+    //     return GetScreenshotApiObservable<UserModel | null>("/Identity/GetUserInfo", true).pipe(
+    //         map(({ response: data, error }) => {
+    //             return setUser({ data, error });
+    //         })
+    //     );
+    // })
 );
 
 const rootEpic: Epic = (action$, store$, dependencies) =>

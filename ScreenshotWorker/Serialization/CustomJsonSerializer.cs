@@ -48,7 +48,7 @@ public static class CustomJsonSerializer
         validationResults = [];
 
         var validationContext = new ValidationContext(model);
-        return !Validator.TryValidateObject(model, validationContext, validationResults, validateAllProperties: true);
+        return Validator.TryValidateObject(model, validationContext, validationResults, validateAllProperties: true);
     }
 }
 

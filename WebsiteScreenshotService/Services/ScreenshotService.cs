@@ -35,7 +35,6 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
         var confirmationToken = _authorizationManager.GenerateConfirmationToken(new ConfirmationData
             (
                 UserId: userContext.Id,
-                WebsiteUrl: screenshotOptionsModel.Url,
                 ScreenshotId: screenshotId
             ));
 
@@ -51,10 +50,11 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
         (
             Id: screenshotId,
             UserId: userContext.Id,
-            WebsiteUrl: screenshotOptionsModel.Url
+            WebsiteUrl: screenshotOptionsModel.Url,
+            Type: screenshotOptionsModel.ScreenshotType
         ));
 
-        if(!savedScreenshotResult.IsSuccess)
+        if (!savedScreenshotResult.IsSuccess)
             return Result<string>.Error(savedScreenshotResult.ErrorMessage!);
 
         var savedScreenshot = savedScreenshotResult.Value!;

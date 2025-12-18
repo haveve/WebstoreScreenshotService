@@ -12,9 +12,9 @@ public class WaitForRequestsToCompleteStep : IContentInitializationStep
     {
         try
         {
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new() { Timeout = settings.ExecutionTimeout * 1000 });
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new() { Timeout = settings.ExecutionTimeoutInSeconds * 1000 });
         }
-        catch (PlaywrightException)
+        catch (Exception ex) when (ex is PlaywrightException || ex is TimeoutException)
         {
         }
     }

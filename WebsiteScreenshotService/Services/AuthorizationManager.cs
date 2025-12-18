@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using WebsiteScreenshotService.Configurations;
 using WebsiteScreenshotService.Extensions;
+using WebsiteScreenshotService.Model;
 
 namespace WebsiteScreenshotService.Services;
 
@@ -23,6 +24,8 @@ public class AuthorizationManager(IOptions<AuthorizationConfiguration> options, 
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
+                ValidAudience = _config.Audience,
+                ValidIssuer = _config.Issuer,
                 IssuerSigningKey = new SymmetricSecurityKey(key)
             };
 
@@ -34,7 +37,6 @@ public class AuthorizationManager(IOptions<AuthorizationConfiguration> options, 
 
             return new(
                 userClaims.GetUserId()!.Value,
-                userClaims.GetClaimValue(Constants.Claims.WebsiteUrl)!,
                 userClaims.GetClaimValue(Constants.Claims.ScreenshotId)!
             );
         }

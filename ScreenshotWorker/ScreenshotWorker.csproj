@@ -9,6 +9,12 @@
 
 	<ItemGroup>
 		<Protobuf Include="Protos\screenshot.proto" GrpcServices="Client" />
+		<None Update="appsettings.Development.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 	
 	<ItemGroup>

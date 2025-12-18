@@ -1,18 +1,28 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Google.Protobuf.WellKnownTypes;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using ScreenshotWorker.Extensions;
+using ScreenshotWorker.Managers;
+using ScreenshotWorker.Repositories;
 using ScreenshotWorker.Services;
 using ScreenshotWorker.Services.ContentInitialization;
-using Microsoft.Extensions.Logging;
 using ScreenshotWorker.Settings;
-using ScreenshotWorker.Repositories;
-using ScreenshotWorker.Managers;
-using ScreenshotWorker.Extensions;
 using WebsiteScreenshotService;
-using Microsoft.Extensions.Options;
 
 var builder = Host.CreateDefaultBuilder(args);
 
-builder.ConfigureServices((context, services) =>
+builder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.Sources.Clear();
+                    config.AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
+                    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                    config.AddEnvironmentVariables();
+                })
+    .ConfigureServices((context, services) =>
            {
                services.AddSingleton<IContentInitializationManager, ContentInitializationManager>();
 
@@ -22,17 +32,17 @@ builder.ConfigureServices((context, services) =>
                services.AddSingleton<IScreenshotService, ScreenshotService>();
                services.AddSingleton<IBrowserService, BrowserService>();
 
+               services.AddSingleton<IMessageBrokerManager, MessageBrokerManager>();
+               services.AddSingleton<IScreenshotRepository, LocalScreenshotRepository>();
+
                services.AddSingleton<IApplicationLifetimeManager, ApplicationLifetimeManager>();
 
                services.AddOptionsWithValidation<BrowserServiceSettings>(context.Configuration.GetSection("BrowserServiceOptions"));
                services.AddOptionsWithValidation<MessageBrokerSettings>(context.Configuration.GetSection("MessageBrokerSettings"));
                services.AddOptionsWithValidation<ScreenshotServiceSettings>(context.Configuration.GetSection("ScreenshotServiceSettings"));
 
-               if (context.HostingEnvironment.IsDevelopment())
-               {
-                   services.AddSingleton<IScreenshotRepository, LocalScreenshotRepository>();
-                   services.AddOptionsWithValidation<LocalScreenshotStorageSettings>(context.Configuration.GetSection("ScreenshotStorageSettings"));
-               }
+               services.AddSingleton<IScreenshotRepository, LocalScreenshotRepository>();
+               services.AddOptionsWithValidation<LocalScreenshotStorageSettings>(context.Configuration.GetSection("ScreenshotStorageSettings"));
 
                services.RegisterServiceRepositoryHttpClient();
 

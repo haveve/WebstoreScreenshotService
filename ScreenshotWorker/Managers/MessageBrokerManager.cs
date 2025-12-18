@@ -96,8 +96,8 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowser
             VirtualHost = _configuration.Connection.VirtualHost,
         };
 
-        using var connection = await factory.CreateConnectionAsync();
-        using var channel = await connection.CreateChannelAsync();
+        var connection = await factory.CreateConnectionAsync();
+        var channel = await connection.CreateChannelAsync();
 
         await channel.QueueDeclarePassiveAsync(queue: _configuration.Queue.Name);
 
