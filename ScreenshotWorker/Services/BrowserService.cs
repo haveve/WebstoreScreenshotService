@@ -21,17 +21,30 @@ public class BrowserService(IContentInitializationManager contentInitializationM
     /// <returns>A task that represents the asynchronous operation. The task result contains the screenshot as a stream.</returns>
     public async Task<byte[]> MakeScreenshotAsync(ScreenshotOptionsModel screenshotOptionsModel)
     {
-        await using var context = await CreateBrowserContextAsync(screenshotOptionsModel);
-        var page = await context.NewPageAsync();
+        IBrowserContext? context = null;
+        IBrowser? browser = null;
 
-        await page.GotoAsync(screenshotOptionsModel.Url, new()
+        try
         {
-            WaitUntil = WaitUntilState.Load,
-        });
+            (context, browser) = await CreateBrowserContextAsync(screenshotOptionsModel);
+            var page = await context.NewPageAsync();
 
-        await _contentInitializationManager.InitializeContentAsync(page, screenshotOptionsModel);
+            await page.GotoAsync(screenshotOptionsModel.Url, new()
+            {
+                WaitUntil = WaitUntilState.Commit,
+            });
 
-        return await page.ScreenshotAsync(FormatScreenshotOptions(screenshotOptionsModel));
+            await _contentInitializationManager.InitializeContentAsync(page, screenshotOptionsModel);
+            return await page.ScreenshotAsync(FormatScreenshotOptions(screenshotOptionsModel));
+        }
+        finally
+        {
+            if (context is not null)
+                await context.DisposeAsync();
+
+            if (browser is not null)
+                await browser.DisposeAsync();
+        }
     }
 
     private static PageScreenshotOptions FormatScreenshotOptions(ScreenshotOptionsModel screenshotOptionsModel)
@@ -55,13 +68,13 @@ public class BrowserService(IContentInitializationManager contentInitializationM
         };
     }
 
-    private async Task<IBrowserContext> CreateBrowserContextAsync(ScreenshotOptionsModel screenshotOptionsModel)
+    private async Task<(IBrowserContext, IBrowser)> CreateBrowserContextAsync(ScreenshotOptionsModel screenshotOptionsModel)
     {
         var playwright = await Playwright.CreateAsync();
 
         var browser = await playwright.Chromium.LaunchAsync(new()
         {
-            Headless = false,
+            Headless = true,
             Args = new[]
             {
                 "--start-maximized",
@@ -93,6 +106,6 @@ public class BrowserService(IContentInitializationManager contentInitializationM
         context.SetDefaultNavigationTimeout(_browserServiceSettings.NavigationTimeout * 1000);
         context.SetDefaultTimeout(_browserServiceSettings.DefaultTimeout * 1000);
 
-        return context;
+        return (context, browser);
     }
 }
