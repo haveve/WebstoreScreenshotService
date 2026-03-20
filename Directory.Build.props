@@ -1,0 +1,15 @@
+<Project>
+	<PropertyGroup>		
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<!--<GenerateDocumentationFile>true</GenerateDocumentationFile>-->
+
+		<!-- Enable lock file -->
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+		<!-- Enforce lock file-->
+		<RestoreLockedMode>true</RestoreLockedMode>
+		<!-- Deterministic builds -->
+		<!--<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>-->
+	</PropertyGroup>
+</Project>
