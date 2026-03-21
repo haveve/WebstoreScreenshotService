@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { useAppSelector } from "../behavior/rootReducer";
 import { getLogoutAction } from "../behavior/epic";
 import cookieStore from "../behavior/cookie/store";
-import { BarLoader } from "react-spinners";
+import { LinearProgress } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
 import { useThemeMode } from "./ThemeSettings";
@@ -136,7 +136,11 @@ const Navigation = () => {
                     </Box>
                 </Box>
             </Drawer>
-            <BarLoader width={"100%"} color="#1370f2" height={5} loading={!loaded} />
+            {!loaded &&
+                <Box sx={{ width: '100%' }}>
+                    <LinearProgress />
+                </Box>
+            }
             {loaded && cookieConsent === false && (
                 <Container maxWidth="md" sx={{ mt: 3 }}>
                     <Alert severity="error">{t("Navigation.cookiesDeclined")}</Alert>

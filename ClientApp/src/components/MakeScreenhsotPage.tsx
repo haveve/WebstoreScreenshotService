@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Clip, ScreenshotType } from "../behavior/types";
 import { useAppSelector } from "../behavior/rootReducer";
 import { useDispatch } from "react-redux";
@@ -31,7 +31,6 @@ import ArrayFieldWrapper from './form/ArrayField';
 const $4kClipName = "Desktop 4K (3840x2160)";
 
 const clipModels: Record<string, Clip> = {
-    // Mobile
     "iPhone SE (375x667)": { width: 375, height: 667 },
     "iPhone 6/7/8 (375x667)": { width: 375, height: 667 },
     "iPhone X/XS/11 Pro (375x812)": { width: 375, height: 812 },
@@ -43,16 +42,12 @@ const clipModels: Record<string, Clip> = {
     "Pixel 4 (411x731)": { width: 411, height: 731 },
     "Pixel 7 (412x915)": { width: 412, height: 915 },
     "OnePlus 8 (412x915)": { width: 412, height: 915 },
-
-    // Tablets
     "iPad Mini (768x1024)": { width: 768, height: 1024 },
     "iPad (768x1024)": { width: 768, height: 1024 },
     "iPad Pro 10.5\" (834x1112)": { width: 834, height: 1112 },
     "iPad Pro 11\" (834x1194)": { width: 834, height: 1194 },
     "iPad Pro 12.9\" (1024x1366)": { width: 1024, height: 1366 },
     "Galaxy Tab S6 (800x1280)": { width: 800, height: 1280 },
-
-    // Laptops
     "Surface Pro 7 (912x1368)": { width: 912, height: 1368 },
     "Laptop 11\" (1366x768)": { width: 1366, height: 768 },
     "Laptop 13\" (1280x800)": { width: 1280, height: 800 },
@@ -60,8 +55,6 @@ const clipModels: Record<string, Clip> = {
     "Laptop 15\" (1440x900)": { width: 1440, height: 900 },
     "Laptop 15.6\" FHD (1920x1080)": { width: 1920, height: 1080 },
     "Laptop 17\" (1920x1200)": { width: 1920, height: 1200 },
-
-    // Desktop
     "Desktop HD (1366x768)": { width: 1366, height: 768 },
     "Desktop Full HD (1920x1080)": { width: 1920, height: 1080 },
     "Desktop 2K (2560x1440)": { width: 2560, height: 1440 },
@@ -79,6 +72,16 @@ enum Modes {
 }
 
 type Header = { name: string; value: string };
+type Cookie = { 
+    name: string; 
+    value: string; 
+    domain: string; 
+    path: string;
+    expires?: number;
+    secure: boolean;
+    httpOnly: boolean;
+    sameSite?: 'Strict' | 'Lax' | 'None';
+};
 
 const ScreenshotForm = () => {
     const { t } = useTranslation();
@@ -94,7 +97,14 @@ const ScreenshotForm = () => {
         clip: clipModels[$4kClipName],
         useFullHeight: false,
         blockBanners: false,
-        headers: [] as Header[]
+        headers: [] as Header[],
+        cookies: [] as Cookie[],
+        elementSelector: '',
+        dismissDialogs: false,
+        hidePopups: false,
+        hideSelectors: [] as string[],
+        highlightWord: '',
+        highlightColor: '#FFFF00'
     };
 
     const validationSchema = Yup.object().shape({
@@ -111,10 +121,26 @@ const ScreenshotForm = () => {
         }),
         headers: Yup.array().of(
             Yup.object().shape({
-                name: Yup.string().required(t('Validation.required', { field: t('MainPage.headerTitle') })),
-                value: Yup.string().required(t('Validation.required', { field: t('MainPage.headerValue') }))
+                name: Yup.string()
+                    .required(t('Validation.required', { field: t('MainPage.headerTitle') }))
+                    .matches(/^[A-Za-z0-9\-]+$/, t('Validation.invalidHeaderName')),
+                value: Yup.string()
+                    .required(t('Validation.required', { field: t('MainPage.headerValue') }))
+                    .max(4000, t('Validation.maxLength', { field: t('MainPage.headerValue'), max: 4000 }))
             })
-        )
+        ).max(40, t('Validation.maxItems', { field: t('MainPage.headers'), max: 40 })),
+        cookies: Yup.array().of(
+            Yup.object().shape({
+                name: Yup.string().required(t('Validation.required', { field: t('MainPage.cookieName') })),
+                value: Yup.string().required(t('Validation.required', { field: t('MainPage.cookieValue') })),
+                domain: Yup.string().required(t('Validation.required', { field: t('MainPage.cookieDomain') })),
+                path: Yup.string().required(t('Validation.required', { field: t('MainPage.cookiePath') }))
+            })
+        ).max(20, t('Validation.maxItems', { field: t('MainPage.cookies'), max: 20 })),
+        elementSelector: Yup.string().max(500, t('Validation.maxLength', { field: t('MainPage.elementSelector'), max: 500 })),
+        hideSelectors: Yup.array().of(Yup.string()).max(40, t('Validation.maxItems', { field: t('MainPage.hideSelectors'), max: 40 })),
+        highlightWord: Yup.string().max(500, t('Validation.maxLength', { field: t('MainPage.highlightWord'), max: 500 })),
+        highlightColor: Yup.string().max(20, t('Validation.maxLength', { field: t('MainPage.highlightColor'), max: 20 }))
     });
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: Modes, setFieldValue: any) => {
@@ -134,11 +160,36 @@ const ScreenshotForm = () => {
                 initialValues={initialValues}
                 validationSchema={validationSchema}
                 onSubmit={(values) => {
-                    dispatch(getMakeScreenshotAction({
+                    const payload: any = {
                         url: values.url,
                         screenshotType: values.screenshotType,
                         clip: values.useFullHeight ? { ...values.clip, height: null } : values.clip
-                    }));
+                    };
+
+                    if (values.headers.length > 0) {
+                        payload.headers = values.headers;
+                    }
+                    if (values.cookies.length > 0) {
+                        payload.cookies = values.cookies;
+                    }
+                    if (values.elementSelector) {
+                        payload.element = { selector: values.elementSelector };
+                    }
+                    if (values.dismissDialogs || values.hidePopups || values.hideSelectors.length > 0) {
+                        payload.modalModel = {
+                            dismissDialogs: values.dismissDialogs,
+                            hidePopups: values.hidePopups,
+                            hideSelectors: values.hideSelectors.filter(s => s.trim())
+                        };
+                    }
+                    if (values.highlightWord) {
+                        payload.highlightWord = {
+                            word: values.highlightWord,
+                            color: values.highlightColor
+                        };
+                    }
+
+                    dispatch(getMakeScreenshotAction(payload));
                 }}
             >
                 {({ values, setFieldValue }) => {
@@ -195,6 +246,63 @@ const ScreenshotForm = () => {
                                     <AccordionDetails>
                                         <Stack spacing={2}>
                                             <SwitchFieldWrapper name="blockBanners" label={t('MainPage.blockBanners')} />
+                                            
+                                            <TextFieldWrapper 
+                                                name="elementSelector" 
+                                                label={t('MainPage.elementSelector')} 
+                                                placeholder={t('MainPage.elementSelectorPlaceholder')}
+                                                helperText={t('MainPage.elementSelectorHelp')}
+                                                fullWidth 
+                                            />
+
+                                            <Accordion>
+                                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                                    <Typography variant="subtitle2">{t('MainPage.modalSettings')}</Typography>
+                                                </AccordionSummary>
+                                                <AccordionDetails>
+                                                    <Stack spacing={2}>
+                                                        <SwitchFieldWrapper name="dismissDialogs" label={t('MainPage.dismissDialogs')} />
+                                                        <SwitchFieldWrapper name="hidePopups" label={t('MainPage.hidePopups')} />
+                                                        <ArrayFieldWrapper<string> 
+                                                            name="hideSelectors" 
+                                                            label={t('MainPage.hideSelectors')} 
+                                                            emptyValue=""
+                                                        >
+                                                            {({ index, parentName }) => (
+                                                                <TextFieldWrapper
+                                                                    key={index}
+                                                                    name={`${parentName}.[${index}]`}
+                                                                    label={`${t('MainPage.selector')} ${index + 1}`}
+                                                                    fullWidth
+                                                                />
+                                                            )}
+                                                        </ArrayFieldWrapper>
+                                                    </Stack>
+                                                </AccordionDetails>
+                                            </Accordion>
+
+                                            <Accordion>
+                                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                                    <Typography variant="subtitle2">{t('MainPage.highlightSettings')}</Typography>
+                                                </AccordionSummary>
+                                                <AccordionDetails>
+                                                    <Stack spacing={2}>
+                                                        <TextFieldWrapper 
+                                                            name="highlightWord" 
+                                                            label={t('MainPage.highlightWord')} 
+                                                            placeholder={t('MainPage.highlightWordPlaceholder')}
+                                                            fullWidth 
+                                                        />
+                                                        <TextFieldWrapper 
+                                                            name="highlightColor" 
+                                                            label={t('MainPage.highlightColor')} 
+                                                            placeholder="#FFFF00"
+                                                            fullWidth 
+                                                        />
+                                                    </Stack>
+                                                </AccordionDetails>
+                                            </Accordion>
+
                                             <ArrayFieldWrapper<Header> name="headers" label={t('MainPage.headersTitle')} emptyValue={{ name: '', value: '' }}>
                                                 {({ index, parentName }) => (
                                                     <Stack direction="row" key={index} spacing={1} alignItems="top" sx={{ width: '100%' }}>
@@ -211,10 +319,82 @@ const ScreenshotForm = () => {
                                                     </Stack>
                                                 )}
                                             </ArrayFieldWrapper>
+
+                                            <ArrayFieldWrapper<Cookie> 
+                                                name="cookies" 
+                                                label={t('MainPage.cookiesTitle')} 
+                                                emptyValue={{ 
+                                                    name: '', 
+                                                    value: '', 
+                                                    domain: '', 
+                                                    path: '/',
+                                                    secure: false,
+                                                    httpOnly: false
+                                                }}
+                                            >
+                                                {({ index, parentName }) => (
+                                                    <Stack key={index} spacing={1} sx={{ width: '100%', p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+                                                        <Stack direction="row" spacing={1}>
+                                                            <TextFieldWrapper
+                                                                name={`${parentName}.[${index}].name`}
+                                                                label={t("MainPage.cookieName")}
+                                                                fullWidth
+                                                            />
+                                                            <TextFieldWrapper
+                                                                name={`${parentName}.[${index}].value`}
+                                                                label={t("MainPage.cookieValue")}
+                                                                fullWidth
+                                                            />
+                                                        </Stack>
+                                                        <Stack direction="row" spacing={1}>
+                                                            <TextFieldWrapper
+                                                                name={`${parentName}.[${index}].domain`}
+                                                                label={t("MainPage.cookieDomain")}
+                                                                placeholder=".example.com"
+                                                                fullWidth
+                                                            />
+                                                            <TextFieldWrapper
+                                                                name={`${parentName}.[${index}].path`}
+                                                                label={t("MainPage.cookiePath")}
+                                                                placeholder="/"
+                                                                fullWidth
+                                                            />
+                                                        </Stack>
+                                                        <Stack direction="row" spacing={1}>
+                                                            <TextFieldWrapper
+                                                                name={`${parentName}.[${index}].expires`}
+                                                                label={t("MainPage.cookieExpires")}
+                                                                type="number"
+                                                                placeholder={t("MainPage.cookieExpiresPlaceholder")}
+                                                                fullWidth
+                                                            />
+                                                            <SelectFieldWrapper
+                                                                name={`${parentName}.[${index}].sameSite`}
+                                                                label={t("MainPage.cookieSameSite")}
+                                                                options={[
+                                                                    { value: '', label: t('MainPage.noneOption') },
+                                                                    { value: 'Strict', label: 'Strict' },
+                                                                    { value: 'Lax', label: 'Lax' },
+                                                                    { value: 'None', label: 'None' }
+                                                                ]}
+                                                            />
+                                                        </Stack>
+                                                        <Stack direction="row" spacing={2}>
+                                                            <SwitchFieldWrapper 
+                                                                name={`${parentName}.[${index}].secure`} 
+                                                                label={t("MainPage.cookieSecure")} 
+                                                            />
+                                                            <SwitchFieldWrapper 
+                                                                name={`${parentName}.[${index}].httpOnly`} 
+                                                                label={t("MainPage.cookieHttpOnly")} 
+                                                            />
+                                                        </Stack>
+                                                    </Stack>
+                                                )}
+                                            </ArrayFieldWrapper>
                                         </Stack>
                                     </AccordionDetails>
                                 </Accordion>
-
 
                                 {serverError && <Typography color="error">{serverError}</Typography>}
 

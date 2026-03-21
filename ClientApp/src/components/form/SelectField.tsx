@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import { FieldProps } from "./types";
 import { formatValidate } from "./helpers";
+import { memo } from "react";
 
 type SelectFieldProps = {
   options: { label: string; value: any }[];
@@ -43,4 +44,4 @@ const SelectField = ({ name, label, options, schema, ...props }: SelectFieldProp
   );
 };
 
-export default SelectField;
+export default memo(SelectField);

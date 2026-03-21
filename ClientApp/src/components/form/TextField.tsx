@@ -4,6 +4,7 @@ import {
 } from "@mui/material";
 import { FieldProps } from "./types";
 import { formatValidate } from "./helpers";
+import { memo } from "react";
 
 /**
  * Wrapper for MUI TextField
@@ -25,4 +26,4 @@ const FormikTextField = ({ name, label, schema, ...props }: FieldProps) => {
     );
 };
 
-export default FormikTextField;
+export default memo(FormikTextField);

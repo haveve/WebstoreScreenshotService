@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Formik, Form, FormikHelpers, FormikValues, FormikProps } from 'formik';
 import * as Yup from 'yup';
+import { memo } from "react";
 
 type FormikFormWrapperProps<T extends FormikValues> = {
   initialValues: T;

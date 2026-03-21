@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import { FieldProps } from "./types";
 import { formatValidate } from "./helpers";
+import { memo } from "react";
 
 const CheckboxField = ({ name, label, schema, ...props }: FieldProps) => {
     return (
@@ -32,4 +33,4 @@ const CheckboxField = ({ name, label, schema, ...props }: FieldProps) => {
     );
 };
 
-export default CheckboxField;
+export default memo(CheckboxField);
