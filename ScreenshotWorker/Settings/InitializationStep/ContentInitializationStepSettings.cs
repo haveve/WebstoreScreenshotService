@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 
 namespace ScreenshotWorker.Settings.InitializationStep;
 
-[JsonDerivedType(typeof(ContentInitializationStepSettings), typeDiscriminator: ContentInitializationStepsNames.RequestsToComplete)]
 [JsonDerivedType(typeof(ScrollInitializationStepSettings), typeDiscriminator: ContentInitializationStepsNames.Scroll)]
 public class ContentInitializationStepSettings
 {

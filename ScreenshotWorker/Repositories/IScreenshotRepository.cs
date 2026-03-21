@@ -1,4 +1,4 @@
-﻿using ScreenshotWorker.Model;
+﻿using ScreenshotWorker.Model.ScreenshotOptions;
 
 namespace ScreenshotWorker.Repositories;
 

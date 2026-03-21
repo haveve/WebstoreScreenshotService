@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using ScreenshotWorker.Extensions;
-using ScreenshotWorker.Model;
+using ScreenshotWorker.Model.ScreenshotOptions;
 using ScreenshotWorker.Settings;
 using System.Net.Http.Json;
 

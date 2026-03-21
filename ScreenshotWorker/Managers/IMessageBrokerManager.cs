@@ -1,6 +1,6 @@
 ﻿namespace ScreenshotWorker.Managers;
 
-public interface IMessageBrokerManager
+public interface IMessageBrokerManager: IAsyncDisposable
 {
     public Task InitializeAsync();
 }

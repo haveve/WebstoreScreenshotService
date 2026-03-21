@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
-using ScreenshotWorker.Model;
+using ScreenshotWorker.Model.ScreenshotOptions;
 using ScreenshotWorker.Settings;
 using ScreenshotWorker.Settings.InitializationStep;
 

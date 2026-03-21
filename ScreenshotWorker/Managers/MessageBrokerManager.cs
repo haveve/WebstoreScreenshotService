@@ -111,4 +111,9 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowser
         _logger.LogError("Received request has invalid format message: {Message}, errors: {Errors}", message, errors);
         return channel.BasicNackAsync(deliveryTag, multiple: false, requeue: false);
     }
+
+    public ValueTask DisposeAsync()
+    {
+        return ValueTask.CompletedTask;
+    }
 }

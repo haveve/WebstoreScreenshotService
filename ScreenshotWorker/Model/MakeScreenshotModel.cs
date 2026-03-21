@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ScreenshotWorker.Model.ScreenshotOptions;
+using System.ComponentModel.DataAnnotations;
 
 namespace ScreenshotWorker.Model;
 

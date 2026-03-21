@@ -1,33 +1,38 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ScreenshotWorker;
 using ScreenshotWorker.Extensions;
 using ScreenshotWorker.Managers;
 using ScreenshotWorker.Repositories;
 using ScreenshotWorker.Services;
 using ScreenshotWorker.Services.ContentInitialization;
 using ScreenshotWorker.Settings;
+using ScreenshotWorker.Utils;
 using WebsiteScreenshotService;
 
 var builder = Host.CreateDefaultBuilder(args);
 
 builder
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config.Sources.Clear();
-                    config.AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
-                    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-                    config.AddEnvironmentVariables();
-                })
+    .ConfigureAppConfiguration((hostingContext, config) =>
+          {
+              config.Sources.Clear();
+              config.AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
+              config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+              config.AddEnvironmentVariables();
+          })
     .ConfigureServices((context, services) =>
            {
                services.AddSingleton<IContentInitializationManager, ContentInitializationManager>();
 
                services.AddSingleton<IContentInitializationStep, ScrollToPageEndStep>();
                services.AddSingleton<IContentInitializationStep, WaitForRequestsToCompleteStep>();
+               services.AddSingleton<IContentInitializationStep, WaitForSelectorStep>();
+               services.AddSingleton<IContentInitializationStep, WaitForElementToAppearStep>();
+
+               services.AddSingleton(new BrowserPool());
 
                services.AddSingleton<IScreenshotService, ScreenshotService>();
                services.AddSingleton<IBrowserService, BrowserService>();
@@ -61,8 +66,4 @@ builder.ConfigureLogging(logging =>
            });
 
 using var app = builder.Build();
-
-using var screenshotWorkerApplication = app.Services.GetRequiredService<IApplicationLifetimeManager>();
-await screenshotWorkerApplication.StartApplicationAsync();
-
-await app.RunAsync(screenshotWorkerApplication.CancellationToken);
+await app.StartApplicationAsync(args);
