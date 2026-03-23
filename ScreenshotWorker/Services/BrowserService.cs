@@ -167,7 +167,7 @@ public class BrowserService(IContentInitializationManager contentInitializationM
                 Value = c.Value,
                 Domain = c.Domain,
                 Path = c.Path ?? "/",
-                Expires = c.Expires,
+                Expires = c.Expires.HasValue ? new DateTimeOffset(c.Expires.Value).ToUnixTimeSeconds() : null,
                 Secure = c.Secure,
                 HttpOnly = c.HttpOnly,
                 SameSite = c.SameSite switch

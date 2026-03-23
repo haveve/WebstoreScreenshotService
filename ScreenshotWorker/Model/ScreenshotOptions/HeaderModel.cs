@@ -24,6 +24,6 @@ public class HeaderModel
     /// Max length 4000.
     /// </summary>
     [Required]
-    [SafeCookieString(4000)] // reuse SafeCookieString to prevent CR/LF injection
+    [SafeCookieString(1000)] // reuse SafeCookieString to prevent CR/LF injection
     public string Value { get; set; } = default!;
 }

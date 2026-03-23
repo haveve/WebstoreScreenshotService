@@ -30,10 +30,10 @@ public class AdvancedConfigurationModel
 
     public ResourceBlockOptions BlockResources { get; set; }
 
-    [MaxCollectionCount(40, ErrorMessage = "Maximum 30 headers allowed.")]
+    [MaxCollectionCount(20, ErrorMessage = "Maximum 30 headers allowed.")]
     public List<HeaderModel> Headers { get; set; } = [];
 
-    [MaxCollectionCount(20, ErrorMessage = "Maximum 20 cookies allowed.")]
+    [MaxCollectionCount(15, ErrorMessage = "Maximum 20 cookies allowed.")]
     public List<CookieModel> Cookies { get; set; } = [];
 }
 

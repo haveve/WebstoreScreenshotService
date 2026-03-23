@@ -13,11 +13,14 @@ public static partial class CssSelectorValidation
 public class SafeCssSelectorListAttribute : ValidationAttribute
 {
     private readonly int _maxCount;
+    private readonly int _selectorMaxLength;
 
-    public SafeCssSelectorListAttribute(int maxCount = 30)
+
+    public SafeCssSelectorListAttribute(int maxCount, int selectorMaxLength)
     {
         _maxCount = maxCount;
-        ErrorMessage = $"Maximum {_maxCount} selectors allowed, and each must be valid.";
+        _selectorMaxLength = selectorMaxLength;
+        ErrorMessage = $"Maximum {_maxCount} selectors allowed, and each must be valid with maximum length of {_selectorMaxLength} characters.";
     }
 
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
@@ -34,6 +37,9 @@ public class SafeCssSelectorListAttribute : ValidationAttribute
         {
             if (string.IsNullOrWhiteSpace(item))
                 return new ValidationResult("Selectors cannot be empty.");
+
+            if(item.Length > _selectorMaxLength)
+                return new ValidationResult($"Selectors cannot be longer than {_selectorMaxLength}.");
 
             if (!CssSelectorValidation.SafeSelectorRegex().IsMatch(item))
                 return new ValidationResult($"Invalid selector format: {item}");

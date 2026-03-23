@@ -12,7 +12,7 @@ public class CookieModel
     /// Prevents injection attacks.
     /// </summary>
     [Required]
-    [SafeCookieString(50, @"^[a-zA-Z0-9_\-]+$")]
+    [SafeCookieString(100, @"^[a-zA-Z0-9_\-]+$")]
     public string Name { get; set; } = default!;
 
     /// <summary>
@@ -21,7 +21,7 @@ public class CookieModel
     /// Prevents JS or header injection attacks.
     /// </summary>
     [Required]
-    [SafeCookieString(200)]
+    [SafeCookieString(1000)]
     public string Value { get; set; } = default!;
 
     /// <summary>
@@ -30,21 +30,17 @@ public class CookieModel
     /// Prevents header injection.
     /// </summary>
     [Required]
-    [SafeCookieDomain]
+    [SafeCookieDomain(maxLength:200)]
     public string Domain { get; set; } = default!;
 
     /// <summary>
     /// Cookie path. Default "/".
     /// Must be RFC 6265 compliant.
     /// </summary>
-    [SafeCookiePath]
+    [SafeCookiePath(maxLength:100)]
     public string Path { get; set; } = "/";
 
-    /// <summary>
-    /// Unix timestamp (seconds) when cookie expires.
-    /// Null means session cookie.
-    /// </summary>
-    public float? Expires { get; set; }
+    public DateTime? Expires { get; set; }
 
     /// <summary>
     /// Send cookie only via HTTPS.

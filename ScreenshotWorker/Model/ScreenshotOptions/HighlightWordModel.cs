@@ -9,7 +9,7 @@ public class HighlightWordModel
     /// Word to highlight. Safe for JS injection, supports Unicode (ru/ua/chinese/etc).
     /// </summary>
     [Required]
-    [SafeJsString(500)]
+    [SafeJsString(200)]
     public required string Word { get; set; }
 
     /// <summary>

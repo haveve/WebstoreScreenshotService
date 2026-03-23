@@ -14,6 +14,6 @@ public class ModalModel
     /// <summary>
     /// CSS selectors to hide before screenshot.
     /// </summary>
-    [SafeCssSelectorList(30)]
+    [SafeCssSelectorList(maxCount: 15, selectorMaxLength: 200)]
     public List<string> HideSelectors { get; set; } = [];
 }

@@ -8,7 +8,7 @@ public class SafeCookiePathAttribute : SafeCookieStringAttribute
     private static readonly string PathPattern =
         @"^\/[a-zA-Z0-9\/_\-\.]*$"; // path starting with /, valid chars
 
-    public SafeCookiePathAttribute(int maxLength = 50)
+    public SafeCookiePathAttribute(int maxLength)
         : base(maxLength, PathPattern)
     {
     }
