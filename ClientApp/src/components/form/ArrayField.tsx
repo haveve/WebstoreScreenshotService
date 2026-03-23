@@ -3,6 +3,7 @@ import { Box, Stack, Button, Typography, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTranslation } from 'react-i18next';
+import { memo } from 'react';
 
 type ArrayFieldWrapperProps<T = any> = {
     name: string;
@@ -15,15 +16,17 @@ type ArrayFieldWrapperProps<T = any> = {
         touched?: FormikTouched<T>;
         parentName: string;
     }) => React.ReactNode;
+    maxLength?: number
 };
 
-const ArrayFieldWrapper = <T,>({ name, label, children, emptyValue }: ArrayFieldWrapperProps<T>) => {
+const ArrayFieldWrapper = <T,>({ name, label, children, emptyValue, maxLength }: ArrayFieldWrapperProps<T>) => {
     const { values, errors, touched } = useFormikContext<any>();
     const { t } = useTranslation();
     const arrayValues: T[] = values[name] || [];
 
     const arrayErrors = getIn(errors, name) as FormikErrors<T>[] | undefined;
     const arrayTouched = getIn(touched, name) as FormikTouched<T>[] | undefined;
+    const showButton = maxLength === undefined || arrayValues.length < maxLength;
 
     return (
         <Box sx={{ mt: 2, mb: 2 }}>
@@ -52,9 +55,9 @@ const ArrayFieldWrapper = <T,>({ name, label, children, emptyValue }: ArrayField
                                 </Stack>
                             );
                         })}
-                        <Button variant="outlined" startIcon={<AddIcon />} onClick={() => push(emptyValue)}>
+                        {showButton && <Button variant="outlined" startIcon={<AddIcon />} onClick={() => push(emptyValue)}>
                             {t('General.add', { item: label })}
-                        </Button>
+                        </Button>}
                     </Stack>
                 )}
             </FieldArray>
@@ -62,4 +65,4 @@ const ArrayFieldWrapper = <T,>({ name, label, children, emptyValue }: ArrayField
     );
 };
 
-export default ArrayFieldWrapper;
+export default memo(ArrayFieldWrapper) as typeof ArrayFieldWrapper;

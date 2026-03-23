@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import MainPage from "./MainPage";
-import MakeScreenhsotPage from "./MakeScreenhsotPage";
+import MakeScreenhsotPage from "./makeScreenshot/MakeScreenhsotPage";
 import RegisterPage from "./RegisterPage";
 import LoginPage from "./LoginPage";
 import { useEffect } from "react";

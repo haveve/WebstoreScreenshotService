@@ -5,6 +5,7 @@ import { memo } from "react";
 
 type FormikFormWrapperProps<T extends FormikValues> = {
   initialValues: T;
+  validateOnChange?: boolean;
   validationSchema?: Yup.ObjectSchema<any>; // optional Yup schema
   onSubmit: (values: T, helpers: FormikHelpers<T>) => void | Promise<void>;
   children: (formProps: FormikProps<T>) => ReactNode;
@@ -13,6 +14,7 @@ type FormikFormWrapperProps<T extends FormikValues> = {
 const FormikFormWrapper = <T extends FormikValues>({
   initialValues,
   validationSchema,
+  validateOnChange,
   onSubmit,
   children,
 }: FormikFormWrapperProps<T>) => {
@@ -20,6 +22,7 @@ const FormikFormWrapper = <T extends FormikValues>({
     <Formik<T>
       initialValues={initialValues}
       validationSchema={validationSchema}
+      validateOnChange={validateOnChange}
       onSubmit={onSubmit}
     >
       {(props) => <Form>{children(props)}</Form>}
@@ -27,4 +30,4 @@ const FormikFormWrapper = <T extends FormikValues>({
   );
 };
 
-export default FormikFormWrapper;
+export default memo(FormikFormWrapper) as typeof FormikFormWrapper;
