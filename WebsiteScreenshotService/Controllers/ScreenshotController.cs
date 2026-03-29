@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Filters;
 using WebsiteScreenshotService.Controllers.Examples.Indentity;
 using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Extensions;
 using WebsiteScreenshotService.Model;
+using WebsiteScreenshotService.Model.ScreenshotOptions;
+using WebsiteScreenshotService.Model.ScreenshotOptions.Implementation;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
 using WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
 using WebsiteScreenshotService.Services;
@@ -14,11 +17,12 @@ namespace WebsiteScreenshotService.Controllers;
 [Authorize]
 [ApiController]
 [Route("[action]")]
-public class ScreenshotController(IScreenshotService screenshotService, IScreenshotManager screenshotManager, IScreenshotStorageManager screenshotStorageManager) : ControllerBase
+public class ScreenshotController(IScreenshotService screenshotService, IScreenshotManager screenshotManager, IScreenshotStorageManager screenshotStorageManager, IUserContextAccessor userContextAccessor) : ControllerBase
 {
     private readonly IScreenshotService _screenshotService = screenshotService;
     private readonly IScreenshotManager _screenshotManager = screenshotManager;
     private readonly IScreenshotStorageManager _screenshotStorageManager = screenshotStorageManager;
+    private readonly IUserContextAccessor _userContextAccessor = userContextAccessor;
 
     /// <summary>
     /// Captures a screenshot based on the specified options and returns the image file.
@@ -34,14 +38,20 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
     [ProducesResponseType<FileStream>(StatusCodes.Status200OK, "image/png", "image/jpeg")]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, "application/json")]
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(MakeScreenshotResponseExample))]
-    public async Task<IActionResult> MakeScreenshot([FromBody] ScreenshotOptionsModel screenshotOptions)
+    public async Task<IActionResult> MakeScreenshot([FromBody] InputScreenshotOptionsModel screenshotOptions)
     {
-        var screenshotResult = await _screenshotService.MakeScreenshotAsync(screenshotOptions);
+        var userContext = _userContextAccessor.GetCurrentUser();
+        var model = screenshotOptions.ToScreenshotOptions(userContext);
+
+        if(!model.IsSuccess)
+            return BadRequest(new ErrorResponse(model.ErrorMessage!));
+
+        var screenshotResult = await _screenshotService.MakeScreenshotAsync(model.Value!);
 
         if (!screenshotResult.IsSuccess)
             return BadRequest(new ErrorResponse(screenshotResult.ErrorMessage!));
 
-        return Ok(new { screenshotId = screenshotResult.Value });
+        return Ok(screenshotResult.Value);
     }
 
     [HttpGet]
@@ -63,7 +73,6 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
 
         return Ok(paginationResult);
     }
-
 
     [HttpGet]
     public async Task<IActionResult> GetScreenshot([FromQuery] string id)

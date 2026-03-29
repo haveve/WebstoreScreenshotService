@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
-using ScreenshotWorker.Settings;
+using WebsiteScreenshotService.Settings;
 using WebsiteScreenshotService.Entities;
-using WebsiteScreenshotService.Model;
+using WebsiteScreenshotService.Model.ScreenshotOptions;
 
 namespace WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
 

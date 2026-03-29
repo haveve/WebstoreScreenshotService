@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
 using WebsiteScreenshotService.Configurations;
+using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Model;
+using WebsiteScreenshotService.Model.ScreenshotOptions;
+using WebsiteScreenshotService.Model.UserInfo.Implementation;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
 using WebsiteScreenshotService.Repositories.Subscription;
 using WebsiteScreenshotService.Services.Messaging;
@@ -20,14 +23,14 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
     private readonly IScreenshotManager _screenshotManager = screenshotManager;
     private readonly QueueConfig _queueConfig = options.Value.Queue;
 
-    private readonly Result<string> defaultErrorMessage = Result<string>.Error("Failed to send screenshot request. Please, try again later");
+    private readonly Result<Screenshot> defaultErrorMessage = Result<Screenshot>.Error("Failed to send screenshot request. Please, try again later");
 
     /// <summary>
     /// Takes a screenshot of a webpage based on the specified options.
     /// </summary>
     /// <param name="screenshotOptionsModel">The options for taking the screenshot.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the screenshot as a stream.</returns>
-    public async Task<Result<string>> MakeScreenshotAsync(ScreenshotOptionsModel screenshotOptionsModel)
+    public async Task<Result<Screenshot>> MakeScreenshotAsync(IScreenshotOptionsModel screenshotOptionsModel)
     {
         var userContext = _userContextAccessor.GetCurrentUser();
         var screenshotId = MakeScreenshotId(userContext.Id);
@@ -55,7 +58,7 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
         ));
 
         if (!savedScreenshotResult.IsSuccess)
-            return Result<string>.Error(savedScreenshotResult.ErrorMessage!);
+            return Result<Screenshot>.Error(savedScreenshotResult.ErrorMessage!);
 
         var savedScreenshot = savedScreenshotResult.Value!;
 
@@ -80,7 +83,7 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
             return defaultErrorMessage;
         }
 
-        return Result<string>.Success(screenshotId);
+        return Result<Screenshot>.Success(savedScreenshot);
     }
 
     private static string MakeScreenshotId(Guid userId)

@@ -1,4 +1,4 @@
-﻿using WebsiteScreenshotService.Model;
+﻿using WebsiteScreenshotService.Model.ScreenshotOptions;
 
 namespace WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 

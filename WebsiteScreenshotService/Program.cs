@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using ScreenshotWorker.Settings;
+using WebsiteScreenshotService.Settings;
 using System.Text.Json;
 using WebsiteScreenshotService;
 using WebsiteScreenshotService.Configurations;

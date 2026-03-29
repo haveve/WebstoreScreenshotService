@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ScreenshotWorker.Settings;
+namespace WebsiteScreenshotService.Settings;
 
 public class ScreenshotStorageConfigurations
 {

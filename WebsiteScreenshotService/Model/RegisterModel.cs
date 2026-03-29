@@ -37,7 +37,7 @@ public class RegisterModel
     /// Converts the <see cref="RegisterModel"/> to a <see cref="User"/> entity.
     /// </summary>
     /// <returns>A new <see cref="User"/> entity with the registration details.</returns>
-    public User ToEntity()
+    public Entities.User ToEntity()
         => new(Guid.NewGuid(), Name, Surname, Email, Password, SubscriptionPlan.GetRegularSubscriptionPlan());
 }
 

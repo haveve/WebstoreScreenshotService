@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using WebsiteScreenshotService.Model;
+using WebsiteScreenshotService.Model.ScreenshotOptions;
 
 namespace WebsiteScreenshotService.Entities;
 
