@@ -5,8 +5,6 @@ using WebsiteScreenshotService.Controllers.Examples.Indentity;
 using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Extensions;
 using WebsiteScreenshotService.Model;
-using WebsiteScreenshotService.Model.ScreenshotOptions;
-using WebsiteScreenshotService.Model.ScreenshotOptions.Implementation;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
 using WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
 using WebsiteScreenshotService.Services;
@@ -85,9 +83,7 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
             return BadRequest(new ErrorResponse(storedScreenshotResult.ErrorMessage!));
 
         var storedScreenshot = storedScreenshotResult.Value!;
-
         var screenshot = new ScreenshotModel(storedScreenshot, _screenshotStorageManager.GetScreenshotUrl(storedScreenshot));
-
         return Ok(screenshot);
     }
 }

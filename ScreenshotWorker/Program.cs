@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ScreenshotWorker;
 using ScreenshotWorker.Extensions;
 using ScreenshotWorker.Managers;
 using ScreenshotWorker.Repositories;
