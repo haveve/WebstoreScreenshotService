@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,17 +14,19 @@ import Form from '../form/Form';
 import TextFieldWrapper from '../form/TextField';
 import SelectFieldWrapper from '../form/SelectField';
 
-import { getMakeScreenshotAction } from '../../behavior/epic';
+import { getMakeScreenshotAction, getScreenshotAction } from '../../behavior/epic';
 import { useAppSelector } from '../../behavior/rootReducer';
 
 import {
     ScreenshotType, ScreenshotQualityMode, ClipModel, HeaderModel, CookieModel,
-    ResourceBlockOptions, ColorSchemeOption, ScreenshotOptionsModel
+    ResourceBlockOptions, ColorSchemeOption, ScreenshotOptionsModel,
+    ScreenshotState
 } from '../../behavior/types';
 import JsonPreview from './JsonPreview';
 import ModalSection from './ModalSection';
 import HighlightWordSection from './HighlightWordSection';
 import AdvancedSection from './AdvancedSection';
+import { timer } from 'rxjs';
 
 export enum Modes { Slow = 'Slow', Medium = 'Medium', Fast = 'Fast' }
 
@@ -131,7 +133,7 @@ export type HighlightWord = {
     color: string;
 }
 
-export interface ScreenshotFormValues {
+export type ScreenshotFormValues = {
     url: string;
     screenshotType: ScreenshotType;
     preset: string;
@@ -153,15 +155,33 @@ export interface ScreenshotFormValues {
 }
 
 const ScreenshotForm = () => {
-    const maxDate = new Date();
-    maxDate.setMonth(maxDate.getMonth() + 6);
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const { error: serverError, image } = useAppSelector(state => state);
-
+    const { error: serverError, screenshot: screenshotData } = useAppSelector(state => state);
     const [qualityTab, setQualityTab] = useState<Modes>(Modes.Medium);
 
-    const initialValues: ScreenshotFormValues = {
+    const screenshot = screenshotData?.screenshot;
+
+    const error = !serverError && screenshot?.state === ScreenshotState.Failed
+        ? t('Errors.ScreenshotFailedStatus')
+        : serverError;
+
+    useEffect(() => {
+        const lastChangedDate = screenshotData?.lastChangedDate
+            ? new Date(screenshotData.lastChangedDate)
+            : null;
+
+        if (!lastChangedDate || !screenshot || screenshot?.state === ScreenshotState.New)
+            return;
+
+        const subscriber = timer(200)
+            .subscribe(_ => dispatch(getScreenshotAction(screenshot.id)))
+
+        return () => subscriber.unsubscribe();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [screenshotData?.lastChangedDate])
+
+    const initialValues = useMemo<ScreenshotFormValues>(() => ({
         url: '',
         screenshotType: ScreenshotType.Png,
         preset: "Desktop 4K (3840x2160)",
@@ -187,7 +207,7 @@ const ScreenshotForm = () => {
         blockResources: [],
         headers: [],
         cookies: []
-    };
+    }), []);
 
     const validationSchema = Yup.object().shape({
         url: Yup.string().required('URL is required').url('Invalid URL'),
@@ -313,23 +333,20 @@ const ScreenshotForm = () => {
                                         {/* Advanced Configuration Section */}
                                         <AdvancedSection advancedEnabled={values.advancedEnabled} />
 
-                                        {serverError && <Typography color="error">{serverError}</Typography>}
+                                        {error && <Typography color="error">{error}</Typography>}
 
-                                        <Stack direction="row" spacing={2}>
-                                            <Button type="submit" variant="contained" color="primary">Get Screenshot</Button>
-                                            {values.url && image && (
-                                                <Button variant="contained" color="success" onClick={() => { const link = document.createElement('a'); link.download = `screenshot.${values.screenshotType.toLowerCase()}`; link.href = image; link.click(); }}>
+                                        {screenshot?.state === ScreenshotState.Successful && <>
+                                            <Stack direction="row" spacing={2}>
+                                                <Button type="submit" variant="contained" color="primary">Get Screenshot</Button>
+                                                <Button variant="contained" color="success" onClick={() => { const link = document.createElement('a'); link.download = `screenshot.${values.screenshotType.toLowerCase()}`; link.href = screenshot.url; link.click(); }}>
                                                     Download Screenshot
                                                 </Button>
-                                            )}
-                                        </Stack>
-
-                                        {image && (
+                                            </Stack>
                                             <Box textAlign="center" mt={4}>
                                                 <Typography variant="h6">Screenshot:</Typography>
-                                                <Box component="img" src={image} alt="Screenshot" sx={{ maxWidth: '100%', cursor: 'pointer', mt: 1 }} onClick={() => window.open(image, '_blank')} />
+                                                <Box component="img" src={screenshot.url} alt="Screenshot" sx={{ maxWidth: '100%', cursor: 'pointer', mt: 1 }} onClick={() => window.open(screenshot.url, '_blank')} />
                                             </Box>
-                                        )}
+                                        </>}
                                     </Stack>
                                 </Grid>
 

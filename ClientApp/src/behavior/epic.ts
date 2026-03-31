@@ -2,8 +2,8 @@ import { Epic, ofType, combineEpics } from "redux-observable";
 import { map, exhaustMap } from "rxjs";
 import { PayloadAction, createAction } from "@reduxjs/toolkit";
 import { GetScreenshotApiObservable, PostScreenshotApiObservable } from "./api";
-import { LoginModel, RegisterModel, ScreenshotOptionsModel, UserModel } from "./types";
-import { setImage, setUser } from "./reducer";
+import { LoginModel, RegisterModel, Screenshot, ScreenshotOptionsModel, UserModel } from "./types";
+import { setScreenshot, setUser } from "./reducer";
 import { mockUser } from "./mocks";
 
 export const getLoginAction = createAction<LoginModel>("login");
@@ -49,9 +49,22 @@ export const makeScreenshotEpic: Epic<PayloadAction<ScreenshotOptionsModel, "mak
     ofType("makeScreenshot"),
     map(action => action.payload),
     exhaustMap(payload => {
-        return PostScreenshotApiObservable<Blob | null>(payload, "/MakeScreenshot", true, "blob").pipe(
+        return PostScreenshotApiObservable<Screenshot | null>(payload, "/MakeScreenshot", true, "blob").pipe(
             map(({ response: data, error }) => {
-                return setImage({ data: data ? URL.createObjectURL(data) : data, error });
+                return setScreenshot({ data, error });
+            })
+        );
+    })
+);
+
+export const getScreenshotAction = createAction<string>("getScreenshot");
+export const getScreenshotEpic: Epic<PayloadAction<string, "getScreenshot">, any> = (action$) => action$.pipe(
+    ofType("getScreenshot"),
+    map(action => action.payload),
+    exhaustMap(id => {
+        return GetScreenshotApiObservable<Screenshot | null>("/GetScreenshot", true, { "id": id }).pipe(
+            map(({ response: data, error }) => {
+                return setScreenshot({ data, error });
             })
         );
     })
@@ -71,7 +84,7 @@ export const receiveUserEpic: Epic<PayloadAction<void, "getUser">, any> = (actio
 );
 
 const rootEpic: Epic = (action$, store$, dependencies) =>
-    combineEpics<any>(loginEpic, registerEpic, logoutEpic, makeScreenshotEpic, receiveUserEpic)
+    combineEpics<any>(loginEpic, registerEpic, logoutEpic, makeScreenshotEpic, getScreenshotEpic, receiveUserEpic)
         (action$, store$, dependencies);
 
 export default rootEpic;

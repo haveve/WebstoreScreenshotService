@@ -71,17 +71,17 @@ export interface ModalModel {
     hideSelectors: string[];
 }
 
-export interface HighlightWordModel {
+export type HighlightWordModel = {
     word: string;
     color: string;
 }
 
-export interface HeaderModel {
+export type HeaderModel = {
     name: string;
     value: string;
 }
 
-export interface CookieModel {
+export type CookieModel = {
     name: string;
     value: string;
     domain: string;
@@ -92,7 +92,7 @@ export interface CookieModel {
     sameSite?: 'Strict' | 'Lax' | 'None';
 }
 
-export interface AdvancedConfigurationModel {
+export type AdvancedConfigurationModel = {
     locale: string;
     timezoneId: string;
     colorScheme: ColorSchemeOption;
@@ -102,14 +102,32 @@ export interface AdvancedConfigurationModel {
     cookies: CookieModel[];
 }
 
-export interface ScreenshotOptionsModel {
+export type ScreenshotOptionsModel = {
     url: string;
     screenshotType: ScreenshotType;
     mode: ScreenshotQualityMode;
-
     clip?: ClipModel;
     element?: ElementModel;
     modalModel?: ModalModel;
     highlightWord?: HighlightWordModel;
     advancedConfiguration?: AdvancedConfigurationModel;
+}
+
+export type Screenshot = {
+    id: string;
+    url: string;
+    websiteUrl: string,
+    userId: string,
+    createdAt: string,
+    state: ScreenshotState,
+    type: ScreenshotType,
+    title: string | null,
+    description: string | null,
+}
+
+export enum ScreenshotState
+{
+    New = 'New',
+    Successful = 'Successful',
+    Failed = 'Failed',
 }

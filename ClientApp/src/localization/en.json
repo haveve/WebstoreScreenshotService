@@ -216,6 +216,9 @@
     "agreeTerms": "You must agree to the terms and conditions",
     "invalidHeaderName": "Header name can only contain letters, numbers, and hyphens"
   },
+  "Errors":{
+    "ScreenshotFailedStatus": "We couldn’t capture the screenshot. Please try again. If the problem continues, contact the administrator"
+  },
   "General": {
     "add": "Add {{item}}",
     "language": "Language"

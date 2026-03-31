@@ -1,16 +1,21 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { UserModel } from "./types";
+import { Screenshot, UserModel } from "./types";
+
+type ScreenshotState = {
+    screenshot: Screenshot | null,
+    lastChangedDate: string
+}
 
 export type State = {
     user: UserModel | null | undefined;
-    image: string | null;
+    screenshot: ScreenshotState | null;
     loaded: boolean;
     error: string | null;
 }
 
 const initialState: State = {
     user: undefined,
-    image: null,
+    screenshot: null,
     loaded: false,
     error: null
 }
@@ -29,8 +34,8 @@ export const store = createSlice({
             state.error = action.payload.error;
             state.loaded = true;
         },
-        setImage: (state, action: PayloadAction<ActionModel<State['image']>>) => {
-            state.image = action.payload.data;
+        setScreenshot: (state, action: PayloadAction<ActionModel<ScreenshotState['screenshot']>>) => {
+            state.screenshot = {screenshot: action.payload.data, lastChangedDate: new Date().toISOString()};
             state.error = action.payload.error;
             state.loaded = true;
         },
@@ -45,7 +50,7 @@ export const store = createSlice({
 
 export const {
     setUser,
-    setImage
+    setScreenshot
 } = store.actions;
 
 export default store.reducer;

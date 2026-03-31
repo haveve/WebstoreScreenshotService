@@ -51,7 +51,9 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
         if (!screenshotResult.IsSuccess)
             return BadRequest(new ErrorResponse(screenshotResult.ErrorMessage!));
 
-        return Ok(screenshotResult.Value);
+        var screenshot = screenshotResult.Value!;
+        var responseModel = new ScreenshotModel(screenshot, _screenshotStorageManager.GetScreenshotUrl(screenshot));
+        return Ok(responseModel);
     }
 
     [HttpGet]

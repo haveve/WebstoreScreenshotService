@@ -54,6 +54,6 @@ export function PostScreenshotApiObservable<T>(body: any, path: string, withCred
     return ScreenshotApiObservable<T>(body, path, Methods.POST, withCredentials, responseType);
 }
 
-export function GetScreenshotApiObservable<T>(path: string, withCredentials = false, quaryParams?: string[][], responseType: XMLHttpRequestResponseType = "json") {
-    return ScreenshotApiObservable<T>(quaryParams, path, Methods.GET, withCredentials, responseType);
+export function GetScreenshotApiObservable<T>(path: string, withCredentials = false, queryParams?: Record<string, string>, responseType: XMLHttpRequestResponseType = "json") {
+    return ScreenshotApiObservable<T>(queryParams, path, Methods.GET, withCredentials, responseType);
 }
