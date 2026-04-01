@@ -1,17 +1,23 @@
 import { Field } from "formik";
 import {
-    TextField
+    TextField,
+    TextFieldProps as BaseTextFieldProps
 } from "@mui/material";
 import { FieldProps } from "./types";
-import { formatValidate } from "./helpers";
-import { memo } from "react";
+import { memo, ReactNode } from "react";
 
 /**
  * Wrapper for MUI TextField
  */
-const FormikTextField = ({ name, label, schema, ...props }: FieldProps) => {
+
+type TextFieldProps = BaseTextFieldProps & {
+    name: string;
+    label: ReactNode;
+}
+
+const FormikTextField = ({ name, label, ...props }: TextFieldProps) => {
     return (
-        <Field name={name} validate={formatValidate(schema)}>
+        <Field name={name}>
             {({ field, meta }: FieldProps) => (
                 <TextField
                     {...field}

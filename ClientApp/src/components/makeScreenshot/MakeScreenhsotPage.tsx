@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
@@ -8,6 +8,7 @@ import {
 import TurtleIcon from '@mui/icons-material/Timer';
 import RabbitIcon from '@mui/icons-material/DirectionsRun';
 import FlashIcon from '@mui/icons-material/FlashOn';
+import Alert from "@mui/material/Alert";
 import * as Yup from 'yup';
 
 import Form from '../form/Form';
@@ -27,10 +28,17 @@ import ModalSection from './ModalSection';
 import HighlightWordSection from './HighlightWordSection';
 import AdvancedSection from './AdvancedSection';
 import { timer } from 'rxjs';
+import { FormikProps } from 'formik';
+import { CostCalculation } from './CostCalculation';
+
+export type FormClipModel = {
+    width: number;
+    height: number;
+}
 
 export enum Modes { Slow = 'Slow', Medium = 'Medium', Fast = 'Fast' }
 
-const clipModels: Record<string, ClipModel> = {
+const clipModels: Record<string, FormClipModel> = {
     "iPhone SE (375x667)": { width: 375, height: 667 },
     "iPhone 6/7/8 (375x667)": { width: 375, height: 667 },
     "iPhone X/XS/11 Pro (375x812)": { width: 375, height: 812 },
@@ -100,12 +108,20 @@ const toUtcISOString = (localDateTime?: string): string | undefined => {
 };
 
 const formatFormValues = (values: ScreenshotFormValues, qualityTab: Modes) => {
+    let clip: ClipModel | undefined = { ...values.clip };
+
+    if (values.useFullHeight)
+        clip.height = null;
+
+    if (values.elementSelector)
+        clip = undefined;
+
     const payload: ScreenshotOptionsModel = {
         url: values.url,
         screenshotType: values.screenshotType,
         mode: mapModeToBackend(qualityTab),
-        clip: values.useFullHeight ? { ...values.clip, height: null } : values.clip,
-        element: values.elementSelector ? { selector: values.elementSelector } : undefined,
+        clip,
+        element: values.elementSelector ? { selector: values.elementSelector, clip: values.clip } : undefined,
         modalModel: values.modalEnabled ? values.modal : undefined,
         highlightWord: values.highlightEnabled ? values.highlightWord : undefined,
         advancedConfiguration: values.advancedEnabled ? {
@@ -137,7 +153,7 @@ export type ScreenshotFormValues = {
     url: string;
     screenshotType: ScreenshotType;
     preset: string;
-    clip: ClipModel;
+    clip: FormClipModel;
     modalEnabled: boolean;
     modal: Modal
     useFullHeight: boolean;
@@ -154,17 +170,15 @@ export type ScreenshotFormValues = {
     cookies: CookieModel[];
 }
 
+type ChangeTab = (_: any, newValue: Modes, setFieldValue: (name: string, value: any) => void) => void;
+
 const ScreenshotForm = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const { error: serverError, screenshot: screenshotData } = useAppSelector(state => state);
+    const screenshotData = useAppSelector(state => state.screenshot);
     const [qualityTab, setQualityTab] = useState<Modes>(Modes.Medium);
 
     const screenshot = screenshotData?.screenshot;
-
-    const error = !serverError && screenshot?.state === ScreenshotState.Failed
-        ? t('Errors.ScreenshotFailedStatus')
-        : serverError;
 
     useEffect(() => {
         const lastChangedDate = screenshotData?.lastChangedDate
@@ -209,7 +223,7 @@ const ScreenshotForm = () => {
         cookies: []
     }), []);
 
-    const validationSchema = Yup.object().shape({
+    const validationSchema = useMemo(() => Yup.object().shape({
         url: Yup.string().required('URL is required').url('Invalid URL'),
         clip: Yup.object().shape({
             width: Yup.number().min(1).max(5000).required(),
@@ -221,22 +235,21 @@ const ScreenshotForm = () => {
         cookies: Yup.array().of(
             Yup.object().shape({ name: Yup.string().required(), value: Yup.string().required(), domain: Yup.string().required(), path: Yup.string().required() })
         ).max(20)
-    });
+    }), []);
 
-    const handleTabChange = (_: any, newValue: Modes, setFieldValue: any) => {
+    const handleTabChange: ChangeTab = useCallback((_, newValue, setFieldValue) => {
         setQualityTab(newValue);
         if (newValue === Modes.Fast) {
             setFieldValue('useFullHeight', false);
             setFieldValue('preset', "Desktop 4K (3840x2160)");
             setFieldValue('clip', clipModels["Desktop 4K (3840x2160)"]);
         }
-    };
+    }, []);
 
     return (
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
             <Typography variant="h4" align="center" gutterBottom>{t('MainPage.screenshotService')}</Typography>
             <Typography variant="body1" align="center" gutterBottom>{t('MainPage.captureManageScreenshots')}</Typography>
-
             <Form
                 initialValues={initialValues}
                 validationSchema={validationSchema}
@@ -246,117 +259,160 @@ const ScreenshotForm = () => {
                     dispatch(getMakeScreenshotAction(payload));
                 }}
             >
-                {({ values, setFieldValue }) => {
-                    const isFastMode = qualityTab === Modes.Fast;
-                    const payload = formatFormValues(values, qualityTab);
-                    return (
-                        <>
-                            {/* Quality Tabs */}
-                            <Box sx={{ mb: 3 }}>
-                                <Tabs value={qualityTab} onChange={(e, val) => handleTabChange(e, val, setFieldValue)} centered>
-                                    <Tab value={Modes.Slow} icon={<TurtleIcon />} label="Slow / High Quality" />
-                                    <Tab value={Modes.Medium} icon={<RabbitIcon />} label="Medium Quality" />
-                                    <Tab value={Modes.Fast} icon={<FlashIcon />} label="Fast / Low Quality" />
-                                </Tabs>
-                            </Box>
-                            <Grid
-                                container
-                                spacing={3}
-                                alignItems="stretch"
-                                wrap="nowrap"
-                            >
-                                <Grid
-                                    order={1}
-                                    size={{ xs: 12, md: 4 }}
-                                    sx={{
-                                        minWidth: { md: 320 },
-                                        maxWidth: { md: 400 },
-                                        flexShrink: 0
-                                    }}
-                                >
-                                    <Box sx={{ height: "100%" }}>
-                                        <JsonPreview values={payload} />
-                                    </Box>
-                                </Grid>
-
-                                <Grid
-                                    size={{ xs: 12, md: 8 }}
-                                    sx={{
-                                        flexGrow: 1,
-                                        overflow: "auto"
-                                    }}
-                                >
-                                    <Stack spacing={2}>
-                                        <TextFieldWrapper name="url" label="URL" fullWidth />
-                                        <SelectFieldWrapper
-                                            name="screenshotType"
-                                            label="Screenshot Type"
-                                            options={[{ value: ScreenshotType.Png, label: 'PNG' }, { value: ScreenshotType.Jpeg, label: 'JPEG' }]}
-                                        />
-
-                                        {/* Clip or Element Selection */}
-                                        <Typography variant="subtitle1">Select either Clip or Element</Typography>
-                                        <SelectFieldWrapper
-                                            name="preset"
-                                            label="Screen Preset"
-                                            options={Object.keys(clipModels).map(label => ({ value: label, label }))}
-                                            onChange={e => { setFieldValue('preset', e.target.value); setFieldValue('clip', clipModels[e.target.value]); }}
-                                        />
-                                        <FormControlLabel
-                                            control={<Switch
-                                                checked={values.useFullHeight}
-                                                onChange={e => setFieldValue('useFullHeight', e.target.checked)}
-                                                name="useFullHeight"
-                                            />}
-                                            label="Full height will capture entire page."
-                                        />
-
-                                        <Stack direction="row" spacing={2}>
-                                            <TextFieldWrapper name="clip.width" label="Width (px)" type="number" disabled={isFastMode} />
-                                            <TextFieldWrapper name="clip.height" label="Height (px)" type="number" disabled={values.useFullHeight || isFastMode} />
-                                        </Stack>
-
-                                        <TextFieldWrapper
-                                            name="elementSelector"
-                                            label="Or Element Selector"
-                                            placeholder="Element should be in range of 5000x7000 px"
-                                            fullWidth
-                                            maxLength={200}
-                                        />
-
-                                        {/* Modal Section */}
-                                        <ModalSection modalEnabled={values.modalEnabled} />
-
-                                        {/* Highlight Word Section */}
-                                        <HighlightWordSection highlightEnabled={values.highlightEnabled} />
-
-                                        {/* Advanced Configuration Section */}
-                                        <AdvancedSection advancedEnabled={values.advancedEnabled} />
-
-                                        {error && <Typography color="error">{error}</Typography>}
-
-                                        {screenshot?.state === ScreenshotState.Successful && <>
-                                            <Stack direction="row" spacing={2}>
-                                                <Button type="submit" variant="contained" color="primary">Get Screenshot</Button>
-                                                <Button variant="contained" color="success" onClick={() => { const link = document.createElement('a'); link.download = `screenshot.${values.screenshotType.toLowerCase()}`; link.href = screenshot.url; link.click(); }}>
-                                                    Download Screenshot
-                                                </Button>
-                                            </Stack>
-                                            <Box textAlign="center" mt={4}>
-                                                <Typography variant="h6">Screenshot:</Typography>
-                                                <Box component="img" src={screenshot.url} alt="Screenshot" sx={{ maxWidth: '100%', cursor: 'pointer', mt: 1 }} onClick={() => window.open(screenshot.url, '_blank')} />
-                                            </Box>
-                                        </>}
-                                    </Stack>
-                                </Grid>
-
-                            </Grid>
-                        </>
-                    );
-                }}
+                {(formContext) => <FormContent formContext={formContext} qualityTab={qualityTab} handleTabChange={handleTabChange} />}
             </Form >
         </Container >
     );
 };
+
+type FormContentProps<T> = {
+    formContext: FormikProps<T>
+    qualityTab: Modes
+    handleTabChange: ChangeTab
+}
+
+const FormContent = memo(({ formContext: { values, setFieldValue }, qualityTab, handleTabChange }: FormContentProps<ScreenshotFormValues>) => {
+    const payload = useMemo(
+        () => formatFormValues(values, qualityTab),
+        [values, qualityTab]
+    );
+    const { t } = useTranslation();
+
+    const isFastMode = qualityTab === Modes.Fast;
+    const isElementSet = !!values.elementSelector;
+
+    const serverError = useAppSelector(state => state.error);
+    const screenshotData = useAppSelector(state => state.screenshot);
+
+    const screenshot = screenshotData?.screenshot;
+
+    const error = !serverError && screenshot?.state === ScreenshotState.Failed
+        ? t('Errors.ScreenshotFailedStatus')
+        : serverError;
+
+    return <>
+        {/* Quality Tabs */}
+        <Box sx={{ mb: 3 }}>
+            <Tabs value={qualityTab} onChange={(e, val) => handleTabChange(e, val, setFieldValue)} centered>
+                <Tab value={Modes.Slow} icon={<TurtleIcon />} label="Slow / High Quality" />
+                <Tab value={Modes.Medium} icon={<RabbitIcon />} label="Medium Quality" />
+                <Tab value={Modes.Fast} icon={<FlashIcon />} label="Fast / Low Quality" />
+            </Tabs>
+        </Box>
+        <Grid
+            container
+            spacing={3}
+            alignItems="stretch"
+            wrap="nowrap"
+        >
+            <Grid
+                order={-1}
+                size={{ xs: 12, md: 3 }}
+                sx={{
+                    minWidth: { md: 320 },
+                    maxWidth: { md: 400 },
+                    flexShrink: 0
+                }}
+            >
+                <CostCalculation options={payload} />
+            </Grid>
+            <Grid
+                order={1}
+                size={{ xs: 12, md: 3 }}
+                sx={{
+                    minWidth: { md: 320 },
+                    maxWidth: { md: 400 },
+                    flexShrink: 0
+                }}
+            >
+                <Box sx={{ height: "100%" }}>
+                    <JsonPreview values={payload} />
+                </Box>
+            </Grid>
+
+            <Grid
+                size={{ xs: 12, md: 8 }}
+                sx={{
+                    flexGrow: 1,
+                    overflow: "auto"
+                }}
+            >
+                <Stack spacing={2} paddingLeft={5}>
+                    {isElementSet && <Alert severity="warning" variant="standard">
+                        You selected an element-based screenshot. Only the specified element will be captured. Please ensure the element exists on the page and is within specified area Width(px)×Height(px). If you want to capture the entire page instead, remove the selector.
+                    </Alert>}
+                    <TextFieldWrapper name="url" label="URL" fullWidth />
+                    <SelectFieldWrapper
+                        name="screenshotType"
+                        label="Screenshot Type"
+                        options={[{ value: ScreenshotType.Png, label: 'PNG' }, { value: ScreenshotType.Jpeg, label: 'JPEG' }]}
+                    />
+
+                    {/* Clip or Element Selection */}
+                    <Typography variant="subtitle1">Select either Clip or Element</Typography>
+                    <SelectFieldWrapper
+                        name="preset"
+                        label="Screen Preset"
+                        options={Object.keys(clipModels).map(label => ({ value: label, label }))}
+                        onChange={e => { setFieldValue('preset', e.target.value); setFieldValue('clip', clipModels[e.target.value as string]); }}
+                    />
+                    <FormControlLabel
+                        control={<Switch
+                            checked={values.useFullHeight}
+                            onChange={e => setFieldValue('useFullHeight', e.target.checked)}
+                            disabled={!!values.elementSelector || isFastMode}
+                            name="useFullHeight"
+                        />}
+                        label="Full height will capture entire page."
+                    />
+
+                    <Stack direction="row" spacing={2}>
+                        <TextFieldWrapper name="clip.width" label="Width (px)" type="number" />
+                        <TextFieldWrapper name="clip.height" label="Height (px)" type="number" disabled={values.useFullHeight} />
+                    </Stack>
+
+                    <TextFieldWrapper
+                        name="elementSelector"
+                        label="Or Element Selector"
+                        placeholder="Element should be in range of 5000x7000 px"
+                        fullWidth
+                        onChange={e => {
+                            if (e.target.value)
+                                setFieldValue('useFullHeight', false);
+
+                            setFieldValue('elementSelector', e.target.value)
+                        }}
+                        slotProps={{ htmlInput: { maxLength: 200 } }}
+                    />
+
+                    {/* Modal Section */}
+                    <ModalSection modalEnabled={values.modalEnabled} />
+
+                    {/* Highlight Word Section */}
+                    <HighlightWordSection highlightEnabled={values.highlightEnabled} />
+
+                    {/* Advanced Configuration Section */}
+                    <AdvancedSection advancedEnabled={values.advancedEnabled} />
+
+                    {error && <Typography color="error">{error}</Typography>}
+
+                    {screenshot?.state === ScreenshotState.Successful && <>
+                        <Stack direction="row" spacing={2}>
+                            <Button type="submit" variant="contained" color="primary">Get Screenshot</Button>
+                            <Button variant="contained" color="success" onClick={() => { const link = document.createElement('a'); link.download = `screenshot.${values.screenshotType.toLowerCase()}`; link.href = screenshot.url; link.click(); }}>
+                                Download Screenshot
+                            </Button>
+                        </Stack>
+                        <Box textAlign="center" mt={4}>
+                            <Typography variant="h6">Screenshot:</Typography>
+                            <Box component="img" src={screenshot.url} alt="Screenshot" sx={{ maxWidth: '100%', cursor: 'pointer', mt: 1 }} onClick={() => window.open(screenshot.url, '_blank')} />
+                        </Box>
+                    </>}
+                </Stack>
+            </Grid>
+
+        </Grid>
+    </>
+});
 
 export default ScreenshotForm;

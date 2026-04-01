@@ -8,6 +8,7 @@ import SecurityIcon from '@mui/icons-material/Security';
 import { Link as RouterLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useThemeMode } from "./ThemeSettings";
+import { format } from "../utils/string";
 
 const HomePage = () => {
   const { t } = useTranslation();
@@ -35,12 +36,14 @@ const HomePage = () => {
       price: t("Home.Subscriptions.free.price"),
       desc: t("Home.Subscriptions.free.desc"),
       benefits: t("Home.Subscriptions.free.benefits").split('\n'),
+      isFree: true
     },
     {
       plan: t("Home.Subscriptions.premium.plan"),
       price: t("Home.Subscriptions.premium.price"),
       desc: t("Home.Subscriptions.premium.desc"),
       benefits: t("Home.Subscriptions.premium.benefits").split('\n'),
+      isFree: false
     },
   ];
 
@@ -130,7 +133,7 @@ const HomePage = () => {
                 height: '100%'
               }}
             >
-              <Typography variant="h5">{sub.plan} — {sub.price}</Typography>
+              <Typography variant="h5">{sub.plan}{format(sub.price, sub.isFree ? 0 : 9.99)}</Typography>
               <Typography variant="body2" mb={2}>{sub.desc}</Typography>
               <ul>
                 {sub.benefits.map((b, idx) => (

@@ -1,15 +1,23 @@
 import { Field } from "formik";
-import { TextField } from "@mui/material";
+import { TextField, TextFieldProps as BaseTextFieldProps } from "@mui/material";
 import { FieldProps } from "./types";
-import { formatValidate } from "./helpers";
-import { memo } from "react";
+import { memo, ReactNode } from "react";
+
+/**
+ * Wrapper for MUI TextField
+ */
+
+type ColorPickerProps = Omit<BaseTextFieldProps, 'type'> & {
+  name: string;
+  label: ReactNode;
+}
 
 /**
  * Wrapper for a color picker using MUI and Formik
  */
-const FormikColorPicker = ({ name, label, schema, ...props }: FieldProps) => {
+const FormikColorPicker = ({ name, label, ...props }: ColorPickerProps) => {
   return (
-    <Field name={name} validate={formatValidate(schema)}>
+    <Field name={name}>
       {({ field, meta }: FieldProps) => (
         <TextField
           {...field}

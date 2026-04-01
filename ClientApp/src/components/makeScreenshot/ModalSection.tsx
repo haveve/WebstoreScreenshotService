@@ -39,7 +39,7 @@ const ModalSection = ({
                         emptyValue=""
                         maxLength={15}>
                         {({ index, parentName }) => (
-                            <TextFieldWrapper maxLength={200} key={index} name={`${parentName}[${index}]`} label={`Selector ${index + 1}`} fullWidth />
+                            <TextFieldWrapper slotProps={{ htmlInput: { maxLength: 200 } }} key={index} name={`${parentName}[${index}]`} label={`Selector ${index + 1}`} fullWidth />
                         )}
                     </ArrayFieldWrapper>
                 </Stack>

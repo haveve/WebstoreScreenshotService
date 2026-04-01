@@ -4,21 +4,27 @@ import {
   Select,
   FormControl,
   InputLabel,
-  FormHelperText
+  FormHelperText,
+  SelectProps as BaseSelectProps
 } from "@mui/material";
 import { FieldProps } from "./types";
-import { formatValidate } from "./helpers";
-import { memo } from "react";
+import { memo, ReactNode } from "react";
 
-type SelectFieldProps = {
+/**
+ * Wrapper for MUI TextField
+ */
+
+type SelectFieldProps = BaseSelectProps & {
+  name: string;
+  label: ReactNode;
   options: { label: string; value: any }[];
-} & FieldProps;
+}
 
-const SelectField = ({ name, label, options, schema, ...props }: SelectFieldProps) => {
+const SelectField = ({ name, label, options, ...props }: SelectFieldProps) => {
   return (
     <FormControl>
       <InputLabel>{label}</InputLabel>
-      <Field name={name} validate={formatValidate(schema)}>
+      <Field name={name}>
         {({ field, meta }: FieldProps) => (
           <>
             <Select

@@ -99,6 +99,7 @@ public sealed class BrowserPool(int maxContexts = 10, int restartAfterJobs = 100
     private static BrowserNewContextOptions CreateBrowserContextOptions(ScreenshotOptionsModel screenshotOptionsModel)
     {
         var advancedConfig = screenshotOptionsModel.AdvancedConfiguration;
+        var config = screenshotOptionsModel;
 
         var browserContextOptions = new BrowserNewContextOptions
         {
@@ -110,8 +111,8 @@ public sealed class BrowserPool(int maxContexts = 10, int restartAfterJobs = 100
             IgnoreHTTPSErrors = false,
             ViewportSize = new ViewportSize
             {
-                Width = Math.Max(screenshotOptionsModel.Clip!.Width, 1280),
-                Height = screenshotOptionsModel.Clip.Height ?? 800
+                Width = config.Element?.Clip.Width ?? config.Clip?.Width ?? 1280,
+                Height = config.Element?.Clip.Height ?? config.Clip?.Height ?? 800
             },
             ColorScheme = advancedConfig?.ColorScheme switch
             {

@@ -39,7 +39,8 @@ const AdvancedSection = ({
                             { value: ColorSchemeOption.NoPreference, label: 'No Preference' }
                         ]}
                     />
-                    <TextFieldWrapper maxLength={200} name="waitForSelector" label="Wait For Selector" fullWidth />
+                    <TextFieldWrapper slotProps={{ htmlInput: { maxLength: 200 } }}
+                        name="waitForSelector" label="Wait For Selector" fullWidth />
                     <SelectFieldWrapper
                         name="blockResources"
                         label="Block Resources"
@@ -61,8 +62,10 @@ const AdvancedSection = ({
                         maxLength={20}>
                         {({ index, parentName }) => (
                             <Stack direction="row" key={index} spacing={1} sx={{ width: '100%' }}>
-                                <TextFieldWrapper maxLength={100} name={`${parentName}[${index}].name`} label="Header Name" fullWidth />
-                                <TextFieldWrapper maxLength={1000} name={`${parentName}[${index}].value`} label="Header Value" fullWidth />
+                                <TextFieldWrapper slotProps={{ htmlInput: { maxLength: 100 } }}
+                                    name={`${parentName}[${index}].name`} label="Header Name" fullWidth />
+                                <TextFieldWrapper slotProps={{ htmlInput: { maxLength: 1000 } }}
+                                    name={`${parentName}[${index}].value`} label="Header Value" fullWidth />
                             </Stack>
                         )}
                     </ArrayFieldWrapper>
@@ -85,12 +88,16 @@ const AdvancedSection = ({
                         {({ index, parentName }) => (
                             <Stack key={index} spacing={1} sx={{ width: '100%', p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
                                 <Stack direction="row" spacing={1}>
-                                    <TextFieldWrapper maxLength={100} name={`${parentName}[${index}].name`} label="Cookie Name" fullWidth />
-                                    <TextFieldWrapper value={1000} name={`${parentName}[${index}].value`} label="Cookie Value" fullWidth />
+                                    <TextFieldWrapper slotProps={{ htmlInput: { maxLength: 100 } }}
+                                        name={`${parentName}[${index}].name`} label="Cookie Name" fullWidth />
+                                    <TextFieldWrapper slotProps={{ htmlInput: { maxLength: 1000 } }}
+                                        name={`${parentName}[${index}].value`} label="Cookie Value" fullWidth />
                                 </Stack>
                                 <Stack direction="row" spacing={1}>
-                                    <TextFieldWrapper maxLength={200} name={`${parentName}[${index}].domain`} label="Domain" placeholder=".example.com" fullWidth />
-                                    <TextFieldWrapper maxLength={100} name={`${parentName}[${index}].path`} label="Path" placeholder="/" fullWidth />
+                                    <TextFieldWrapper slotProps={{ htmlInput: { maxLength: 200 } }}
+                                        name={`${parentName}[${index}].domain`} label="Domain" placeholder=".example.com" fullWidth />
+                                    <TextFieldWrapper slotProps={{ htmlInput: { maxLength: 100 } }}
+                                        name={`${parentName}[${index}].path`} label="Path" placeholder="/" fullWidth />
                                 </Stack>
                                 <TextFieldWrapper
                                     type="datetime-local"

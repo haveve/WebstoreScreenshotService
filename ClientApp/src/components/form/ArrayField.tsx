@@ -22,8 +22,7 @@ type ArrayFieldWrapperProps<T = any> = {
 const ArrayFieldWrapper = <T,>({ name, label, children, emptyValue, maxLength }: ArrayFieldWrapperProps<T>) => {
     const { values, errors, touched } = useFormikContext<any>();
     const { t } = useTranslation();
-    const arrayValues: T[] = values[name] || [];
-
+    const arrayValues: T[] = getIn(values, name) || [];
     const arrayErrors = getIn(errors, name) as FormikErrors<T>[] | undefined;
     const arrayTouched = getIn(touched, name) as FormikTouched<T>[] | undefined;
     const showButton = maxLength === undefined || arrayValues.length < maxLength;

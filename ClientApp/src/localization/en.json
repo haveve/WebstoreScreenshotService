@@ -161,13 +161,13 @@
       "title": "Plans and subscriptions",
       "free": {
         "plan": "Free",
-        "price": "0$",
+        "price": "",
         "desc": "Basic features, limited number of screenshots",
         "benefits": "Up to 5 screenshots per day\nNo history"
       },
       "premium": {
         "plan": "Premium",
-        "price": "9.99$/month",
+        "price": " - {0}$/month",
         "desc": "Advanced features and full history",
         "benefits": "Unlimited screenshots\nFull history\nPriority support"
       }

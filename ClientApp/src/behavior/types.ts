@@ -61,8 +61,14 @@ export interface ClipModel {
     height?: number | null;
 }
 
+export interface ElementClipModel {
+    width: number;
+    height: number;
+}
+
 export interface ElementModel {
     selector: string;
+    clip: ElementClipModel;
 }
 
 export interface ModalModel {

@@ -1,5 +1,5 @@
 import { ajax, AjaxConfig } from "rxjs/ajax";
-import { trimStartCharacter } from "./utils";
+import { trimStartCharacter } from "../utils/string";
 import { catchError, map } from "rxjs";
 
 const enum Methods {

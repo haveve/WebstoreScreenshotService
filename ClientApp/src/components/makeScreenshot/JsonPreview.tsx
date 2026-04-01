@@ -1,20 +1,26 @@
 import { Box, Typography, IconButton, Paper, Tooltip } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { ScreenshotOptionsModel } from "../../behavior/types";
-import { memo } from "react";
+import { memo, useRef, useState } from "react";
 
 export interface JsonPreviewProps {
   values: ScreenshotOptionsModel;
 }
 
-const JsonPreview = ({
-  values,
-}: JsonPreviewProps) => {
-
+const JsonPreview = ({ values }: JsonPreviewProps) => {
   const json = JSON.stringify(values, null, 2);
+  const [open, setOpen] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(json);
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(json);
+
+    setOpen(true);
+
+    if (timeoutRef.current)
+      clearTimeout(timeoutRef.current);
+
+    timeoutRef.current = setTimeout(() => setOpen(false), 1000);
   };
 
   return (
@@ -32,8 +38,18 @@ const JsonPreview = ({
     >
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Typography variant="subtitle1">Request JSON</Typography>
-        <Tooltip title="Copy JSON">
-          <IconButton onClick={handleCopy} size="small" sx={{ color: "#e2e8f0" }}>
+        <Tooltip
+          title={"Copied!"}
+          open={open}
+          disableFocusListener
+          disableHoverListener
+          disableTouchListener
+        >
+          <IconButton
+            onClick={handleCopy}
+            size="small"
+            sx={{ color: "#e2e8f0" }}
+          >
             <ContentCopyIcon fontSize="small" />
           </IconButton>
         </Tooltip>

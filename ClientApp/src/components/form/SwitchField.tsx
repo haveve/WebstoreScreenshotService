@@ -4,15 +4,24 @@ import {
     FormControlLabel,
     FormHelperText,
     FormControl,
+    SwitchProps as BaseSwitchProps
 } from "@mui/material";
 import { FieldProps } from "./types";
-import { formatValidate } from "./helpers";
-import { memo } from "react";
+import { memo, ReactNode } from "react";
 
-const CheckboxField = ({ name, label, schema, ...props }: FieldProps) => {
+/**
+ * Wrapper for MUI TextField
+ */
+
+type SwitchProps = BaseSwitchProps & {
+    name: string;
+    label: ReactNode;
+}
+
+const CheckboxField = ({ name, label, ...props }: SwitchProps) => {
     return (
-        <Field name={name} validate={formatValidate(schema)}>
-            {({ field, meta }: any) => (
+        <Field name={name}>
+            {({ field, meta }: FieldProps) => (
                 <FormControl error={meta.touched && Boolean(meta.error)}>
                     <FormControlLabel
                         control={

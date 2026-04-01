@@ -63,7 +63,7 @@ const Navigation = () => {
 
     return (
         <>
-            <AppBar position="static" color="primary">
+            <AppBar position="sticky" color="primary">
                 <Container maxWidth="lg">
                     <Toolbar sx={{ justifyContent: "space-between" }}>
                         {/* Logo and Title */}
