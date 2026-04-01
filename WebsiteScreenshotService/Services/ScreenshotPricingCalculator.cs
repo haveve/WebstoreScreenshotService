@@ -5,7 +5,7 @@ namespace WebsiteScreenshotService.Services;
 
 public static class ScreenshotPricingCalculator
 {
-    private const double BasePoints = 1.0;
+    private const decimal BasePoints = 1.0M;
 
     private const int DefaultWidth = 1920;
     private const int DefaultHeight = 1080;
@@ -14,16 +14,16 @@ public static class ScreenshotPricingCalculator
     {
         var pixels = CalculatePixels(options);
 
-        var sizeMultiplier = pixels / (double)(DefaultWidth * DefaultHeight);
+        var sizeMultiplier = pixels / (decimal)(DefaultWidth * DefaultHeight);
 
         var total = BasePoints * sizeMultiplier;
 
         // Feature multipliers
         if (IsFullPage(options))
-            total *= 1.4;
+            total *= 1.4M;
 
         if (options.Element != null)
-            total *= 1.5;
+            total *= 1.5M;
 
         // Loading complexity
         total *= GetLoadingMultiplier(options.ContentLoadingOptions);
@@ -33,10 +33,10 @@ public static class ScreenshotPricingCalculator
 
         // Additive costs
         if (options.HighlightWord != null)
-            total += 0.5;
+            total += 0.5M;
 
         if (options.ModalModel != null)
-            total += options.ModalModel.HideSelectors?.Count * 0.2 ?? 0;
+            total += options.ModalModel.HideSelectors?.Count * 0.1M ?? 0;
 
         // Safety limits
         total = Math.Max(total, 1);
@@ -45,53 +45,42 @@ public static class ScreenshotPricingCalculator
         return (int)Math.Ceiling(total);
     }
 
-    private static double GetAdvancedCost(IAdvancedConfigurationModel? adv)
+    private static decimal GetAdvancedCost(IAdvancedConfigurationModel? adv)
     {
         if (adv == null)
             return 0;
 
-        double cost = 0;
-
-        // 🌍 Locale / Timezone (browser context overhead)
-        if (!string.IsNullOrWhiteSpace(adv.Locale) && adv.Locale != "en-US")
-            cost += 0.2;
-
-        if (!string.IsNullOrWhiteSpace(adv.TimezoneId) && adv.TimezoneId != "UTC")
-            cost += 0.2;
-
-        // 🎨 Color scheme
-        if (adv.ColorScheme != ColorSchemeOption.NoPreference)
-            cost += 0.1;
+        var cost = 0.0M;
 
         // ⏳ Wait for selector (expensive)
         if (!string.IsNullOrWhiteSpace(adv.WaitForSelector))
-            cost += 2.0;
+            cost += 2.0M;
 
         // 📡 Headers
         if (adv.Headers != null)
-            cost += adv.Headers.Count * 0.15;
+            cost += adv.Headers.Count * 0.15M;
 
         // 🍪 Cookies
         if (adv.Cookies != null)
-            cost += adv.Cookies.Count * 0.2;
+            cost += adv.Cookies.Count * 0.2M;
 
         // 🚫 Resource blocking (reduces cost)
         if (adv.BlockResources != ResourceBlockOptions.None)
         {
             if (adv.BlockResources.HasFlag(ResourceBlockOptions.Images))
-                cost -= 0.2;
+                cost -= 0.2M;
 
             if (adv.BlockResources.HasFlag(ResourceBlockOptions.Fonts))
-                cost -= 0.1;
+                cost -= 0.1M;
 
             if (adv.BlockResources.HasFlag(ResourceBlockOptions.Media))
-                cost -= 0.3;
+                cost -= 0.3M;
 
             if (adv.BlockResources.HasFlag(ResourceBlockOptions.Scripts))
-                cost -= 0.4;
+                cost -= 0.4M;
 
             if (adv.BlockResources.HasFlag(ResourceBlockOptions.Stylesheets))
-                cost -= 0.1;
+                cost -= 0.1M;
         }
 
         return cost;
@@ -113,15 +102,15 @@ public static class ScreenshotPricingCalculator
     private static bool IsFullPage(ScreenshotOptionsModel options)
         => options.Clip != null && options.Clip.Height == null;
 
-    private static double GetLoadingMultiplier(ContentLoadingOptions options)
+    private static decimal GetLoadingMultiplier(ContentLoadingOptions options)
     {
         return options switch
         {
-            ContentLoadingOptions.None => 1.0,
-            ContentLoadingOptions.ScrollToTheEndOfThePage => 1.3,
-            ContentLoadingOptions.WaitForRequestsToComplete => 1.5,
-            ContentLoadingOptions.All => 1.8,
-            _ => 1.0
+            ContentLoadingOptions.None => 1.0M,
+            ContentLoadingOptions.ScrollToTheEndOfThePage => 1.3M,
+            ContentLoadingOptions.WaitForRequestsToComplete => 1.5M,
+            ContentLoadingOptions.All => 1.8M,
+            _ => throw new NotImplementedException()
         };
     }
 }

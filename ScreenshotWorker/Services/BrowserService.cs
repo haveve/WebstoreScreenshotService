@@ -3,6 +3,7 @@ using Microsoft.Playwright;
 using ScreenshotWorker.Model.ScreenshotOptions;
 using ScreenshotWorker.Services.ContentInitialization;
 using ScreenshotWorker.Settings;
+using System.Collections.Immutable;
 
 namespace ScreenshotWorker.Services;
 
@@ -63,6 +64,30 @@ public class BrowserService(IContentInitializationManager contentInitializationM
         }
     }
 
+    private static readonly ImmutableList<string> defaultSelectors =
+            [
+            // Generic UI patterns
+            "[class*='modal']",
+            "[class*='popup']",
+            "[class*='overlay']",
+            "[class*='dialog']",
+
+            // Cookie / GDPR
+            "[class*='cookie']",
+            "[class*='consent']",
+            "[class*='gdpr']",
+            "[class*='privacy']",
+
+            // Marketing / interruptions
+            "[class*='banner']",
+            "[class*='subscribe']",
+            "[class*='newsletter']",
+
+            // Backdrops / blockers
+            "[class*='backdrop']",
+            "[class*='lightbox']"
+            ];
+
     private static async ValueTask HidePopupsAsync(IPage page, ScreenshotOptionsModel screenshotOptionsModel)
     {
         if (screenshotOptionsModel.ModalModel is null)
@@ -71,26 +96,20 @@ public class BrowserService(IContentInitializationManager contentInitializationM
         if (screenshotOptionsModel.ModalModel.DismissDialogs)
             page.Dialog += async (_, dialog) => await dialog.DismissAsync();
 
-        if (screenshotOptionsModel.ModalModel.HidePopups)
-        {
-            var selectors = new List<string>
-            {
-                ".modal",
-                ".popup",
-                ".cookie-banner",
-                ".overlay"
-            };
+        if (!screenshotOptionsModel.ModalModel.HidePopups)
+            return;
 
-            if (screenshotOptionsModel.ModalModel.HideSelectors.Count > 0)
-                selectors.AddRange(screenshotOptionsModel.ModalModel.HideSelectors);
+        var selectors = defaultSelectors
+            .Concat(screenshotOptionsModel.ModalModel.HideSelectors)
+            .Distinct()
+            .ToArray();
 
-            await page.EvaluateAsync(@"(selectors) => {
+        await page.EvaluateAsync(@"(selectors) => {
                 selectors.forEach(sel => {
                     const elements = document.querySelectorAll(sel);
                     elements.forEach(el => el.style.display = 'none');
                 });
             }", selectors);
-        }
     }
 
     private static PageScreenshotOptions FormatScreenshotOptions(ScreenshotOptionsModel screenshotOptionsModel)
