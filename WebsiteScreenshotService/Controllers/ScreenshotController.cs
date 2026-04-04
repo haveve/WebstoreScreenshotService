@@ -6,6 +6,7 @@ using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Extensions;
 using WebsiteScreenshotService.Model;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
+using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 using WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
 using WebsiteScreenshotService.Services;
 using WebsiteScreenshotService.Utils;
@@ -57,18 +58,20 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
     [HttpGet]
     public async Task<IActionResult> GetScreenshots([FromQuery] Paging paging)
     {
-        var screenshotResult = await _screenshotManager.GetScreenshots(paging);
+        var screenshotPaging = new ScreenshotPaging(paging.Page, paging.PageSize, paging.Query, paging.SearchScope, paging.CategoryIds);
+        var screenshotResult = await _screenshotManager.GetScreenshots(screenshotPaging);
 
         if (!screenshotResult.IsSuccess)
             return BadRequest(new ErrorResponse(screenshotResult.ErrorMessage!));
 
-        var screenshotPaging = screenshotResult.Value!;
+        var result = screenshotResult.Value!;
 
         var paginationResult = new PaginationResult<ScreenshotModel>
         (
-            TotalCount: screenshotPaging.TotalCount,
-            Items: screenshotPaging.Items
+            TotalCount: result.TotalCount,
+            Items: result.Items
                 .Select(screenshot => new ScreenshotModel(screenshot, _screenshotStorageManager.GetScreenshotUrl(screenshot)))
+                .ToArray()
         );
 
         return Ok(paginationResult);

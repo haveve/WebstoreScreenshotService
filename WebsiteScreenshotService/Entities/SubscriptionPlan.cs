@@ -1,16 +1,18 @@
-﻿namespace WebsiteScreenshotService.Entities;
+﻿using System.Text.Json.Serialization;
+
+namespace WebsiteScreenshotService.Entities;
 
 /// <summary>
 /// Represents a subscription plan with a type and the number of screenshots left.
 /// </summary>
 /// <param name="Type">The type of the subscription plan.</param>
 /// <param name="ScreenshotLeft">The number of screenshots left in the subscription plan.</param>
-public record SubscriptionPlan(SubscriptionType Type, int ScreenshotLeft)
+public record SubscriptionPlan(SubscriptionType Type, long ScreenshotLeft)
 {
     /// <summary>
     /// Gets the number of screenshots left in the subscription plan.
     /// </summary>
-    public int ScreenshotLeft { get; private set; } = ScreenshotLeft;
+    public long ScreenshotLeft { get; private set; } = ScreenshotLeft;
 
     /// <summary>
     /// Gets a regular subscription plan with a default number of screenshots.
@@ -36,6 +38,7 @@ public record SubscriptionPlan(SubscriptionType Type, int ScreenshotLeft)
 /// <summary>
 /// Defines the types of subscription plans.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum SubscriptionType
 {
     /// <summary>

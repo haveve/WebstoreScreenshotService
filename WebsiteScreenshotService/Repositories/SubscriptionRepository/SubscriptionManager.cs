@@ -3,7 +3,7 @@ using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.Subscription;
 
-public class InMemorySubscriptionManager(ISubscriptionRepository screenshotRepository, IUserContextAccessor userContextAccessor) : ISubscriptionManager
+public class SubscriptionManager(ISubscriptionRepository screenshotRepository, IUserContextAccessor userContextAccessor) : ISubscriptionManager
 {
     private readonly ISubscriptionRepository _screenshotRepository = screenshotRepository;
 
@@ -19,7 +19,7 @@ public class InMemorySubscriptionManager(ISubscriptionRepository screenshotRepos
     public async Task<SubscriptionPlan> GetUserSubscriptionAsync(Guid userId = default)
     {
         if (userId == default)
-            userId = userContextAccessor.GetCurrentUser().Id;
+            userId = userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         using var _ = await EnterLockAsync(userId);
 
@@ -30,7 +30,7 @@ public class InMemorySubscriptionManager(ISubscriptionRepository screenshotRepos
     public async Task<bool> CanMakeScreenshotAsync(Guid userId = default)
     {
         if (userId == default)
-            userId = userContextAccessor.GetCurrentUser().Id;
+            userId = userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         using var _ = await EnterLockAsync(userId);
         return await _screenshotRepository.CanMakeScreenshotAsync(userId);
@@ -39,7 +39,7 @@ public class InMemorySubscriptionManager(ISubscriptionRepository screenshotRepos
     public async Task<Result<SubscriptionPlan>> ScreenshotWasMadeAsync(Guid userId = default)
     {
         if (userId == default)
-            userId = userContextAccessor.GetCurrentUser().Id;
+            userId = userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         using var _ = await EnterLockAsync(userId, isRead: false);
 
@@ -55,7 +55,7 @@ public class InMemorySubscriptionManager(ISubscriptionRepository screenshotRepos
     public async Task RedeemScreenshotAsync(string screenshotId, Guid userId = default)
     {
         if (userId == default)
-            userId = userContextAccessor.GetCurrentUser().Id;
+            userId = userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         using var _ = await EnterLockAsync(userId, isRead: false);
         await _screenshotRepository.RedeemScreenshotAsync(screenshotId, userId);

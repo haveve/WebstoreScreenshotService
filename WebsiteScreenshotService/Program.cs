@@ -1,17 +1,20 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using WebsiteScreenshotService.Settings;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using WebsiteScreenshotService;
 using WebsiteScreenshotService.Configurations;
 using WebsiteScreenshotService.Extensions.ServiceExtensions;
 using WebsiteScreenshotService.Repositories;
+using WebsiteScreenshotService.Repositories.EF;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
+using WebsiteScreenshotService.Repositories.ScreenshotRepository.Search;
 using WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
 using WebsiteScreenshotService.Repositories.Subscription;
 using WebsiteScreenshotService.Repositories.UserRepository;
 using WebsiteScreenshotService.Services;
 using WebsiteScreenshotService.Services.Messaging;
+using WebsiteScreenshotService.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,12 +25,32 @@ builder.Services.AddControllerServices()
         options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     });
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSingleton<IScreenshotSearchStrategy, SqliteScreenshotSearchStrategy>();
+    builder.Services.AddDbContext<ScreenshotDbContext>(options =>
+        options.UseSqlite("Data Source=screenshots.db"));
+}
+else
+{
+    builder.Services.AddSingleton<IScreenshotSearchStrategy, PostgresScreenshotSearchStrategy>();
+    builder.Services.AddDbContext<ScreenshotDbContext>(options =>
+        options.UseNpgsql("host=localhost port=5432 dbname=mydb user=myuser password=mypassword"));
+}
+
+var databaseProvider = builder.Environment.IsProduction()
+    ? Provider.Postgres
+    : Provider.Sqlite;
+
+builder.Services.AddSingleton(new StorageConfigurations() { Provider = databaseProvider });
+
 builder.Services.AddGrpc();
 
 builder.Services.Configure<KestrelServerOptions>(builder.Configuration.GetSection("Server"));
 builder.Services.AddOptionsWithValidation<MessageBrokerConfigurations>(builder.Configuration.GetSection("MessageBroker"));
 builder.Services.AddOptionsWithValidation<AuthorizationConfiguration>(builder.Configuration.GetSection("Authorization"));
 builder.Services.AddOptionsWithValidation<ScreenshotStorageConfigurations>(builder.Configuration.GetSection("ScreenshotStorageSettings"));
+builder.Services.AddOptionsWithValidation<EncryptionConfigurations>(builder.Configuration.GetSection("MessageBroker"));
 
 if (builder.Environment.IsDevelopment())
     builder.Services.AddSwaggerServices();
@@ -45,8 +68,8 @@ builder.Services.AddSingleton<IMessageBrokerManager, MessageBrokerManager>();
 builder.Services.AddSingleton<ISubscriptionManager, InMemorySubscriptionManager>();
 builder.Services.AddSingleton<ISubscriptionRepository, InMemorySubscriptionRepository>();
 
-builder.Services.AddSingleton<IScreenshotManager, InMemoryScreenshotManager>();
-builder.Services.AddSingleton<IScreenshotRepository, InMemoryScreenshotRepository>();
+builder.Services.AddSingleton<IScreenshotManager, ScreenshotManager>();
+builder.Services.AddSingleton<IScreenshotRepository, ScreenshotRepository>();
 
 builder.Services.AddSingleton<IScreenshotStorageManager, ScreenshotStorageManager>();
 

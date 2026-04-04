@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 
 namespace WebsiteScreenshotService.Model;
 
@@ -22,12 +23,6 @@ public class RegisterModel
     public string Password { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the surname of the user.
-    /// </summary>
-    [Required]
-    public string Surname { get; set; } = default!;
-
-    /// <summary>
     /// Gets or sets the first name of the user.
     /// </summary>
     [Required]
@@ -37,7 +32,7 @@ public class RegisterModel
     /// Converts the <see cref="RegisterModel"/> to a <see cref="User"/> entity.
     /// </summary>
     /// <returns>A new <see cref="User"/> entity with the registration details.</returns>
-    public Entities.User ToEntity()
-        => new(Guid.NewGuid(), Name, Surname, Email, Password, SubscriptionPlan.GetRegularSubscriptionPlan());
+    public UserCreateModel ToEntity()
+        => new(Guid.NewGuid(), Name, Email, Password, SubscriptionPlan.GetRegularSubscriptionPlan());
 }
 

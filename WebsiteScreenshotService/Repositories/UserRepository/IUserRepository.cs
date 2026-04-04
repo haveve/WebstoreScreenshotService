@@ -1,4 +1,5 @@
 ﻿using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 
 namespace WebsiteScreenshotService.Repositories.UserRepository;
 
@@ -27,5 +28,5 @@ public interface IUserRepository
     /// </summary>
     /// <param name="user">The user to create.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created user.</returns>
-    public Task<User?> CreateUserAsync(User user);
+    public Task<User?> CreateUserAsync(UserCreateModel user);
 }

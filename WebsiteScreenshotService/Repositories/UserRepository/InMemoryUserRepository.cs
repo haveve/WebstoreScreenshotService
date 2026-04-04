@@ -1,51 +1,72 @@
-﻿using System.Collections.Concurrent;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using System.Text.Json;
+using WebsiteScreenshotService.Configurations;
 using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Repositories.EF;
+using WebsiteScreenshotService.Repositories.EF.DbEntities;
+using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
+using WebsiteScreenshotService.Services.Security;
 
 namespace WebsiteScreenshotService.Repositories.UserRepository;
 
 /// <summary>
 /// Provides an in-memory implementation of the <see cref="IUserRepository"/> interface for managing users and their subscriptions.
 /// </summary>
-public class InMemoryUserRepository : IUserRepository
+public class UserRepository(ScreenshotDbContext context, IHashingService hashingService, IKeyService keyService, IEncryptionService encryptionService, IOptions<EncryptionConfigurations> encryptionSettings) : IUserRepository
 {
-    private readonly ConcurrentBag<User> _users = new()
-    {
-        new User(new Guid("{bbb13e58-0cf0-4063-8b83-7e0bf15f7e4d}"),"Ivan","Pohoidash","i.pohoidash@gmail.com","abc123", SubscriptionPlan.GetRegularSubscriptionPlan())
-    };
+    private readonly ScreenshotDbContext _context = context;
+    private readonly IHashingService _hashingService = hashingService;
+    private readonly IKeyService _keyService = keyService;
+    private readonly IEncryptionService _encryptionService = encryptionService;
+    private readonly EncryptionConfigurations _encryptionSettings = encryptionSettings.Value;
 
-    /// <summary>
-    /// Retrieves a user by their unique identifier.
-    /// </summary>
-    /// <param name="id">The unique identifier of the user.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the user if found; otherwise, null.</returns>
-    public Task<User?> GetUserByIdAsync(Guid id)
+    public async Task<User?> GetUserByIdAsync(Guid id)
     {
-        return Task.FromResult(_users.FirstOrDefault(user => user.Id == id));
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+        return null;
     }
 
-    /// <summary>
-    /// Creates a new user and adds them to the in-memory collection.
-    /// </summary>
-    /// <param name="user">The user to create.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the created user if successful; otherwise, null.</returns>
-    public Task<User?> CreateUserAsync(User user)
+    public async Task<User?> CreateUserAsync(UserCreateModel user)
     {
-        var userWithSameEmail = _users.FirstOrDefault(u => u.Email == user.Email);
+        var exists = await _context.Users
+            .AnyAsync(u => u.Email == user.Email);
 
-        if (userWithSameEmail is not null)
-            return Task.FromResult(null as User);
+        if (exists)
+            return null;
 
-        _users.Add(user);
-        return Task.FromResult<User?>(user);
+        var salt = _keyService.GenerateBase64Key();
+        var encKey = _keyService.GenerateBase64Key();
+
+        var encryptedData = new EncryptedData(user.Name, user.Email);
+
+        var userEntity = new UserEntity()
+        {
+            Id = Guid.CreateVersion7(),
+            Email = _hashingService.Hash(user.Email),
+            Salt = salt,
+            Password = _hashingService.Hash(user.Password, salt),
+            EncKey = _encryptionService.Encrypt(encKey, _keyService.FromBase64(_encryptionSettings.MasterKey)),
+            SubscriptionPlan = new() { Type = user.SubscriptionPlan.Type, ScreenshotLeft = user.SubscriptionPlan.ScreenshotLeft },
+            EncryptedData = _encryptionService.Encrypt(JsonSerializer.Serialize(encryptedData))
+        };
+
+        _context.Users.Add(userEntity);
+        await _context.SaveChangesAsync();
+
+        return null;
     }
 
-    /// <summary>
-    /// Retrieves a user by their email and password.
-    /// </summary>
-    /// <param name="email">The email of the user.</param>
-    /// <param name="password">The password of the user.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the user if found; otherwise, null.</returns>
-    public Task<User?> GetUserByEmailAndPasswordAsync(string email, string password)
-        => Task.FromResult(_users.FirstOrDefault(user => user.Email == email && user.Password == password));
+    public async Task<User?> GetUserByEmailAndPasswordAsync(string email, string password)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user is null || !_hashingService.Verify(password, user.Salt, user.Password))
+            return null;
+
+        return null;
+    }
 }
 

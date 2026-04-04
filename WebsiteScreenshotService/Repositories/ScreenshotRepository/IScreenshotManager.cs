@@ -12,7 +12,7 @@ public interface IScreenshotManager
 
     public Task<Result<Screenshot>> UpdateStateAsync(string screenshotId, ScreenshotState state);
 
-    public ValueTask<Result<PaginationResult<Screenshot>>> GetScreenshots(Paging? paging = null, Guid userId = default);
+    public ValueTask<Result<PaginationResult<Screenshot>>> GetScreenshots(ScreenshotPaging? paging = null, Guid userId = default);
 
     public ValueTask<Result<Screenshot>> GetScreenshot(string screenshotId);
 }

@@ -33,11 +33,13 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
     public async Task<Result<Screenshot>> MakeScreenshotAsync(IScreenshotOptionsModel screenshotOptionsModel)
     {
         var userContext = _userContextAccessor.GetCurrentUser();
-        var screenshotId = MakeScreenshotId(userContext.Id);
+        var useInfo = userContext.UserInfo;
+        var screenshotPlan = userContext.SubscriptionPlan;
+        var screenshotId = MakeScreenshotId();
 
         var confirmationToken = _authorizationManager.GenerateConfirmationToken(new ConfirmationData
             (
-                UserId: userContext.Id,
+                UserId: useInfo.Id,
                 ScreenshotId: screenshotId
             ));
 
@@ -52,7 +54,7 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
         var savedScreenshotResult = await _screenshotManager.MakeAsync(new
         (
             Id: screenshotId,
-            UserId: userContext.Id,
+            UserId: useInfo.Id,
             WebsiteUrl: screenshotOptionsModel.Url,
             Type: screenshotOptionsModel.ScreenshotType
         ));
@@ -69,11 +71,11 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
             ConfirmationToken = confirmationToken,
             UserInformation = new UserInformation
             {
-                UserId = userContext.Id,
+                UserId = useInfo.Id,
             }
         };
 
-        var routingKey = _queueConfig.QueuePerSubscription[userContext.SubscriptionPlan.Type];
+        var routingKey = _queueConfig.QueuePerSubscription[screenshotPlan.Type];
 
         var successfullySent = await _messageBrokerManager.SendMessageAsync(model, routingKey);
 
@@ -86,6 +88,6 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
         return Result<Screenshot>.Success(savedScreenshot);
     }
 
-    private static string MakeScreenshotId(Guid userId)
-        => $"{userId}_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+    private static string MakeScreenshotId()
+        => Guid.CreateVersion7().ToString();
 }

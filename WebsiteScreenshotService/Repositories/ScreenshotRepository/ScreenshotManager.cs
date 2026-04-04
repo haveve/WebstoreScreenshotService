@@ -4,17 +4,17 @@ using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.ScreenshotRepository;
 
-public class InMemoryScreenshotManager(IScreenshotRepository screenshotRepository, IUserContextAccessor userContextAccessor) : IScreenshotManager
+public class ScreenshotManager(IScreenshotRepository screenshotRepository, IUserContextAccessor userContextAccessor) : IScreenshotManager
 {
     private readonly IScreenshotRepository _screenshotRepository = screenshotRepository;
 
     public async ValueTask<Result<Screenshot>> GetScreenshot(string screenshotId)
         => await _screenshotRepository.GetScreenshot(screenshotId);
 
-    public async ValueTask<Result<PaginationResult<Screenshot>>> GetScreenshots(Paging? paging = null, Guid userId = default)
+    public async ValueTask<Result<PaginationResult<Screenshot>>> GetScreenshots(ScreenshotPaging? paging = null, Guid userId = default)
     {
         if (userId == default)
-            userId = userContextAccessor.GetCurrentUser().Id;
+            userId = userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         return await _screenshotRepository.GetScreenshots(paging, userId);
     }

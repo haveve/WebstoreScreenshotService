@@ -44,6 +44,7 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
             return null;
         }
 
-        return new UserContext(userId.Value, subscriptionPlan, UserRole.User);
+        var userInfo = new UserInfo(userId.Value, UserRole.User);
+        return new UserContext(userInfo, subscriptionPlan);
     }
 }
