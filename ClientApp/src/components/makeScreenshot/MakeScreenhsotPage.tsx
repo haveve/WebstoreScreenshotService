@@ -224,7 +224,7 @@ const ScreenshotForm = () => {
     }), []);
 
     const validationSchema = useMemo(() => Yup.object().shape({
-        url: Yup.string().required('URL is required').url('Invalid URL'),
+        url: Yup.string().required('URL is required').url('Invalid URL').max(2048),
         clip: Yup.object().shape({
             width: Yup.number().min(1).max(5000).required(),
             height: Yup.number().min(1).max(7000).required()
@@ -341,7 +341,7 @@ const FormContent = memo(({ formContext: { values, setFieldValue }, qualityTab, 
                     {isElementSet && <Alert severity="warning" variant="standard">
                         You selected an element-based screenshot. Only the specified element will be captured. Please ensure the element exists on the page and is within specified area Width(px)×Height(px). If you want to capture the entire page instead, remove the selector.
                     </Alert>}
-                    <TextFieldWrapper name="url" label="URL" fullWidth />
+                    <TextFieldWrapper name="url" label="URL" fullWidth slotProps={{ htmlInput: { maxLength: 2048 } }} />
                     <SelectFieldWrapper
                         name="screenshotType"
                         label="Screenshot Type"

@@ -17,6 +17,7 @@ public class InputScreenshotOptionsModel
     /// Gets or sets the URL of the webpage to capture.
     /// </summary>
     [Required]
+    [MaxLength(2048)]
     [SafeUrl(ErrorMessage = "The provided URL is not allowed.")]
     public required string Url { get; set; }
 

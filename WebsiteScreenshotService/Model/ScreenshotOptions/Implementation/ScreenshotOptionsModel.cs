@@ -9,13 +9,11 @@ namespace WebsiteScreenshotService.Model.ScreenshotOptions.Implementation;
 /// Represents the options for taking a screenshot.
 /// </summary>
 [RequireOneOf(nameof(Clip), nameof(Element), ErrorMessage = "You must provide either Clip or Element.")]
-public class ScreenshotOptionsModel: IScreenshotOptionsModel
+public class ScreenshotOptionsModel : IScreenshotOptionsModel
 {
     /// <summary>
     /// Gets or sets the URL of the webpage to capture.
     /// </summary>
-    [Required]
-    [SafeUrl(ErrorMessage = "The provided URL is not allowed.")]
     public required string Url { get; set; }
 
     /// <summary>
