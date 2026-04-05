@@ -10,11 +10,6 @@ namespace WebsiteScreenshotService.Entities;
 public record SubscriptionPlan(SubscriptionType Type, long ScreenshotLeft)
 {
     /// <summary>
-    /// Gets the number of screenshots left in the subscription plan.
-    /// </summary>
-    public long ScreenshotLeft { get; private set; } = ScreenshotLeft;
-
-    /// <summary>
     /// Gets a regular subscription plan with a default number of screenshots.
     /// </summary>
     /// <returns>A regular subscription plan.</returns>
@@ -26,13 +21,6 @@ public record SubscriptionPlan(SubscriptionType Type, long ScreenshotLeft)
 
     public static SubscriptionPlan GetAdvancedSubscriptionPlan()
         => new(Type: SubscriptionType.Advanced, ScreenshotLeft: 50_000);
-
-    /// <summary>
-    /// Decrements the number of screenshots left by one.
-    /// </summary>
-    public void ScreenshotWasMade() => ScreenshotLeft--;
-
-    public void IncrementScreenshotCount() => ScreenshotLeft++;
 }
 
 /// <summary>
