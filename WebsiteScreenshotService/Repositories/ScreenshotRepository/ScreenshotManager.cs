@@ -19,6 +19,9 @@ public class ScreenshotManager(IScreenshotRepository screenshotRepository, IUser
         return await _screenshotRepository.GetScreenshots(paging, userId);
     }
 
+    public async Task DeleteAsync(string id)
+        => await _screenshotRepository.DeleteAsync(id);
+
     public async Task<Result<Screenshot>> MakeAsync(ScreenshotCreateModel screenshot)
         => await _screenshotRepository.MakeAsync(screenshot);
 

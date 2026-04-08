@@ -9,8 +9,8 @@ public class ScreenshotStorageManager(IOptions<ScreenshotStorageConfigurations> 
 {
     private readonly string baseUrl = options.Value.Url.TrimEnd('/');
 
-    public string GetScreenshotUrl(Screenshot screenshot)
-       => $"{baseUrl}/{screenshot.UserId}/{screenshot.Id}{ToImageExtension(screenshot.Type)}";
+    public string GetScreenshotUrl(Screenshot screenshot, Guid userId)
+       => $"{baseUrl}/{userId}/{screenshot.Id}{ToImageExtension(screenshot.Type)}";
 
     private static string ToImageExtension(ScreenshotType type)
         => type switch

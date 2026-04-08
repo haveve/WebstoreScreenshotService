@@ -3,7 +3,7 @@ using WebsiteScreenshotService.Model.ScreenshotOptions;
 
 namespace WebsiteScreenshotService.Entities;
 
-public record Screenshot(string Id, string WebsiteUrl, Guid UserId, DateTime CreatedAt, ScreenshotState State, ScreenshotType Type, string? Title = null, string? Description = null);
+public record Screenshot(string Id, string WebsiteUrl, DateTime CreatedAt, ScreenshotState State, ScreenshotType Type, string? Title = null, string? Description = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ScreenshotState

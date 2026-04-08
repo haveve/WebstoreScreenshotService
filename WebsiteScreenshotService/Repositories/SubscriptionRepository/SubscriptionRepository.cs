@@ -10,18 +10,6 @@ public class SubscriptionRepository(ScreenshotDbContext context, IScreenshotMana
     private readonly ScreenshotDbContext _context = context;
     private readonly IScreenshotManager _screenshotManager = screenshotManager;
 
-    public async Task<SubscriptionPlan?> GetUserSubscriptionAsync(Guid userId)
-    {
-        var plan = await _context.Users
-            .Where(u => u.Id == userId)
-            .Select(u => u.SubscriptionPlan)
-            .FirstOrDefaultAsync();
-
-        return plan is not null
-            ? new(plan.Type, plan.ScreenshotLeft)
-            : null;
-    }
-
     public async Task<bool> CanMakeScreenshotAsync(Guid userId)
     {
         return await _context.Users

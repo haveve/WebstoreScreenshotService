@@ -1,31 +1,12 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using WebsiteScreenshotService.Configurations;
 
 namespace WebsiteScreenshotService.Services.Security;
 
 public class AesEncryptionService : IEncryptionService
 {
-    private readonly Lazy<byte[]> _lazyKey;
-
     private const int NonceSizeBytes = 12;
     private const int TagSizeBytes = 16;
-
-    public AesEncryptionService(IKeyService keyService,EncryptionConfigurations settings, string key)
-    {
-        _lazyKey = new Lazy<byte[]>(() =>
-        {
-            var masterKey = keyService.FromBase64(settings.MasterKey);
-            var decryptedKey = Decrypt(key, masterKey);
-            return keyService.FromBase64(decryptedKey);
-        }, LazyThreadSafetyMode.PublicationOnly);
-    }
-
-    public string Encrypt(string input)
-        => Encrypt(input, _lazyKey.Value);
-
-    public string Decrypt(string input)
-        => Decrypt(input, _lazyKey.Value);
 
     public string Encrypt(string input, byte[] key)
     {

@@ -15,7 +15,7 @@ namespace WebsiteScreenshotService.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("[action]")]
+[Route("screenshots/[action]")]
 public class ScreenshotController(IScreenshotService screenshotService, IScreenshotManager screenshotManager, IScreenshotStorageManager screenshotStorageManager, IUserContextAccessor userContextAccessor) : ControllerBase
 {
     private readonly IScreenshotService _screenshotService = screenshotService;
@@ -34,6 +34,7 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
     /// <response code="400">User does not exist or has exceeded their available screenshots limit or Input data is invalid.</response>
     /// <response code="401">Unauthorized</response>
     [HttpPost]
+    [ActionName("makeScreenshot")]
     [ProducesResponseType<FileStream>(StatusCodes.Status200OK, "image/png", "image/jpeg")]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, "application/json")]
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(MakeScreenshotResponseExample))]
@@ -50,14 +51,17 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
         if (!screenshotResult.IsSuccess)
             return BadRequest(new ErrorResponse(screenshotResult.ErrorMessage!));
 
+        var useInfo = userContext.UserInfo;
         var screenshot = screenshotResult.Value!;
-        var responseModel = new ScreenshotModel(screenshot, _screenshotStorageManager.GetScreenshotUrl(screenshot));
+        var responseModel = new ScreenshotModel(screenshot, _screenshotStorageManager.GetScreenshotUrl(screenshot, useInfo.Id));
         return Ok(responseModel);
     }
 
     [HttpGet]
+    [ActionName("getScreenshots")]
     public async Task<IActionResult> GetScreenshots([FromQuery] Paging paging)
     {
+        var userContext = _userContextAccessor.GetCurrentUser();
         var screenshotPaging = new ScreenshotPaging(paging.Page, paging.PageSize, paging.Query, paging.SearchScope, paging.CategoryIds);
         var screenshotResult = await _screenshotManager.GetScreenshots(screenshotPaging);
 
@@ -66,11 +70,12 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
 
         var result = screenshotResult.Value!;
 
+        var useInfo = userContext.UserInfo;
         var paginationResult = new PaginationResult<ScreenshotModel>
         (
             TotalCount: result.TotalCount,
             Items: result.Items
-                .Select(screenshot => new ScreenshotModel(screenshot, _screenshotStorageManager.GetScreenshotUrl(screenshot)))
+                .Select(screenshot => new ScreenshotModel(screenshot, _screenshotStorageManager.GetScreenshotUrl(screenshot, useInfo.Id)))
                 .ToArray()
         );
 
@@ -78,15 +83,18 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
     }
 
     [HttpGet]
+    [ActionName("getScreenshot")]
     public async Task<IActionResult> GetScreenshot([FromQuery] string id)
     {
+        var userContext = _userContextAccessor.GetCurrentUser();
         var storedScreenshotResult = await _screenshotManager.GetScreenshot(id);
 
         if (!storedScreenshotResult.IsSuccess)
             return BadRequest(new ErrorResponse(storedScreenshotResult.ErrorMessage!));
 
+        var useInfo = userContext.UserInfo;
         var storedScreenshot = storedScreenshotResult.Value!;
-        var screenshot = new ScreenshotModel(storedScreenshot, _screenshotStorageManager.GetScreenshotUrl(storedScreenshot));
+        var screenshot = new ScreenshotModel(storedScreenshot, _screenshotStorageManager.GetScreenshotUrl(storedScreenshot, useInfo.Id));
         return Ok(screenshot);
     }
 }

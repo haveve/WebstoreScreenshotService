@@ -1,12 +1,12 @@
 ﻿using WebsiteScreenshotService.Extensions;
-using WebsiteScreenshotService.Repositories.Subscription;
+using WebsiteScreenshotService.Repositories.UserRepository;
 
 namespace WebsiteScreenshotService;
 
-public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddleware> logger, ISubscriptionManager subscriptionManager) : IMiddleware
+public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddleware> logger, IUserRepository userRepository) : IMiddleware
 {
     private readonly ILogger<UserContextInitializeMiddleware> _logger = logger;
-    private readonly ISubscriptionManager _subscriptionManager = subscriptionManager;
+    private readonly IUserRepository _userRepository = userRepository;
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
@@ -36,13 +36,15 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
             return null;
         }
 
-        var subscriptionPlan = await _subscriptionManager.GetUserSubscriptionAsync(userId.Value);
+        var user = await _userRepository.GetUserByIdAsync(userId.Value);
 
-        if (subscriptionPlan is null)
+        if (user is null)
         {
             await httpContext.Response.UnauthorizedAccess();
             return null;
         }
+
+        var subscriptionPlan = user.SubscriptionPlan;
 
         var userInfo = new UserInfo(userId.Value, UserRole.User);
         return new UserContext(userInfo, subscriptionPlan);

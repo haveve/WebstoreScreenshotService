@@ -5,7 +5,9 @@ using System.Text.Json;
 using WebsiteScreenshotService;
 using WebsiteScreenshotService.Configurations;
 using WebsiteScreenshotService.Extensions.ServiceExtensions;
-using WebsiteScreenshotService.Repositories;
+using WebsiteScreenshotService.Mappers.EntityMappers;
+using WebsiteScreenshotService.Mappers.EntityMappers.impl;
+using WebsiteScreenshotService.Repositories.CategoryRepository;
 using WebsiteScreenshotService.Repositories.EF;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository.Search;
@@ -57,19 +59,29 @@ if (builder.Environment.IsDevelopment())
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddSingleton<IUserEntityMapper, UserEntityMapper>();
+builder.Services.AddSingleton<ICategoryEntityMapper, CategoryEntityMapper>();
+builder.Services.AddSingleton<IScreenshotEntityMapper, ScreenshotEntityMapper>();
+
+builder.Services.AddSingleton<IUserRepository, UserRepository>();
+builder.Services.AddSingleton<IUserManager, UserManager>();
+
 builder.Services.AddSingleton<IScreenshotService, ScreenshotService>();
-builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+
 builder.Services.AddSingleton<IUserContextAccessor, UserContextAccessor>();
 builder.Services.AddSingleton<IAuthorizationManager, AuthorizationManager>();
 
 builder.Services.AddSingleton<IMessageBrokerChannelManager, RabbitMqChannelManager>();
 builder.Services.AddSingleton<IMessageBrokerManager, MessageBrokerManager>();
 
-builder.Services.AddSingleton<ISubscriptionManager, InMemorySubscriptionManager>();
-builder.Services.AddSingleton<ISubscriptionRepository, InMemorySubscriptionRepository>();
+builder.Services.AddSingleton<ISubscriptionManager, SubscriptionManager>();
+builder.Services.AddSingleton<ISubscriptionRepository, SubscriptionRepository>();
 
 builder.Services.AddSingleton<IScreenshotManager, ScreenshotManager>();
 builder.Services.AddSingleton<IScreenshotRepository, ScreenshotRepository>();
+
+builder.Services.AddSingleton<ICategoryManager, CategoryManager>();
+builder.Services.AddSingleton<ICategoryRepository, CategoryRepository>();
 
 builder.Services.AddSingleton<IScreenshotStorageManager, ScreenshotStorageManager>();
 
@@ -115,6 +127,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseMiddleware<UserSpecificServicesInitializeMiddleware>();
 app.UseMiddleware<UserContextInitializeMiddleware>();
 
 app.MapControllers();

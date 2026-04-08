@@ -11,11 +11,11 @@ using WebsiteScreenshotService.Repositories.UserRepository;
 
 namespace WebsiteScreenshotService.Controllers;
 
-[Route("[controller]/[action]")]
+[Route("identity/[action]")]
 [ApiController]
-public class IdentityController(IUserRepository UserRepository) : ControllerBase
+public class IdentityController(IUserManager userManager) : ControllerBase
 {
-    private readonly IUserRepository _userRepository = UserRepository;
+    private readonly IUserManager _userManager = userManager;
 
     /// <summary>
     /// Retrieves the information of the currently authenticated user.
@@ -25,20 +25,16 @@ public class IdentityController(IUserRepository UserRepository) : ControllerBase
     /// </returns>
     /// <response code="200">Returns the UserModel or null if used is not authorized or user does not exist.</response>
     [HttpGet]
+    [ActionName("getUserInfo")]
     [Produces("application/json")]
     [ProducesResponseType<UserModel>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUserInfo()
     {
-        var userId = User.GetUserId();
+        var user = await _userManager.GetUser();
+        var userModel = user is not null ? UserModel.GetModel(user) : null;
 
-        if (!userId.HasValue)
-            return Ok();
-
-        var user = await _userRepository.GetUserByIdAsync(userId.Value);
-        var userModel = (UserModel?)null;
-
-        if (user != null)
-            userModel = UserModel.GetModel(user);
+        if (userModel is null)
+            return BadRequest("User doesn't exist");
 
         return Ok(userModel);
     }
@@ -53,13 +49,14 @@ public class IdentityController(IUserRepository UserRepository) : ControllerBase
     /// <response code="200">Returns the UserModel if login is successful.</response>
     /// <response code="400">User doesn't exist or invalid credentials or Input data is invalid.</response>
     [HttpPost]
+    [ActionName("login")]
     [Produces("application/json")]
     [ProducesResponseType<UserModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(LoginResponseExample))]
     public async Task<IActionResult> Login(LoginModel login)
     {
-        var user = await _userRepository.GetUserByEmailAndPasswordAsync(login.Email, login.Password);
+        var user = await _userManager.GetUserByEmailAndPasswordAsync(login.Email, login.Password);
 
         if (user == null)
             return BadRequest("User doesn't exist");
@@ -79,13 +76,14 @@ public class IdentityController(IUserRepository UserRepository) : ControllerBase
     /// <response code="200">Successful registration of the user.</response>
     /// <response code="400">User with that email already exists or Input data is invalid.</response>
     [HttpPost]
+    [ActionName("register")]
     [Produces("application/json")]
     [ProducesResponseType<UserModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(RegisterResponseExample))]
     public async Task<IActionResult> Register(RegisterModel registerModel)
     {
-        var user = await _userRepository.CreateUserAsync(registerModel.ToEntity());
+        var user = await _userManager.CreateUserAsync(registerModel.ToEntity());
 
         if (user == null)
             return BadRequest("User with that email already exist");
@@ -103,6 +101,7 @@ public class IdentityController(IUserRepository UserRepository) : ControllerBase
     /// </returns>
     /// <response code="200">Successful logout.</response>
     [HttpGet]
+    [ActionName("logout")]
     [Produces(typeof(void))]
     public async Task<IActionResult> Logout()
     {

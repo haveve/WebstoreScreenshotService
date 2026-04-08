@@ -16,17 +16,6 @@ public class SubscriptionManager(ISubscriptionRepository screenshotRepository, I
             : _lockPerUser.EnterWriteAsync(userId);
     }
 
-    public async Task<SubscriptionPlan> GetUserSubscriptionAsync(Guid userId = default)
-    {
-        if (userId == default)
-            userId = userContextAccessor.GetCurrentUser().UserInfo.Id;
-
-        using var _ = await EnterLockAsync(userId);
-
-        return await _screenshotRepository.GetUserSubscriptionAsync(userId)
-            ?? throw new InvalidOperationException("User subscription not found.");
-    }
-
     public async Task<bool> CanMakeScreenshotAsync(Guid userId = default)
     {
         if (userId == default)

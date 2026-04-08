@@ -31,7 +31,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
                    .IsRequired()
                    .HasMaxLength(128);
 
-            builder.Property(u => u.Email)
+            builder.Property(u => u.EmailHash)
                    .IsRequired()
                    .HasMaxLength(128);
 
@@ -43,7 +43,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
                    .IsRequired()
                    .HasMaxLength(128);
 
-            builder.HasIndex(u => u.Email)
+            builder.HasIndex(u => u.EmailHash)
                    .IsUnique();
 
             builder.OwnsOne(u => u.SubscriptionPlan, sp =>

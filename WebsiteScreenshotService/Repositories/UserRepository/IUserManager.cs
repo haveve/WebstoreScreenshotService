@@ -6,7 +6,7 @@ namespace WebsiteScreenshotService.Repositories.UserRepository;
 /// <summary>
 /// Defines the contract for user repository operations, including user retrieval, creation, and subscription management.
 /// </summary>
-public interface IUserRepository
+public interface IUserManager
 {
     public Task<User?> UpdateUserAsync(Guid id, UserUpdateModel model);
 
@@ -23,7 +23,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="id">The unique identifier of the user.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the user if found; otherwise, null.</returns>
-    public Task<User?> GetUserByIdAsync(Guid id);
+    public ValueTask<User?> GetUser(Guid id = default);
 
     /// <summary>
     /// Creates a new user.
