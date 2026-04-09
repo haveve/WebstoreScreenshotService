@@ -61,10 +61,8 @@ const RegisterPage = () => {
     });
 
     const handleSubmit = (values: RegisterValues) => {
-        debugger;
-        if (!cookieStore.declinedCookieConsent()) {
+        if (!cookieStore.declinedCookieConsent())
             dispatch(getRegisterAction(values));
-        }
     };
 
     return (

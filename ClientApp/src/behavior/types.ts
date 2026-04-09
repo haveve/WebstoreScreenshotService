@@ -123,12 +123,12 @@ export type Screenshot = {
     id: string;
     url: string;
     websiteUrl: string,
-    userId: string,
     createdAt: string,
     state: ScreenshotState,
     type: ScreenshotType,
     title: string | null,
     description: string | null,
+    categories: Category[],
 }
 
 export enum ScreenshotState
@@ -137,3 +137,29 @@ export enum ScreenshotState
     Successful = 'Successful',
     Failed = 'Failed',
 }
+
+export type Paging = {
+    page: number;
+    pageSize: number;
+    query?: string;
+    searchScope: SearchScope;
+    categoryIds?: string[];
+};
+
+export enum SearchScope
+{
+    None = 1 << 0,
+    Title = 1 << 1,
+    All = 1 << 2,
+}
+
+export type Category = {
+    id: string;
+    name: string;
+    color: string;
+};
+
+export type PagedResult<T> = {
+    items: T[];
+    total: number;
+};

@@ -1,6 +1,8 @@
 import { Route, Routes } from "react-router-dom";
 import MainPage from "./MainPage";
-import MakeScreenhsotPage from "./makeScreenshot/MakeScreenhsotPage";
+import MakeScreenshotPage from "./makeScreenshot/MakeScreenshotPage";
+import ScreenshotsList from "./screenshotsList/List";
+import ScreenshotDetailsPage from "./screenshotDetails/ScreenshotDetailsPage";
 import RegisterPage from "./RegisterPage";
 import LoginPage from "./LoginPage";
 import { useEffect } from "react";
@@ -30,7 +32,9 @@ function AppRoutes() {
         <Route path="/my-account" element={<PrivateRoute element={<MyAccount />} toPath="/login" validate={isAuth} />} />
         <Route path="/privacy-policy" element={<TermsAndConditions />} />
         <Route path="/" element={<MainPage />} />
-        <Route path="/make-screenshot" element={<PrivateRoute element={<MakeScreenhsotPage />} toPath="/login" validate={isAuth} />} />
+        <Route path="/make-screenshot" element={<PrivateRoute element={<MakeScreenshotPage />} toPath="/login" validate={isAuth} />} />
+        <Route path="/screenshots" element={<PrivateRoute element={<ScreenshotsList />} toPath="/login" validate={isAuth} />} />
+        <Route path="/screenshot/:id" element={<PrivateRoute element={<ScreenshotDetailsPage />} toPath="/login" validate={isAuth} />} />
         <Route path="/login" element={<PrivateRoute element={<LoginPage />} toPath="/" validate={isUnauth} />} />
         <Route path="/register" element={<PrivateRoute element={<RegisterPage />} toPath="/" validate={isUnauth} />} />
     </Routes>

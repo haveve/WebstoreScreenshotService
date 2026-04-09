@@ -59,8 +59,8 @@ if (builder.Environment.IsDevelopment())
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddSingleton<IUserEntityMapper, UserEntityMapper>();
 builder.Services.AddSingleton<ICategoryEntityMapper, CategoryEntityMapper>();
+builder.Services.AddSingleton<IUserEntityMapper, UserEntityMapper>();
 builder.Services.AddSingleton<IScreenshotEntityMapper, ScreenshotEntityMapper>();
 
 builder.Services.AddSingleton<IUserRepository, UserRepository>();

@@ -185,7 +185,7 @@ const ScreenshotForm = () => {
             ? new Date(screenshotData.lastChangedDate)
             : null;
 
-        if (!lastChangedDate || !screenshot || screenshot?.state === ScreenshotState.New)
+        if (!lastChangedDate || !screenshot || screenshot?.state !== ScreenshotState.New)
             return;
 
         const subscriber = timer(200)
