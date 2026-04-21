@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using WebsiteScreenshotService.Configurations;
+using WebsiteScreenshotService.Repositories._EF.DbEntities;
 using WebsiteScreenshotService.Repositories.EF.DbEntities;
 
 namespace WebsiteScreenshotService.Repositories.EF;
@@ -11,11 +12,25 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
     public DbSet<ScreenshotEntity> Screenshots => Set<ScreenshotEntity>();
     public DbSet<CategoryEntity> Categories => Set<CategoryEntity>();
 
+    public DbSet<BasketEntity> Baskets => Set<BasketEntity>();
+    public DbSet<BasketLineEntity> BasketLines => Set<BasketLineEntity>();
+
+    public DbSet<OrderEntity> Orders => Set<OrderEntity>();
+    public DbSet<OrderLineEntity> OrderLines => Set<OrderLineEntity>();
+
+    public DbSet<PaymentAttemptEntity> PaymentAttempts => Set<PaymentAttemptEntity>();
+
+    public DbSet<SubscriptionEntity> Subscriptions => Set<SubscriptionEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureUser(modelBuilder);
         ConfigureScreenshot(modelBuilder);
         ConfigureCategories(modelBuilder);
+        ConfigureBasket(modelBuilder);
+        ConfigureOrder(modelBuilder);
+        ConfigurePaymentAttempt(modelBuilder);
+        ConfigureSubscription(modelBuilder);
     }
 
     private static void ConfigureUser(ModelBuilder modelBuilder)
@@ -158,6 +173,188 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
                    .IsRequired();
 
             builder.HasIndex(c => new { c.UserId });
+        });
+    }
+
+    private static void ConfigureBasket(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<BasketEntity>(builder =>
+        {
+            builder.HasKey(b => b.Id);
+
+            builder.Property(b => b.UserId)
+                   .IsRequired();
+
+            // Enforce ONE basket per user
+            builder.HasIndex(b => b.UserId)
+                   .IsUnique();
+
+            builder.HasMany(b => b.Lines)
+                   .WithOne()
+                   .HasForeignKey("BasketId")
+                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<BasketLineEntity>(builder =>
+        {
+            builder.HasKey(l => l.Id);
+
+            builder.Property<Guid>("BasketId") // shadow FK
+                   .IsRequired();
+
+            builder.Property(l => l.ProductId)
+                   .IsRequired();
+
+            builder.Property(l => l.Quantity)
+                   .IsRequired();
+
+            // Optional: prevent duplicate product in same basket
+            builder.HasIndex("BasketId", nameof(BasketLineEntity.ProductId))
+                   .IsUnique();
+        });
+    }
+
+    private static void ConfigureOrder(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<OrderEntity>(builder =>
+        {
+            builder.HasKey(o => o.Id);
+
+            builder.Property(o => o.UserId)
+                   .IsRequired();
+
+            builder.Property(o => o.TotalAmount)
+                   .HasPrecision(18, 2)
+                   .IsRequired();
+
+            builder.Property(o => o.Currency)
+                   .HasMaxLength(10)
+                   .IsRequired();
+
+            builder.Property(o => o.Status)
+                   .HasConversion<string>()
+                   .HasMaxLength(20)
+                   .IsRequired();
+
+            builder.Property(o => o.CreatedAt)
+                   .IsRequired();
+
+            builder.HasMany(o => o.Lines)
+                   .WithOne()
+                   .HasForeignKey("OrderId")
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(o => o.UserId);
+            builder.HasIndex(o => o.CreatedAt);
+        });
+
+        modelBuilder.Entity<OrderLineEntity>(builder =>
+        {
+            builder.HasKey(l => l.Id);
+
+            builder.Property<Guid>("OrderId")
+                   .IsRequired();
+
+            builder.Property(l => l.ProductId)
+                   .IsRequired();
+
+            builder.Property(l => l.Quantity)
+                   .IsRequired();
+
+            builder.Property(l => l.UnitPrice)
+                   .HasPrecision(18, 2)
+                   .IsRequired();
+
+            builder.Property(l => l.ProductName)
+                   .HasMaxLength(200)
+                   .IsRequired();
+        });
+    }
+
+    private static void ConfigurePaymentAttempt(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<PaymentAttemptEntity>(builder =>
+        {
+            builder.HasKey(p => p.Id);
+
+            builder.Property(p => p.OrderId)
+                   .IsRequired();
+
+            builder.Property(p => p.UserId)
+                   .IsRequired();
+
+            builder.Property(p => p.Amount)
+                   .HasPrecision(18, 2)
+                   .IsRequired();
+
+            builder.Property(p => p.Status)
+                   .HasConversion<string>()
+                   .HasMaxLength(20)
+                   .IsRequired();
+
+            builder.Property(p => p.Provider)
+                   .HasMaxLength(50)
+                   .IsRequired();
+
+            builder.Property(p => p.ProviderPaymentId)
+                   .HasMaxLength(200);
+
+            builder.Property(p => p.CreatedAt)
+                   .IsRequired();
+
+            builder.HasIndex(p => p.OrderId);
+            builder.HasIndex(p => p.UserId);
+
+            // Important for webhook lookup
+            builder.HasIndex(p => p.ProviderPaymentId)
+                   .IsUnique(false);
+
+            // Ensure only ONE primary attempt per order
+            builder.HasIndex(p => new { p.OrderId, p.IsPrimary })
+                   .HasFilter("\"IsPrimary\" = true"); // works in PostgreSQL
+        });
+    }
+
+    private static void ConfigureSubscription(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<SubscriptionEntity>(builder =>
+        {
+            builder.HasKey(s => s.Id);
+
+            builder.Property(s => s.UserId)
+                   .IsRequired();
+
+            builder.Property(s => s.Type)
+                   .HasConversion<string>()
+                   .HasMaxLength(20)
+                   .IsRequired();
+
+            builder.Property(s => s.Provider)
+                   .HasMaxLength(50)
+                   .IsRequired();
+
+            builder.Property(s => s.ProviderSubscriptionId)
+                   .HasMaxLength(200)
+                   .IsRequired();
+
+            builder.Property(s => s.SubscriptionPeriod)
+                   .HasConversion<string>()
+                   .HasMaxLength(20)
+                   .IsRequired();
+
+            builder.Property(s => s.CurrentPeriodEnd)
+                   .IsRequired();
+
+            builder.Property(s => s.CreatedAt)
+                   .IsRequired();
+
+            builder.Property(s => s.EncryptedData)
+                   .IsRequired();
+
+            // 🔥 Indexes
+            builder.HasIndex(s => s.UserId);
+            builder.HasIndex(s => s.ProviderSubscriptionId)
+                   .IsUnique();
         });
     }
 }

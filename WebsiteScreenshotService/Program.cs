@@ -15,6 +15,7 @@ using WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
 using WebsiteScreenshotService.Repositories.Subscription;
 using WebsiteScreenshotService.Repositories.UserRepository;
 using WebsiteScreenshotService.Services;
+using WebsiteScreenshotService.Services.Caching;
 using WebsiteScreenshotService.Services.Messaging;
 using WebsiteScreenshotService.Settings;
 
@@ -26,6 +27,9 @@ builder.Services.AddControllerServices()
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     });
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSingleton<ICacheManager, CacheManager>();
 
 if (builder.Environment.IsDevelopment())
 {

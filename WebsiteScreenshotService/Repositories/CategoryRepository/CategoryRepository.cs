@@ -12,7 +12,7 @@ public class CategoryRepository(ScreenshotDbContext context, ICategoryEntityMapp
     private readonly ScreenshotDbContext _context = context;
     private readonly ICategoryEntityMapper _categoryEntityMapper = categoryEntityMapper;
 
-    public async Task<Category> AddAsync(CategoryCreateModel category, Guid userId)
+    public async Task<Category?> AddAsync(CategoryCreateModel category, Guid userId)
     {
         var categoryEntity = new CategoryEntity()
         {
@@ -50,11 +50,13 @@ public class CategoryRepository(ScreenshotDbContext context, ICategoryEntityMapp
         return _categoryEntityMapper.FromEntity(category);
     }
 
-    public async Task<CategoryEntity?> GetByIdAsync(Guid categoryId)
+    public async Task<Category?> GetByIdAsync(Guid categoryId)
     {
-        return await _context.Categories
+        var category = await _context.Categories
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == categoryId);
+
+        return category is not null ? _categoryEntityMapper.FromEntity(category) : null;
     }
 
     public async Task<List<Category>> GetAllAsync(Guid userId)

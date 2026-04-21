@@ -1,18 +1,17 @@
 ﻿using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Repositories.CategoryRepository.Models;
-using WebsiteScreenshotService.Repositories.EF.DbEntities;
 
 namespace WebsiteScreenshotService.Repositories.CategoryRepository;
 
 public interface ICategoryManager
 {
-    Task<Category> AddAsync(CategoryCreateModel category, Guid userId = default);
+    Task<Category?> AddAsync(CategoryCreateModel category, Guid userId = default);
 
-    Task RemoveAsync(Guid categoryId);
+    Task RemoveAsync(Guid categoryId, Guid userId = default);
 
-    Task<Category?> UpdateAsync(CategoryUpdateModel model);
+    Task<Category?> UpdateAsync(CategoryUpdateModel model, Guid userId = default);
 
-    ValueTask<CategoryEntity?> GetByIdAsync(Guid categoryId);
+    ValueTask<Category?> GetByIdAsync(Guid categoryId);
 
     ValueTask<List<Category>> GetAllAsync(Guid userId = default);
 }

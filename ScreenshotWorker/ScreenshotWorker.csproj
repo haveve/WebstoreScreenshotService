@@ -16,7 +16,7 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Grpc.Net.ClientFactory"/>
+		<PackageReference Include="Grpc.Net.ClientFactory" />
 		<PackageReference Include="Microsoft.Extensions.Http" />
 		<PackageReference Include="Microsoft.Extensions.Logging" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" />
