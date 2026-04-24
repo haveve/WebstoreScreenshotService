@@ -35,7 +35,7 @@ const ScreenshotFiltersForm = ({ formik, categories, onSubmit }: Props) => {
 
     // ⚡ instant filters
     useEffect(() => {
-        if(!formik.values.query)
+        if (!formik.values.query)
             return;
 
         debounceRef.current && clearTimeout(debounceRef.current)
@@ -46,22 +46,22 @@ const ScreenshotFiltersForm = ({ formik, categories, onSubmit }: Props) => {
         debounceRef.current && clearTimeout(debounceRef.current)
         onSubmit();
     }, [formik.values.categoryIds]);
+
     return (
         <Grid container spacing={2} mb={2}>
-            <Grid size={{ xs: 12, md: 4 }}>
-                <TextField name="query" label="Search" slotProps={{ htmlInput: { maxLength: 150 } }} />
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-                <SelectField
-                    name="searchScope"
-                    label="Scope"
-                    options={[
-                        { label: "Title & Description", value: SearchScope.All },
-                        { label: "Title", value: SearchScope.Title },
-                    ]}
-                    fullWidth
-                />
+            <Grid size={{ xs: 12, md: 8 }} >
+                <Box display="flex" flexWrap="wrap" gap={2}>
+                    <TextField name="query" label="Search" slotProps={{ htmlInput: { maxLength: 150 } }} />
+                    <SelectField
+                        name="searchScope"
+                        label="Scope"
+                        options={[
+                            { label: "Title & Description", value: SearchScope.All },
+                            { label: "Title", value: SearchScope.Title },
+                        ]}
+                        fullWidth
+                    />
+                </Box>
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>

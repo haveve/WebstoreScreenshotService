@@ -52,6 +52,7 @@ const Navigation = () => {
         ? [
             { label: t("Navigation.makeScreenshot"), path: "/make-screenshot" },
             { label: t("Navigation.myAccount"), path: "/my-account" },
+            { label: "Screenshots", path: '/screenshots' },
             { label: t("Navigation.logout"), action: handleLogout },
         ]
         : [
