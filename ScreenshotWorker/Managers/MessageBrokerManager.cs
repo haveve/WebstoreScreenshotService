@@ -1,7 +1,6 @@
 ﻿using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 using ScreenshotWorker.Serialization;
-using ScreenshotWorker.Model;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using System.Text;
@@ -9,16 +8,21 @@ using ScreenshotWorker.Services;
 using Microsoft.Extensions.Options;
 using ScreenshotWorker.Settings;
 using ScreenshotWorker.Repositories;
+using Shared.Core.Contracts.ScreeshotModel;
+using Shared.Core.Contracts.ScreeshotModel.Validation;
 
 namespace ScreenshotWorker.Managers;
 
-public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowserService browserService, IScreenshotRepository screenshotRepository, IScreenshotService screenshotServiceCommunicator, IOptions<MessageBrokerSettings> configuration) : IMessageBrokerManager
+public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowserService browserService, IScreenshotRepository screenshotRepository, IScreenshotService screenshotServiceCommunicator, IOptions<MessageBrokerSettings> configuration, MakeScreenshotModelValidator makeScreenshotModelValidator) : IMessageBrokerManager
 {
     private readonly ILogger<MessageBrokerManager> _logger = logger;
     private readonly IBrowserService _browserService = browserService;
     private readonly MessageBrokerSettings _configuration = configuration.Value;
     private readonly IScreenshotRepository _screenshotRepository = screenshotRepository;
     private readonly IScreenshotService _screenshotServiceCommunicator = screenshotServiceCommunicator;
+    private readonly MakeScreenshotModelValidator _makeScreenshotModelValidator = makeScreenshotModelValidator;
+
+    private static readonly string[] valueCannotBeParsedErrors = ["_root: object wasn't parsed correctly"];
 
     public async Task InitializeAsync()
     {
@@ -31,10 +35,16 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowser
             string? confirmationToken = null;
             try
             {
-                var (errors, parsedValue) = CustomJsonSerializer.TryDeserialize<MakeScreenshotModel>(ea.Body.Span);
+                var parsedValue = CustomJsonSerializer.Deserialize<MakeScreenshotModel>(ea.Body.Span);
 
-                if (parsedValue is null)
+                var validationResult = parsedValue is not null
+                    ? _makeScreenshotModelValidator.Validate(parsedValue)
+                    : null;
+
+                if (parsedValue is null || validationResult is null || !validationResult.IsValid)
                 {
+                    var errors = validationResult?.Errors?.Select(e => $"{e.Path}: {e.Message}")
+                        ?? valueCannotBeParsedErrors;
                     await NackAsync(channel, ea.DeliveryTag, parsedValue, errors);
                     return;
                 }
@@ -49,11 +59,12 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowser
                 {
                     try
                     {
-                        var savedSuccessfully = await _screenshotRepository.SaveScreenshot(
-                             parsedValue.ScreenshotId,
+                        var saveScreenshotModel = new SaveScreenshotModel(parsedValue.ScreenshotId,
                              parsedValue.UserInformation.UserId.ToString(),
                              screenshotData,
                              parsedValue.ScreenshotOptionsModel.ScreenshotType);
+
+                        var savedSuccessfully = await _screenshotRepository.SaveScreenshot(saveScreenshotModel);
 
                         await _screenshotServiceCommunicator.ConfirmScreenshotAttemptAsync(parsedValue.ConfirmationToken);
                     }

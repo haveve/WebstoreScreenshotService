@@ -11,6 +11,9 @@ public static class CustomJsonSerializer
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
+    public static T? Deserialize<T>(ReadOnlySpan<byte> utf8Json)
+       => JsonSerializer.Deserialize<T>(utf8Json, _options);
+
     public static string Serialize<T>(T obj)
        => JsonSerializer.Serialize(obj, _options);
 

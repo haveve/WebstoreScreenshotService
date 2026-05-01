@@ -10,6 +10,7 @@ using ScreenshotWorker.Services;
 using ScreenshotWorker.Services.ContentInitialization;
 using ScreenshotWorker.Settings;
 using ScreenshotWorker.Utils;
+using Shared.Core.Contracts.ScreeshotModel.Validation;
 using WebsiteScreenshotService;
 
 var builder = Host.CreateDefaultBuilder(args);
@@ -24,6 +25,8 @@ builder
           })
     .ConfigureServices((context, services) =>
            {
+               services.AddSingleton<MakeScreenshotModelValidator>();
+
                services.AddSingleton<IContentInitializationManager, ContentInitializationManager>();
 
                services.AddSingleton<IContentInitializationStep, ScrollToPageEndStep>();

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
-using ScreenshotWorker.Model.ScreenshotOptions;
 using ScreenshotWorker.Settings;
 using ScreenshotWorker.Settings.InitializationStep;
+using Shared.Core.Contracts.ScreeshotModel.Components;
 
 namespace ScreenshotWorker.Services.ContentInitialization;
 

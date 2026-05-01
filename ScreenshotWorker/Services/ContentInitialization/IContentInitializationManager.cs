@@ -1,5 +1,5 @@
 ﻿using Microsoft.Playwright;
-using ScreenshotWorker.Model.ScreenshotOptions;
+using Shared.Core.Contracts.ScreeshotModel.Components;
 
 namespace ScreenshotWorker.Services.ContentInitialization;
 

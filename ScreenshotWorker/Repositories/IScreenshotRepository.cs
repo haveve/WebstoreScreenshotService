@@ -1,9 +1,10 @@
-﻿using ScreenshotWorker.Model.ScreenshotOptions;
+﻿using Shared.Core.Contracts.ScreeshotModel.Components;
 
 namespace ScreenshotWorker.Repositories;
 
 public interface IScreenshotRepository
 {
-    public Task<bool> SaveScreenshot(string screenshotId, string userId, byte[] screenshotData, ScreenshotType contentType, CancellationToken cancellationToken = default);
+    public Task<bool> SaveScreenshot(SaveScreenshotModel saveScreenshotModel, CancellationToken cancellationToken = default);
 }
 
+public record SaveScreenshotModel(string ScreenshotId, string UserId, byte[] ScreenshotData, ScreenshotType ContentType);

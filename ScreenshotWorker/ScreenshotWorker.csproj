@@ -27,4 +27,7 @@
 		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
 		<PackageReference Include="Grpc.AspNetCore" />
 	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Shared.Core\Shared.Core.csproj" />
+	</ItemGroup>
 </Project>

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
-using ScreenshotWorker.Model.ScreenshotOptions;
 using ScreenshotWorker.Services.ContentInitialization;
 using ScreenshotWorker.Settings;
+using Shared.Core.Contracts.ScreeshotModel.Components;
 using System.Collections.Immutable;
 
 namespace ScreenshotWorker.Services;
@@ -137,8 +137,8 @@ public class BrowserService(IContentInitializationManager contentInitializationM
     {
         return screenshotOptionsModel.ScreenshotType switch
         {
-            Model.ScreenshotOptions.ScreenshotType.Png => Microsoft.Playwright.ScreenshotType.Png,
-            Model.ScreenshotOptions.ScreenshotType.Jpeg => Microsoft.Playwright.ScreenshotType.Jpeg,
+            Shared.Core.Contracts.ScreeshotModel.Components.ScreenshotType.Png => Microsoft.Playwright.ScreenshotType.Png,
+            Shared.Core.Contracts.ScreeshotModel.Components.ScreenshotType.Jpeg => Microsoft.Playwright.ScreenshotType.Jpeg,
             _ => throw new NotImplementedException("Invalid image type")
         };
     }

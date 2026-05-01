@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using ScreenshotWorker.Extensions;
-using ScreenshotWorker.Model.ScreenshotOptions;
 using ScreenshotWorker.Settings;
+using Shared.Core.Contracts.ScreeshotModel.Components;
 using System.Net.Http.Json;
 
 namespace ScreenshotWorker.Repositories;
@@ -10,8 +10,10 @@ public class LocalScreenshotRepository(IOptions<LocalScreenshotStorageSettings> 
 {
     private readonly LocalScreenshotStorageSettings _settings = options.Value;
 
-    public async Task<bool> SaveScreenshot(string screenshotId, string userId, byte[] screenshotData, ScreenshotType contentType, CancellationToken cancellationToken = default)
+    public async Task<bool> SaveScreenshot(SaveScreenshotModel saveScreenshotModel, CancellationToken cancellationToken = default)
     {
+        var (screenshotId, userId, screenshotData, contentType) = saveScreenshotModel;
+
         using var client = httpClientFactory.GetServiceRepositoryHttpClient();
 
         var formattedUrl = $"{_settings.Url}/screenshot/{userId}/{screenshotId}";
