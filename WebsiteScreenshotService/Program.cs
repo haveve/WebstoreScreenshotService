@@ -7,6 +7,8 @@ using WebsiteScreenshotService.Configurations;
 using WebsiteScreenshotService.Extensions.ServiceExtensions;
 using WebsiteScreenshotService.Mappers.EntityMappers;
 using WebsiteScreenshotService.Mappers.EntityMappers.impl;
+using WebsiteScreenshotService.Model.Validation;
+using WebsiteScreenshotService.Model.Validation.Validators;
 using WebsiteScreenshotService.Repositories.CategoryRepository;
 using WebsiteScreenshotService.Repositories.EF;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
@@ -17,6 +19,8 @@ using WebsiteScreenshotService.Repositories.UserRepository;
 using WebsiteScreenshotService.Services;
 using WebsiteScreenshotService.Services.Caching;
 using WebsiteScreenshotService.Services.Messaging;
+using WebsiteScreenshotService.Services.Payment;
+using WebsiteScreenshotService.Services.Payment.Stripe;
 using WebsiteScreenshotService.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +35,12 @@ builder.Services.AddControllerServices()
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSingleton<ICacheManager, CacheManager>();
 
+var databaseProvider = builder.Environment.IsProduction()
+    ? Provider.Postgres
+    : Provider.Sqlite;
+
+builder.Services.AddSingleton(new StorageConfigurations() { Provider = databaseProvider });
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddSingleton<IScreenshotSearchStrategy, SqliteScreenshotSearchStrategy>();
@@ -44,19 +54,30 @@ else
         options.UseNpgsql("host=localhost port=5432 dbname=mydb user=myuser password=mypassword"));
 }
 
-var databaseProvider = builder.Environment.IsProduction()
-    ? Provider.Postgres
-    : Provider.Sqlite;
-
-builder.Services.AddSingleton(new StorageConfigurations() { Provider = databaseProvider });
-
 builder.Services.AddGrpc();
+
+builder.Services.AddSingleton<IValidatorRegistry>(sp =>
+{
+    var registry = new ValidatorRegistry();
+
+    registry.Add(new InputScreenshotModelValidator());
+    registry.Add(new LoginModelValidator());
+    registry.Add(new RegisterModelValidator());
+    registry.Add(new PagingValidator());
+
+    return registry;
+});
 
 builder.Services.Configure<KestrelServerOptions>(builder.Configuration.GetSection("Server"));
 builder.Services.AddOptionsWithValidation<MessageBrokerConfigurations>(builder.Configuration.GetSection("MessageBroker"));
 builder.Services.AddOptionsWithValidation<AuthorizationConfiguration>(builder.Configuration.GetSection("Authorization"));
 builder.Services.AddOptionsWithValidation<ScreenshotStorageConfigurations>(builder.Configuration.GetSection("ScreenshotStorageSettings"));
 builder.Services.AddOptionsWithValidation<EncryptionConfigurations>(builder.Configuration.GetSection("MessageBroker"));
+
+builder.Services.AddMessageBrokerMassTransit();
+
+builder.Services.AddSingleton<IPaymentProvider, StripePaymentProvider>();
+builder.Services.AddSingleton<IPaymentProviderDataProcessor, StripePaymentProviderDataProcessor>();
 
 if (builder.Environment.IsDevelopment())
     builder.Services.AddSwaggerServices();
@@ -67,25 +88,25 @@ builder.Services.AddSingleton<ICategoryEntityMapper, CategoryEntityMapper>();
 builder.Services.AddSingleton<IUserEntityMapper, UserEntityMapper>();
 builder.Services.AddSingleton<IScreenshotEntityMapper, ScreenshotEntityMapper>();
 
-builder.Services.AddSingleton<IUserRepository, UserRepository>();
-builder.Services.AddSingleton<IUserManager, UserManager>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserManager, UserManager>();
 
 builder.Services.AddSingleton<IScreenshotService, ScreenshotService>();
 
 builder.Services.AddSingleton<IUserContextAccessor, UserContextAccessor>();
 builder.Services.AddSingleton<IAuthorizationManager, AuthorizationManager>();
 
-builder.Services.AddSingleton<IMessageBrokerChannelManager, RabbitMqChannelManager>();
-builder.Services.AddSingleton<IMessageBrokerManager, MessageBrokerManager>();
+builder.Services.AddScoped<IMessageBrokerChannelManager, MassTransitChannelManager>();
+builder.Services.AddScoped<IMessageBrokerManager, MessageBrokerManager>();
 
-builder.Services.AddSingleton<ISubscriptionManager, SubscriptionManager>();
-builder.Services.AddSingleton<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<ISubscriptionManager, SubscriptionManager>();
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 
-builder.Services.AddSingleton<IScreenshotManager, ScreenshotManager>();
-builder.Services.AddSingleton<IScreenshotRepository, ScreenshotRepository>();
+builder.Services.AddScoped<IScreenshotManager, ScreenshotManager>();
+builder.Services.AddScoped<IScreenshotRepository, ScreenshotRepository>();
 
-builder.Services.AddSingleton<ICategoryManager, CategoryManager>();
-builder.Services.AddSingleton<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ICategoryManager, CategoryManager>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 builder.Services.AddSingleton<IScreenshotStorageManager, ScreenshotStorageManager>();
 

@@ -6,7 +6,7 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IMessage
 
     private readonly IMessageBrokerChannelManager _messageBrokerChannelManager = messageBrokerChannelManager;
 
-    public async Task<bool> SendMessageAsync<T>(T message, string routeKey, CancellationToken cancellationToken = default)
+    public async Task<bool> SendMessageAsync<T>(T message, string routeKey, CancellationToken cancellationToken = default) where T : class
     {
         try
         {

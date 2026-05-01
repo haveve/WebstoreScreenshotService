@@ -2,5 +2,5 @@
 
 public interface IMessageBrokerManager
 {
-    Task<bool> SendMessageAsync<T>(T message, string routeKey, CancellationToken cancellationToken = default);
+    Task<bool> SendMessageAsync<T>(T message, string routeKey, CancellationToken cancellationToken = default) where T: class;
 }

@@ -2,5 +2,5 @@
 
 public interface IBrokerChannel
 {
-    public Task PublishAsync<T>(T message, string routeKey, CancellationToken cancellationToken = default);
+    public Task PublishAsync<T>(T message, string routeKey, CancellationToken cancellationToken = default) where T : class;
 }
