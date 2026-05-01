@@ -2,9 +2,4 @@
 
 public record ElementModel(string Selector, ElementClip Clip);
 
-public record ElementClip(int Width, int Height)
-{
-    public const int MaxWidth = 5000;
-
-    public const int MaxHeight = 7000;
-}
+public record ElementClip(int Width, int Height);

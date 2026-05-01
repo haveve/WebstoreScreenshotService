@@ -4,32 +4,44 @@ using Shared.Core.Validation.Rules;
 
 namespace Shared.Core.Contracts.ScreeshotModel.Validation;
 
+public static class Limits
+{
+    public const int UrlMaxLength = 2048;
+    public const int SelectorMaxLength = 200;
+    public const int HeaderNameMaxLength = 100;
+
+    public static class ClipModel
+    {
+        public const int MaxWidth = 5000;
+        public const int MaxHeight = 7000;
+    }
+
+    public static class ElementClip
+    {
+        public const int MaxWidth = 5000;
+
+        public const int MaxHeight = 7000;
+
+    }
+}
+
 public sealed class ScreenshotOptionsValidator : Validator<ScreenshotOptionsModel>
 {
     public ScreenshotOptionsValidator()
     {
-        // ─────────────────────────────
-        // URL (DelegateRule + SafeUrl)
-        // ─────────────────────────────
         RuleFor(nameof(ScreenshotOptionsModel.Url), x => x.Url)
             .Required("Url is required.")
-            .MaxLen(2048, "Url must not exceed 2048 characters.")
+            .MaxLen(Limits.UrlMaxLength,
+                $"Url is too long. Maximum allowed length is {Limits.UrlMaxLength} characters.")
             .SafeUrl();
 
-        // ─────────────────────────────
-        // ScreenshotType
-        // ─────────────────────────────
         RuleFor(nameof(ScreenshotOptionsModel.ScreenshotType), x => x.ScreenshotType)
-            .Must(v => Enum.IsDefined(typeof(ScreenshotType), v),
-                "Invalid screenshot type.");
+            .Must(v => Enum.IsDefined(v),
+                $"Invalid ScreenshotType. Allowed values: {string.Join(", ", Enum.GetNames<ScreenshotType>())}");
 
-        // ─────────────────────────────
-        // ContentLoadingOptions
-        // ─────────────────────────────
-        RuleFor(nameof(ScreenshotOptionsModel.ContentLoadingOptions),
-            x => x.ContentLoadingOptions)
+        RuleFor(nameof(ScreenshotOptionsModel.ContentLoadingOptions), x => x.ContentLoadingOptions)
             .Must(v => v != ContentLoadingOptions.None,
-                "At least one ContentLoadingOptions flag must be set.")
+                "At least one ContentLoadingOption must be selected.")
             .Must(v =>
             {
                 var allowed =
@@ -37,39 +49,18 @@ public sealed class ScreenshotOptionsValidator : Validator<ScreenshotOptionsMode
                     ContentLoadingOptions.ScrollToTheEndOfThePage;
 
                 return (v & ~allowed) == 0;
-            }, "Invalid ContentLoadingOptions flags.");
+            },
+            "ContentLoadingOptions contains invalid flags. Allowed: WaitForRequestsToComplete, ScrollToTheEndOfThePage.");
 
-        // ─────────────────────────────
-        // Clip OR Element (DelegateRule on root)
-        // ─────────────────────────────
         RuleFor("ClipElementExclusivity", x => x)
-            .Must(x => x.Clip != null || x.Element != null,
-                "You must provide either Clip or Element.")
-            .Must(x => !(x.Clip != null && x.Element != null),
-                "Only one of Clip or Element can be provided.");
+            .Must(x => (x.Clip is null) != (x.Element is null),
+                "Either Clip or Element must be provided, but not both.");
 
-        // ─────────────────────────────
-        // Nested rules
-        // ─────────────────────────────
-        Include(nameof(ScreenshotOptionsModel.Clip),
-            x => x.Clip,
-            new ClipValidator());
-
-        Include(nameof(ScreenshotOptionsModel.Element),
-            x => x.Element,
-            new ElementValidator());
-
-        Include(nameof(ScreenshotOptionsModel.ModalModel),
-            x => x.ModalModel,
-            new ModalValidator());
-
-        Include(nameof(ScreenshotOptionsModel.HighlightWord),
-            x => x.HighlightWord,
-            new HighlightValidator());
-
-        Include(nameof(ScreenshotOptionsModel.AdvancedConfiguration),
-            x => x.AdvancedConfiguration,
-            new AdvancedConfigurationValidator());
+        Include(nameof(ScreenshotOptionsModel.Clip), x => x.Clip, new ClipValidator());
+        Include(nameof(ScreenshotOptionsModel.Element), x => x.Element, new ElementValidator());
+        Include(nameof(ScreenshotOptionsModel.ModalModel), x => x.ModalModel, new ModalValidator());
+        Include(nameof(ScreenshotOptionsModel.HighlightWord), x => x.HighlightWord, new HighlightValidator());
+        Include(nameof(ScreenshotOptionsModel.AdvancedConfiguration), x => x.AdvancedConfiguration, new AdvancedConfigurationValidator());
     }
 }
 
@@ -79,12 +70,12 @@ public sealed class ClipValidator : Validator<ClipModel>
     {
         RuleFor(nameof(ClipModel.Width), x => x.Width)
             .Required("Width is required.")
-            .Range(1, ClipModel.MaxWidth,
-                $"Width must be between 1 and {ClipModel.MaxWidth}.");
+            .Range(1, Limits.ClipModel.MaxWidth,
+                $"Width must be between 1 and {Limits.ClipModel.MaxWidth}.");
 
         RuleFor(nameof(ClipModel.Height), x => x.Height)
-            .Must(v => v is null || (v >= 1 && v <= ClipModel.MaxHeight),
-                $"Height must be between 1 and {ClipModel.MaxHeight}.");
+            .Must(v => v is null || (v > 0 && v <= Limits.ClipModel.MaxHeight),
+                $"Height must be between 1 and {Limits.ClipModel.MaxHeight}.");
     }
 }
 
@@ -92,19 +83,11 @@ public sealed class ElementValidator : Validator<ElementModel>
 {
     public ElementValidator()
     {
-        // ─────────────────────────────
-        // Selector (security-sensitive string rule)
-        // ─────────────────────────────
         RuleFor(nameof(ElementModel.Selector), x => x.Selector)
             .Required("Selector is required.")
-            .SafeCssSelector("", 200);
+            .SafeCssSelector(string.Empty, Limits.SelectorMaxLength);
 
-        // ─────────────────────────────
-        // Nested Clip model
-        // ─────────────────────────────
-        Include(nameof(ElementModel.Clip),
-            x => x.Clip,
-            new ElementClipValidator());
+        Include(nameof(ElementModel.Clip), x => x.Clip, new ElementClipValidator());
     }
 }
 
@@ -114,13 +97,13 @@ public sealed class ElementClipValidator : Validator<ElementClip>
     {
         RuleFor(nameof(ElementClip.Width), x => x.Width)
             .Required("Width is required.")
-            .Range(1, ElementClip.MaxWidth,
-                $"Width must be between 1 and {ElementClip.MaxWidth}.");
+            .Range(1, Limits.ElementClip.MaxWidth,
+                $"Width must be between 1 and {Limits.ElementClip.MaxWidth}.");
 
         RuleFor(nameof(ElementClip.Height), x => x.Height)
             .Required("Height is required.")
-            .Range(1, ElementClip.MaxHeight,
-                $"Height must be between 1 and {ElementClip.MaxHeight}.");
+            .Range(1, Limits.ElementClip.MaxHeight,
+                $"Height must be between 1 and {Limits.ElementClip.MaxHeight}.");
     }
 }
 
@@ -128,23 +111,17 @@ public sealed class ModalValidator : Validator<ModalModel>
 {
     public ModalValidator()
     {
-        // ─────────────────────────────
-        // Booleans (explicit rules for clarity)
-        // ─────────────────────────────
         RuleFor(nameof(ModalModel.DismissDialogs), x => x.DismissDialogs)
-            .Must(_ => true, "DismissDialogs must be provided.");
+            .Required("DismissDialogs is required.");
 
         RuleFor(nameof(ModalModel.HidePopups), x => x.HidePopups)
-            .Must(_ => true, "HidePopups must be provided.");
+            .Required("HidePopups is required.");
 
-        // ─────────────────────────────
-        // Selector list (reuse your core rule)
-        // ─────────────────────────────
         RuleFor(nameof(ModalModel.HideSelectors), x => x.HideSelectors)
             .SafeCssSelectorList(
                 maxCount: 15,
-                selectorMaxLength: 200,
-                msg: "Invalid CSS selector in HideSelectors.");
+                selectorMaxLength: Limits.SelectorMaxLength,
+                msg: "HideSelectors contains invalid CSS selector or exceeds allowed limits.");
     }
 }
 
@@ -152,18 +129,12 @@ public sealed class HighlightValidator : Validator<HighlightWordModel>
 {
     public HighlightValidator()
     {
-        // ─────────────────────────────
-        // Word (JS-safe string input)
-        // ─────────────────────────────
         RuleFor(nameof(HighlightWordModel.Word), x => x.Word)
-            .Required("Word is required.")
+            .Required("Highlight word is required.")
             .SafeJsString(200);
 
-        // ─────────────────────────────
-        // Color (hex validation)
-        // ─────────────────────────────
         RuleFor(nameof(HighlightWordModel.Color), x => x.Color)
-            .Required("Color is required.")
+            .Required("Highlight color is required.")
             .SafeHexColor();
     }
 }
@@ -172,52 +143,31 @@ public sealed class AdvancedConfigurationValidator : Validator<AdvancedConfigura
 {
     public AdvancedConfigurationValidator()
     {
-        // ─────────────────────────────
-        // Locale
-        // ─────────────────────────────
         RuleFor(nameof(AdvancedConfigurationModel.Locale), x => x.Locale)
             .Required("Locale is required.")
-            .Must(v => System.Text.RegularExpressions.Regex.IsMatch(v, @"^[a-z]{2}-[A-Z]{2}$"),
-                "Locale must be in format xx-XX (e.g. en-US).");
+            .Must(RegexPatterns.Locale.IsMatch,
+                $"Locale is invalid. Expected format: en-US, fr-FR.");
 
-        // ─────────────────────────────
-        // Timezone
-        // ─────────────────────────────
         RuleFor(nameof(AdvancedConfigurationModel.TimezoneId), x => x.TimezoneId)
             .Required("Timezone is required.")
-            .Must(v => System.Text.RegularExpressions.Regex.IsMatch(v, @"^[A-Za-z]+\/[A-Za-z_]+$"),
-                "Invalid IANA timezone (e.g. Europe/Kyiv).");
+            .Must(RegexPatterns.Timezone.IsMatch,
+                $"Timezone is invalid. Expected format: Europe/Kyiv.");
 
-        // ─────────────────────────────
-        // Enum (always valid, but keeps explicitness)
-        // ─────────────────────────────
         RuleFor(nameof(AdvancedConfigurationModel.ColorScheme), x => x.ColorScheme)
-            .Must(v => Enum.IsDefined(typeof(ColorSchemeOption), v),
-                "Invalid color scheme.");
+            .Must(v => Enum.IsDefined(v),
+                $"Invalid ColorScheme.");
 
-        // ─────────────────────────────
-        // Optional selector (reuse your rule)
-        // ─────────────────────────────
         RuleFor(nameof(AdvancedConfigurationModel.WaitForSelector), x => x.WaitForSelector!)
-            .Required("")
-            .SafeCssSelector("", 200);
+            .SafeCssSelector(string.Empty, Limits.SelectorMaxLength);
 
-
-        // ─────────────────────────────
-        // Flags validation
-        // ─────────────────────────────
         RuleFor(nameof(AdvancedConfigurationModel.BlockResources), x => x.BlockResources)
-            .Must(v => v >= 0,
-                "Invalid resource block configuration.");
+            .Must(v => v >= 0, "BlockResources configuration is invalid.");
 
-        // ─────────────────────────────
-        // Collections (security-sensitive)
-        // ─────────────────────────────
         ForEach(nameof(AdvancedConfigurationModel.Headers), x => x.Headers, new HeaderValidator())
             .MaxCollectionLength(20, "Maximum 20 headers allowed.");
 
         ForEach(nameof(AdvancedConfigurationModel.Cookies), x => x.Cookies, new CookieValidator())
-             .MaxCollectionLength(15, "Maximum 20 headers allowed.");
+            .MaxCollectionLength(20, "Maximum 20 cookies allowed.");
     }
 }
 
@@ -227,9 +177,10 @@ public sealed class HeaderValidator : Validator<HeaderModel>
     {
         RuleFor(nameof(HeaderModel.Name), x => x.Name)
             .Required("Header name is required.")
-            .MaxLen(100, "Header name is too long.")
-            .Must(v => System.Text.RegularExpressions.Regex.IsMatch(v, @"^[A-Za-z0-9\-]+$"),
-                "Header name contains invalid characters.");
+            .MaxLen(Limits.HeaderNameMaxLength,
+                $"Header name must not exceed {Limits.HeaderNameMaxLength} characters.")
+            .Must(RegexPatterns.Header.IsMatch,
+                $"Header name contains invalid characters.");
 
         RuleFor(nameof(HeaderModel.Value), x => x.Value)
             .Required("Header value is required.")
@@ -257,7 +208,7 @@ public sealed class CookieValidator : Validator<CookieModel>
             .SafeCookiePath(100);
 
         RuleFor(nameof(CookieModel.SameSite), x => x.SameSite)
-            .Must(v => !v.HasValue || Enum.IsDefined(typeof(SameSiteMode), v),
-                "Invalid SameSite value.");
+            .Must(v => !v.HasValue || Enum.IsDefined(v.Value),
+                $"Invalid SameSite value.");
     }
 }

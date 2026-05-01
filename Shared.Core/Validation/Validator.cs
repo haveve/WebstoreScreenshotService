@@ -1,10 +1,5 @@
 ﻿namespace Shared.Core.Validation;
 
-public interface IValidator<T>
-{
-    public ValidationResult Validate(T instance);
-}
-
 public abstract class Validator<T>: IValidator<T>
 {
     private readonly List<IRule<T>> _rules = [];

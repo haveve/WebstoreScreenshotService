@@ -53,6 +53,14 @@ public static class BasicRules
                 r.Add(p, msg);
         });
 
+    public static RuleBuilder<T, string> MinLen<T>(
+        this RuleBuilder<T, string> rule, int min, string msg)
+        => rule.Add((v, r, p) =>
+        {
+            if (v?.Length < min)
+                r.Add(p, msg);
+        });
+
     public static RuleBuilder<T, int> Range<T>(
         this RuleBuilder<T, int> rule, int min, int max, string msg)
         => rule.Add((v, r, p) =>
