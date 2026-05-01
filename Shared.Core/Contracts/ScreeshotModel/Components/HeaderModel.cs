@@ -1,7 +1,4 @@
-﻿using Shared.Core.Validation.Attributes;
-using System.ComponentModel.DataAnnotations;
-
-namespace Shared.Core.Contracts.ScreeshotModel.Components;
+﻿namespace Shared.Core.Contracts.ScreeshotModel.Components;
 
 public class HeaderModel
 {
@@ -11,11 +8,6 @@ public class HeaderModel
     /// Must contain only letters, digits, and dash.
     /// Prevents header injection attacks.
     /// </summary>
-    [Required]
-    [RegularExpressionWithTimeout(
-        @"^[A-Za-z0-9\-]+$",
-        ErrorMessage = "Header name contains invalid characters.")]
-    [StringLength(100)] // optional limit to prevent abuse
     public string Name { get; set; } = default!;
 
     /// <summary>
@@ -23,7 +15,5 @@ public class HeaderModel
     /// Prevents CR/LF injection.
     /// Max length 4000.
     /// </summary>
-    [Required]
-    [SafeCookieString(1000)] // reuse SafeCookieString to prevent CR/LF injection
     public string Value { get; set; } = default!;
 }

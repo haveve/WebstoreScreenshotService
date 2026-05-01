@@ -1,28 +1,18 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using Shared.Core.Validation.Attributes;
-using System.Text.Json.Serialization;
-
-namespace Shared.Core.Contracts.ScreeshotModel.Components;
+﻿namespace Shared.Core.Contracts.ScreeshotModel.Components;
 
 /// <summary>
 /// Represents the options for taking a screenshot.
 /// </summary>
-[RequireOneOf(nameof(Clip), nameof(Element), ErrorMessage = "You must provide either Clip or Element.")]
 public class ScreenshotOptionsModel
 {
     /// <summary>
     /// Gets or sets the URL of the webpage to capture.
     /// </summary>
-    [Required]
-    [MaxLength(2048)]
-    [SafeUrl(ErrorMessage = "The provided URL is not allowed.")]
     public required string Url { get; set; }
 
     /// <summary>
     /// Gets or sets the type of screenshot to capture (e.g., PNG, JPEG).
     /// </summary>
-    [DefaultValue(ScreenshotType.Png)]
     public ScreenshotType ScreenshotType { get; set; }
 
     /// <summary>
@@ -38,7 +28,6 @@ public class ScreenshotOptionsModel
 
     public AdvancedConfigurationModel? AdvancedConfiguration { get; set; }
 
-    [Required]
     public required ContentLoadingOptions ContentLoadingOptions { get; set; }
 }
 
@@ -54,9 +43,8 @@ public enum ContentLoadingOptions
 /// <summary>
 /// Screenshot file type.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ScreenshotType
 {
-    Png,
-    Jpeg,
+    Png = 1,
+    Jpeg = 2,
 }

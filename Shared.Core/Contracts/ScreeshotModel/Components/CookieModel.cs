@@ -11,8 +11,6 @@ public class CookieModel
     /// Must be alphanumeric + underscore or dash.
     /// Prevents injection attacks.
     /// </summary>
-    [Required]
-    [SafeCookieString(100, @"^[a-zA-Z0-9_\-]+$")]
     public string Name { get; set; } = default!;
 
     /// <summary>
@@ -20,8 +18,6 @@ public class CookieModel
     /// Printable characters only, no CR/LF.
     /// Prevents JS or header injection attacks.
     /// </summary>
-    [Required]
-    [SafeCookieString(1000)]
     public string Value { get; set; } = default!;
 
     /// <summary>
@@ -29,15 +25,12 @@ public class CookieModel
     /// Must start with a dot, RFC 6265 compliant.
     /// Prevents header injection.
     /// </summary>
-    [Required]
-    [SafeCookieDomain(maxLength:200)]
     public string Domain { get; set; } = default!;
 
     /// <summary>
     /// Cookie path. Default "/".
     /// Must be RFC 6265 compliant.
     /// </summary>
-    [SafeCookiePath(maxLength:100)]
     public string Path { get; set; } = "/";
 
     public DateTime? Expires { get; set; }
@@ -59,10 +52,9 @@ public class CookieModel
     public SameSiteMode? SameSite { get; set; }
 }
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum SameSiteMode
 {
-    Strict,
-    Lax,
-    None
+    Strict = 1,
+    Lax = 2 ,
+    None = 3
 }
