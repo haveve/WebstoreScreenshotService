@@ -1,11 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
+﻿using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 
 namespace WebsiteScreenshotService.Model;
 
-public record Paging(
-    [Range(1, 10000)] int Page,
-    [Range(1, 200)] int PageSize,
-    [MaxLength(150)] string? Query, 
+public sealed record Paging(
+    int Page,
+    int PageSize,
+    string? Query,
     SearchScope SearchScope,
     IReadOnlyCollection<Guid>? CategoryIds);

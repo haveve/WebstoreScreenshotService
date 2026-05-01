@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using WebsiteScreenshotService.Model.ScreeshotModel.Components;
 
-namespace WebsiteScreenshotService.Model.ScreenshotOptions;
+namespace WebsiteScreenshotService.Model;
 
 /// <summary>
 /// Represents the options for taking a screenshot.

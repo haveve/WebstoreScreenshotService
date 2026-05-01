@@ -5,10 +5,6 @@
 /// </summary>
 public class ClipModel
 {
-    public const int MaxWidth = 5000;
-
-    public const int MaxHeight = 7000;
-
     /// <summary>
     /// Gets or sets the width of the element in pixels.
     /// </summary>
