@@ -1,27 +1,10 @@
 ﻿namespace Shared.Core.Contracts.ScreeshotModel.Components;
 
-public class ElementModel
-{
-    public required string Selector { get; set; }
+public record ElementModel(string Selector, ElementClip Clip);
 
-    public required ElementClip Clip { get; set; }
-}
-
-public class ElementClip
+public record ElementClip(int Width, int Height)
 {
     public const int MaxWidth = 5000;
 
     public const int MaxHeight = 7000;
-
-    /// <summary>
-    /// Gets or sets the width of the element in pixels.
-    /// </summary>
-    /// <value>The width in pixels.</value>
-    public int Width { get; set; }
-
-    /// <summary>
-    /// Gets or sets the height of the element in pixels. If is not specified takes the full height of the page.
-    /// </summary>
-    /// <value>The height in pixels.</value>
-    public int Height { get; set; }
 }

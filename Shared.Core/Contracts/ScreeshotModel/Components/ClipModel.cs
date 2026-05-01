@@ -3,21 +3,9 @@
 /// <summary>
 /// Represents a rectangular region of a webpage to capture in a screenshot.
 /// </summary>
-public class ClipModel
+public record ClipModel(int Width, int? Height)
 {
     public const int MaxWidth = 5000;
 
     public const int MaxHeight = 7000;
-
-    /// <summary>
-    /// Gets or sets the width of the element in pixels.
-    /// </summary>
-    /// <value>The width in pixels.</value>
-    public int Width { get; set; }
-
-    /// <summary>
-    /// Gets or sets the height of the element in pixels. If is not specified takes the full height of the page.
-    /// </summary>
-    /// <value>The height in pixels.</value>
-    public int? Height { get; set; }
 }
