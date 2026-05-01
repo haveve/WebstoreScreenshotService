@@ -5,7 +5,6 @@ using WebsiteScreenshotService.Controllers.Examples.Indentity;
 using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Extensions;
 using WebsiteScreenshotService.Model;
-using WebsiteScreenshotService.Model.ScreenshotOptions;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 using WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
