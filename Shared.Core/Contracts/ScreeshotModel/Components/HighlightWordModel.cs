@@ -1,7 +1,4 @@
-﻿using Shared.Core.Validation.Attributes;
-using System.ComponentModel.DataAnnotations;
-
-namespace Shared.Core.Contracts.ScreeshotModel.Components;
+﻿namespace Shared.Core.Contracts.ScreeshotModel.Components;
 
 public class HighlightWordModel
 {

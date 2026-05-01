@@ -1,8 +1,4 @@
-﻿using Shared.Core.Validation.Attributes;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-
-namespace Shared.Core.Contracts.ScreeshotModel.Components;
+﻿namespace Shared.Core.Contracts.ScreeshotModel.Components;
 
 public class CookieModel
 {
