@@ -1,33 +1,35 @@
-﻿namespace WebsiteScreenshotService.Model.ScreenshotOptions;
+﻿using System.Text.Json.Serialization;
 
-public interface ICookieModel
+namespace WebsiteScreenshotService.Model.ScreeshotModel.Components;
+
+public class CookieModel
 {
     /// <summary>
     /// Cookie name.
     /// Must be alphanumeric + underscore or dash.
     /// Prevents injection attacks.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = default!;
 
     /// <summary>
     /// Cookie value.
     /// Printable characters only, no CR/LF.
     /// Prevents JS or header injection attacks.
     /// </summary>
-    public string Value { get; set; }
+    public string Value { get; set; } = default!;
 
     /// <summary>
     /// Domain that can receive the cookie.
     /// Must start with a dot, RFC 6265 compliant.
     /// Prevents header injection.
     /// </summary>
-    public string Domain { get; set; }
+    public string Domain { get; set; } = default!;
 
     /// <summary>
     /// Cookie path. Default "/".
     /// Must be RFC 6265 compliant.
     /// </summary>
-    public string Path { get; set; }
+    public string Path { get; set; } = "/";
 
     public DateTime? Expires { get; set; }
 
@@ -48,6 +50,7 @@ public interface ICookieModel
     public SameSiteMode? SameSite { get; set; }
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum SameSiteMode
 {
     Strict,

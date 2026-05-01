@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using WebsiteScreenshotService.Utils.Synchronization;
+using Shared.Core.Utils.Synchronization;
 
 namespace WebsiteScreenshotService.Utils;
 

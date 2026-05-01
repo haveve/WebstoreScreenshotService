@@ -5,6 +5,7 @@ using WebsiteScreenshotService.Controllers.Examples.Indentity;
 using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Extensions;
 using WebsiteScreenshotService.Model;
+using WebsiteScreenshotService.Model.ScreenshotOptions;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 using WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
@@ -38,7 +39,7 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
     [ProducesResponseType<FileStream>(StatusCodes.Status200OK, "image/png", "image/jpeg")]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, "application/json")]
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(MakeScreenshotResponseExample))]
-    public async Task<IActionResult> MakeScreenshot([FromBody] InputScreenshotOptionsModel screenshotOptions)
+    public async Task<IActionResult> MakeScreenshot([FromBody] InputScreenshotModel screenshotOptions)
     {
         var userContext = _userContextAccessor.GetCurrentUser();
         var model = screenshotOptions.ToScreenshotOptions(userContext);

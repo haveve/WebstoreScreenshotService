@@ -1,6 +1,6 @@
-﻿namespace WebsiteScreenshotService.Model.ScreenshotOptions;
+﻿namespace WebsiteScreenshotService.Model.ScreeshotModel.Components;
 
-public interface IModalModel
+public class ModalModel
 {
     public bool DismissDialogs { get; set; }
 
@@ -9,5 +9,5 @@ public interface IModalModel
     /// <summary>
     /// CSS selectors to hide before screenshot.
     /// </summary>
-    public List<string> HideSelectors { get; set; }
+    public List<string> HideSelectors { get; set; } = [];
 }

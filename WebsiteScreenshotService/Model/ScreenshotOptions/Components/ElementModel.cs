@@ -1,10 +1,17 @@
-﻿namespace WebsiteScreenshotService.Model.ScreenshotOptions;
+﻿namespace WebsiteScreenshotService.Model.ScreeshotModel.Components;
 
-/// <summary>
-/// Represents a rectangular region of a webpage to capture in a screenshot.
-/// </summary>
-public interface IClipModel
+public class ElementModel
 {
+    public required string Selector { get; set; }
+
+    public required ElementClip Clip { get; set; }
+}
+
+public class ElementClip
+{
+    public const int MaxWidth = 5000;
+
+    public const int MaxHeight = 7000;
 
     /// <summary>
     /// Gets or sets the width of the element in pixels.
@@ -16,5 +23,5 @@ public interface IClipModel
     /// Gets or sets the height of the element in pixels. If is not specified takes the full height of the page.
     /// </summary>
     /// <value>The height in pixels.</value>
-    public int? Height { get; set; }
+    public int Height { get; set; }
 }

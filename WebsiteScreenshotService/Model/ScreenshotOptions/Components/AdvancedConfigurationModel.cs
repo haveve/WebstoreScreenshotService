@@ -1,31 +1,34 @@
-﻿namespace WebsiteScreenshotService.Model.ScreenshotOptions;
+﻿using System.Text.Json.Serialization;
 
-public interface IAdvancedConfigurationModel
+namespace WebsiteScreenshotService.Model.ScreeshotModel.Components;
+
+public class AdvancedConfigurationModel
 {
     /// <summary>
     /// Browser locale, e.g., "en-US". Defaults to "en-US".
     /// </summary>
-    public string Locale { get; set; }
+    public string Locale { get; set; } = "en-US";
 
     /// <summary>
     /// Browser timezone, IANA identifier, e.g., "Europe/Kyiv". Defaults to UTC.
     /// </summary>
-    public string TimezoneId { get; set; }
+    public string TimezoneId { get; set; } = "UTC";
 
     /// <summary>
     /// Color scheme for screenshot rendering.
     /// </summary>
-    public ColorSchemeOption ColorScheme { get; set; }
+    public ColorSchemeOption ColorScheme { get; set; } = ColorSchemeOption.Light;
 
     public string? WaitForSelector { get; set; }
 
     public ResourceBlockOptions BlockResources { get; set; }
 
-    public List<IHeaderModel> Headers { get; set; }
+    public List<HeaderModel> Headers { get; set; } = [];
 
-    public List<ICookieModel> Cookies { get; set; }
+    public List<CookieModel> Cookies { get; set; } = [];
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ColorSchemeOption
 {
     Light,

@@ -1,6 +1,6 @@
 ﻿using NpgsqlTypes;
+using Shared.Core.Contracts.ScreeshotModel.Components;
 using WebsiteScreenshotService.Entities;
-using WebsiteScreenshotService.Model.ScreenshotOptions;
 
 namespace WebsiteScreenshotService.Repositories.EF.DbEntities;
 
