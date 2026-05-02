@@ -123,8 +123,17 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         };
 
         options.SlidingExpiration = true;
-        options.Cookie.SameSite = SameSiteMode.None;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+
+        if (builder.Environment.IsProduction())
+        {
+            options.Cookie.SameSite = SameSiteMode.None;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        }
+        else
+        {
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+        }
     });
 
 builder.Services.AddSingleton<ExceptionHandlingMiddleware>();
