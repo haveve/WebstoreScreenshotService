@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using WebsiteScreenshotService.Model.ScreenshotOptions;
+﻿using Shared.Core.Contracts.ScreeshotModel.Components;
+using System.Text.Json.Serialization;
 
 namespace WebsiteScreenshotService.Entities;
 

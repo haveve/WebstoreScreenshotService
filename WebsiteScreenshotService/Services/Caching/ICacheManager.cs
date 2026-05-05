@@ -1,20 +1,22 @@
-﻿namespace WebsiteScreenshotService.Services.Caching;
+﻿using WebsiteScreenshotService.Utils;
+
+namespace WebsiteScreenshotService.Services.Caching;
 
 public interface ICacheManager
 {
-    Task<T?> GetAsync<T>(CacheKey key);
+    Task<T?> GetAsync<T>(CacheKey key) where T : class;
 
     Task SetAsync<T>(
         CacheKey key,
         T value,
-        CacheEntryOptions? options = null);
+        CacheEntryOptions? options = null) where T : class;
 
     Task RemoveAsync(CacheKey key);
 
-    Task<T> GetOrSetAsync<T>(
+    Task<Result<T>> GetOrSetAsync<T>(
         CacheKey key,
-        Func<Task<T>> factory,
-        CacheEntryOptions? options = null);
+        Func<Task<Result<T>>> factory,
+        CacheEntryOptions? options = null) where T : class;
 }
 
 public sealed class CacheEntryOptions

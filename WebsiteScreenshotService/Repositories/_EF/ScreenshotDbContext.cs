@@ -1,26 +1,43 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NpgsqlTypes;
 using WebsiteScreenshotService.Configurations;
 using WebsiteScreenshotService.Repositories._EF.DbEntities;
+using WebsiteScreenshotService.Repositories._EF.DbEntities.Auth;
 using WebsiteScreenshotService.Repositories.EF.DbEntities;
 
 namespace WebsiteScreenshotService.Repositories.EF;
 
+public static class ScreenshotSearch
+{
+    public const string TitleSearchVector = "TitleSearchVector";
+
+    public const string FullSearchVector = "FullSearchVector";
+}
+
 public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, IOptions<StorageConfigurations> consifurations) : DbContext(options)
 {
     public DbSet<UserEntity> Users => Set<UserEntity>();
+
     public DbSet<ScreenshotEntity> Screenshots => Set<ScreenshotEntity>();
+
     public DbSet<CategoryEntity> Categories => Set<CategoryEntity>();
 
     public DbSet<BasketEntity> Baskets => Set<BasketEntity>();
+
     public DbSet<BasketLineEntity> BasketLines => Set<BasketLineEntity>();
 
     public DbSet<OrderEntity> Orders => Set<OrderEntity>();
+
     public DbSet<OrderLineEntity> OrderLines => Set<OrderLineEntity>();
 
     public DbSet<PaymentAttemptEntity> PaymentAttempts => Set<PaymentAttemptEntity>();
 
     public DbSet<SubscriptionEntity> Subscriptions => Set<SubscriptionEntity>();
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<ApiToken> ApiTokens => Set<ApiToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,6 +48,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
         ConfigureOrder(modelBuilder);
         ConfigurePaymentAttempt(modelBuilder);
         ConfigureSubscription(modelBuilder);
+        ConfigureAuth(modelBuilder);
     }
 
     private static void ConfigureUser(ModelBuilder modelBuilder)
@@ -50,7 +68,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
                    .IsRequired()
                    .HasMaxLength(128);
 
-            builder.Property(u => u.Password)
+            builder.Property(u => u.PasswordHash)
                    .IsRequired()
                    .HasMaxLength(128);
 
@@ -124,13 +142,25 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
 
             if (consifurations.Value.Provider == Provider.Postgres)
             {
-                builder.HasGeneratedTsVectorColumn(s => s.SearchVector, "simple", s => new { s.Title, s.Description })
-                       .HasIndex(s => s.SearchVector)
-                       .HasMethod("GIN");
+                // TITLE ONLY (fast, precise)
+                builder.Property<NpgsqlTsVector>(ScreenshotSearch.TitleSearchVector)
+                    .HasComputedColumnSql(@"
+                    to_tsvector('simple', coalesce(""Title"", ''))
+                ", stored: true);
 
-                builder.HasGeneratedTsVectorColumn(s => s.TitleVector, "simple", s => new { s.Title })
-                       .HasIndex(s => s.TitleVector)
-                       .HasMethod("GIN");
+                builder.HasIndex(ScreenshotSearch.TitleSearchVector)
+                    .HasMethod("GIN");
+
+                // TITLE + DESCRIPTION (broader search)
+                builder.Property<NpgsqlTsVector>(ScreenshotSearch.FullSearchVector)
+                    .HasComputedColumnSql(@"
+                    to_tsvector('simple',
+                        coalesce(""Title"", '') || ' ' || coalesce(""Description"", '')
+                    )
+                ", stored: true);
+
+                builder.HasIndex(ScreenshotSearch.FullSearchVector)
+                    .HasMethod("GIN");
             }
 
             // MANY-TO-MANY
@@ -355,6 +385,26 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
             builder.HasIndex(s => s.UserId);
             builder.HasIndex(s => s.ProviderSubscriptionId)
                    .IsUnique();
+        });
+    }
+
+    private void ConfigureAuth(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.HasIndex(x => x.TokenHash).IsUnique();
+            entity.HasIndex(x => x.FamilyId);
+            entity.HasIndex(x => x.UserId);
+        });
+
+        modelBuilder.Entity<ApiToken>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.HasIndex(x => x.TokenHash).IsUnique();
+            entity.HasIndex(x => new { x.UserId, x.Name }).IsUnique();
         });
     }
 }

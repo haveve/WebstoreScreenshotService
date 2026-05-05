@@ -16,5 +16,5 @@ public class UserEntityMapper(IUserContextAccessor userContextAccessor) : Encryp
         => Decrypt<EncryptedData>(data);
 
     public string Encrypt(EncryptedData data)
-        => Encrypt(data);
+        => EncryptAsJson(data);
 }

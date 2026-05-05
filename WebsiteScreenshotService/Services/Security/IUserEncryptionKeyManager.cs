@@ -1,6 +1,8 @@
 ﻿namespace WebsiteScreenshotService.Services.Security;
 
-public interface IUserEncryptionKeyManager
+public interface IUserCryptographicDataManager
 {
-    Task<string> GetUserEncryptionKeyAsync(Guid userId);
+    Task<EncryptionInfo> GetUseCryptographicDataAsync(Guid userId);
 }
+
+public record EncryptionInfo(string Salt, string EncryptionKey);

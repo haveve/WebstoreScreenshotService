@@ -1,4 +1,4 @@
-﻿using WebsiteScreenshotService.Model.ScreenshotOptions;
+﻿using Shared.Core.Contracts.ScreeshotModel.Components;
 
 namespace WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 

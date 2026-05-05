@@ -5,10 +5,10 @@ using WebsiteScreenshotService.Services.Security;
 
 namespace WebsiteScreenshotService;
 
-public class UserSpecificServicesInitializeMiddleware(ILogger<UserContextInitializeMiddleware> logger, IUserEncryptionKeyManager encryptionKeyManager, IKeyService keyService, IEncryptionService encryptionService, IOptions<EncryptionConfigurations> config) : IMiddleware
+public class UserSpecificServicesInitializeMiddleware(ILogger<UserContextInitializeMiddleware> logger, IUserCryptographicDataManager cryptographicDataManager, IKeyService keyService, IEncryptionService encryptionService, IOptions<EncryptionConfigurations> config) : IMiddleware
 {
     private readonly ILogger<UserContextInitializeMiddleware> _logger = logger;
-    private readonly IUserEncryptionKeyManager _encryptionKeyManager = encryptionKeyManager;
+    private readonly IUserCryptographicDataManager _cryptographicDataManager = cryptographicDataManager;
     private readonly EncryptionConfigurations _encryptionConfigurations = config.Value;
     private readonly IKeyService _keyService = keyService;
     private readonly IEncryptionService _encryptionService = encryptionService;
@@ -41,7 +41,7 @@ public class UserSpecificServicesInitializeMiddleware(ILogger<UserContextInitial
             return null;
         }
 
-        var encryptionKey = await _encryptionKeyManager.GetUserEncryptionKeyAsync(userId.Value);
+        var (encryptionKey, _) = await _cryptographicDataManager.GetUseCryptographicDataAsync(userId.Value);
 
         if (encryptionKey is null)
         {

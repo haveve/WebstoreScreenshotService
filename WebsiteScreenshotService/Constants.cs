@@ -14,7 +14,8 @@ public static class Constants
             None = 0,
             Authorization = 1,
             Refresh = 2,
-            Confirmation = 4,
+            Confirmation = 3,
+            Api = 4,
         }
     }
 }

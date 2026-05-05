@@ -9,28 +9,27 @@ using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.ScreenshotRepository;
 
-public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearchStrategy screenshotSearchStrategy, IScreenshotEntityMapper userEntityMapper) : IScreenshotRepository
+public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearchStrategy screenshotSearchStrategy) : IScreenshotRepository
 {
     private readonly ScreenshotDbContext _context = context;
     private readonly IScreenshotSearchStrategy _screenshotSearchStrategy = screenshotSearchStrategy;
-    private readonly IScreenshotEntityMapper _screenshotEntityMapper = userEntityMapper;
 
-    public async Task<Result<Screenshot>> GetScreenshot(string screenshotId)
+    public async Task<Result<ScreenshotEntity>> GetScreenshot(string screenshotId)
     {
         var entity = await _context.Screenshots
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == screenshotId);
 
         if (entity is null)
-            return Result<Screenshot>.Error($"Screenshot {screenshotId} not found");
+            return Result<ScreenshotEntity>.Error($"Screenshot {screenshotId} not found");
 
-        return Result<Screenshot>.Success(_screenshotEntityMapper.FromEntity(entity));
+        return Result<ScreenshotEntity>.Success(entity);
     }
 
     public async Task DeleteAsync(string id)
         => await _context.Screenshots.Where(s => s.Id == id).ExecuteDeleteAsync();
 
-    public async Task<Result<PaginationResult<Screenshot>>> GetScreenshots(ScreenshotPaging? paging, Guid userId)
+    public async Task<Result<PaginationResult<ScreenshotEntity>>> GetScreenshots(ScreenshotPaging? paging, Guid userId)
     {
         var query = _context.Screenshots
             .AsNoTracking()
@@ -54,10 +53,10 @@ public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearch
                 .OrderByDescending(s => s.CreatedAt)
                 .ToListAsync();
 
-            return Result<PaginationResult<Screenshot>>.Success(
-                new PaginationResult<Screenshot>(
+            return Result<PaginationResult<ScreenshotEntity>>.Success(
+                new PaginationResult<ScreenshotEntity>(
                     total,
-                    [.. all.Select(_screenshotEntityMapper.FromEntity)]));
+                    all));
         }
 
         var page = paging.Page;
@@ -69,13 +68,13 @@ public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearch
             .Take(pageSize)
             .ToListAsync();
 
-        return Result<PaginationResult<Screenshot>>.Success(
-            new PaginationResult<Screenshot>(
+        return Result<PaginationResult<ScreenshotEntity>>.Success(
+            new PaginationResult<ScreenshotEntity>(
                 total,
-                [.. items.Select(_screenshotEntityMapper.FromEntity)]));
+                items));
     }
 
-    public async Task<Result<Screenshot>> MakeAsync(ScreenshotCreateModel screenshot)
+    public async Task<Result<ScreenshotEntity>> MakeAsync(ScreenshotCreateModel screenshot)
     {
         var entity = MapFromCreateModel(screenshot);
 
@@ -87,10 +86,10 @@ public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearch
         }
         catch (DbUpdateException)
         {
-            return Result<Screenshot>.Error($"Screenshot {entity.Id} already exists");
+            return Result<ScreenshotEntity>.Error($"Screenshot {entity.Id} already exists");
         }
 
-        return Result<Screenshot>.Success(_screenshotEntityMapper.FromEntity(entity));
+        return Result<ScreenshotEntity>.Success(entity);
     }
 
     private static ScreenshotEntity MapFromCreateModel(ScreenshotCreateModel m)
@@ -106,13 +105,13 @@ public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearch
             Description = m.Description
         };
 
-    public async Task<Result<Screenshot>> UpdateAsync(ScreenshotUpdateModel update)
+    public async Task<Result<ScreenshotEntity>> UpdateAsync(ScreenshotUpdateModel update)
     {
         var entity = await _context.Screenshots
             .FirstOrDefaultAsync(s => s.Id == update.Id);
 
         if (entity is null)
-            return Result<Screenshot>.Error($"Screenshot {update.Id} not found");
+            return Result<ScreenshotEntity>.Error($"Screenshot {update.Id} not found");
 
         entity.Title = update.Title ?? entity.Title;
         entity.Description = update.Description ?? entity.Description;
@@ -120,22 +119,22 @@ public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearch
         _context.Screenshots.Update(entity);
         await _context.SaveChangesAsync();
 
-        return Result<Screenshot>.Success(_screenshotEntityMapper.FromEntity(entity));
+        return Result<ScreenshotEntity>.Success(entity);
     }
 
-    public async Task<Result<Screenshot>> UpdateStateAsync(string screenshotId, ScreenshotState state)
+    public async Task<Result<ScreenshotEntity>> UpdateStateAsync(string screenshotId, ScreenshotState state)
     {
         var entity = await _context.Screenshots
             .FirstOrDefaultAsync(s => s.Id == screenshotId);
 
         if (entity is null)
-            return Result<Screenshot>.Error($"Screenshot {screenshotId} not found");
+            return Result<ScreenshotEntity>.Error($"Screenshot {screenshotId} not found");
 
         entity.State = state;
 
         _context.Screenshots.Update(entity);
         await _context.SaveChangesAsync();
 
-        return Result<Screenshot>.Success(_screenshotEntityMapper.FromEntity(entity));
+        return Result<ScreenshotEntity>.Success(entity);
     }
 }

@@ -1,6 +1,5 @@
-﻿using WebsiteScreenshotService.Entities;
-using WebsiteScreenshotService.Model;
-using WebsiteScreenshotService.Model.ScreenshotOptions;
+﻿using Shared.Core.Contracts.ScreeshotModel.Components;
+using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Services;
@@ -15,6 +14,6 @@ public interface IScreenshotService
     /// </summary>
     /// <param name="screenshotOptionsModel">The options for taking the screenshot.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the screenshot as a stream.</returns>
-    public Task<Result<Screenshot>> MakeScreenshotAsync(IScreenshotOptionsModel screenshotOptionsModel);
+    public Task<Result<Screenshot>> MakeScreenshotAsync(ScreenshotOptionsModel screenshotOptionsModel);
 }
 

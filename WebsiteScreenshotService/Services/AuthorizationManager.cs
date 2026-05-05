@@ -4,7 +4,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using WebsiteScreenshotService.Configurations;
 using WebsiteScreenshotService.Extensions;
-using WebsiteScreenshotService.Model;
 
 namespace WebsiteScreenshotService.Services;
 

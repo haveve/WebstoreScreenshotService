@@ -2,12 +2,12 @@
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using WebsiteScreenshotService.Configurations;
-using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Mappers.EntityMappers;
 using WebsiteScreenshotService.Repositories.EF;
 using WebsiteScreenshotService.Repositories.EF.DbEntities;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 using WebsiteScreenshotService.Services.Security;
+using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.UserRepository;
 
@@ -23,36 +23,34 @@ public class UserRepository(ScreenshotDbContext context, IHashingService hashing
     private readonly EncryptionConfigurations _encryptionSettings = encryptionSettings.Value;
     private readonly IUserEntityMapper _userEntityMapper = userEntityMapper;
 
-    public async Task<User?> UpdateUserAsync(Guid id, UserUpdateModel model)
+    public async Task<Result<UserEntity>> UpdateUserAsync(Guid id, UserUpdateModel model)
     {
         var userEntity = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (userEntity is null)
-            return null;
+            return Result<UserEntity>.Error("User with does not exist");
 
-        var user = _userEntityMapper.FromEntity(userEntity);
-
-        var encryptedData = new EncryptedData(model.Name, user.Email);
+        var encryptedData = _userEntityMapper.Decrypt(userEntity.EncryptedData) with { Name = model.Name };
         userEntity.EncryptedData = _userEntityMapper.Encrypt(encryptedData);
 
         await _context.SaveChangesAsync();
 
-        return user with { Name = model.Name };
+        return Result<UserEntity>.Success(userEntity);
     }
 
-    public async Task<User?> GetUserByIdAsync(Guid id)
+    public async Task<Result<UserEntity>> GetUserByIdAsync(Guid id)
     {
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (user is null)
-            return null;
+            return Result<UserEntity>.Error("User with does not exist");
 
-        return _userEntityMapper.FromEntity(user);
+        return Result<UserEntity>.Success(user);
     }
 
-    public async Task<User?> CreateUserAsync(UserCreateModel user)
+    public async Task<Result<UserEntity>> CreateUserAsync(UserCreateModel user)
     {
         var emailHash = _hashingService.Hash(user.Email);
 
@@ -60,19 +58,19 @@ public class UserRepository(ScreenshotDbContext context, IHashingService hashing
             .AnyAsync(u => u.EmailHash == emailHash);
 
         if (exists)
-            return null;
+            return Result<UserEntity>.Error("User with that email already exists");
 
         var salt = _keyService.GenerateBase64Key();
         var encKey = _keyService.GenerateBase64Key();
 
-        var encryptedData = new EncryptedData(user.Name, user.Email);
+        var encryptedData = new EncryptedData(user.Name, user.Email, TotpSecret: null);
 
         var userEntity = new UserEntity()
         {
             Id = Guid.CreateVersion7(),
             EmailHash = emailHash,
             Salt = salt,
-            Password = _hashingService.Hash(user.Password, salt),
+            PasswordHash = _hashingService.Hash(user.Password, salt),
             EncKey = _encryptionService.Encrypt(encKey, _keyService.FromBase64(_encryptionSettings.MasterKey)),
             SubscriptionPlan = new() { Type = user.SubscriptionPlan.Type, ScreenshotLeft = user.SubscriptionPlan.ScreenshotLeft },
             EncryptedData = _encryptionService.Encrypt(JsonSerializer.Serialize(encryptedData), _keyService.FromBase64(encKey))
@@ -81,18 +79,18 @@ public class UserRepository(ScreenshotDbContext context, IHashingService hashing
         _context.Users.Add(userEntity);
         await _context.SaveChangesAsync();
 
-        return null;
+        return Result<UserEntity>.Success(userEntity);
     }
 
-    public async Task<User?> GetUserByEmailAndPasswordAsync(string email, string password)
+    public async Task<Result<UserEntity>> GetUserByEmailAndPasswordAsync(string email, string password)
     {
         var emailHash = _hashingService.Hash(email);
         var user = await _context.Users.FirstOrDefaultAsync(u => u.EmailHash == emailHash);
 
-        if (user is null || !_hashingService.Verify(password, user.Salt, user.Password))
-            return null;
+        if (user is null || !_hashingService.Verify(password, user.Salt, user.PasswordHash))
+            return Result<UserEntity>.Error("User does not exist");
 
-        return _userEntityMapper.FromEntity(user);
+        return Result<UserEntity>.Success(user);
     }
 }
 

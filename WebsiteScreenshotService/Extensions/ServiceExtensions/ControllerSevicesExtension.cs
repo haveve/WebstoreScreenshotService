@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using WebsiteScreenshotService.Controllers.Filters;
 
 namespace WebsiteScreenshotService.Extensions.ServiceExtensions
 {
@@ -7,7 +8,10 @@ namespace WebsiteScreenshotService.Extensions.ServiceExtensions
     {
         public static IMvcBuilder AddControllerServices(this IServiceCollection services)
         {
-            return services.AddControllers()
+            return services.AddControllers(options =>
+                  {
+                      options.Filters.Add<ValidationFilter>();
+                  })
                   .ConfigureApiBehaviorOptions(options =>
                   {
                       options.InvalidModelStateResponseFactory = context =>

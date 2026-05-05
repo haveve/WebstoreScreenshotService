@@ -1,6 +1,9 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json;
 using WebsiteScreenshotService;
 using WebsiteScreenshotService.Configurations;
@@ -74,6 +77,8 @@ builder.Services.AddOptionsWithValidation<AuthorizationConfiguration>(builder.Co
 builder.Services.AddOptionsWithValidation<ScreenshotStorageConfigurations>(builder.Configuration.GetSection("ScreenshotStorageSettings"));
 builder.Services.AddOptionsWithValidation<EncryptionConfigurations>(builder.Configuration.GetSection("MessageBroker"));
 
+builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerOptionsSetup>();
+
 builder.Services.AddMessageBrokerMassTransit();
 
 builder.Services.AddSingleton<IPaymentProvider, StripePaymentProvider>();
@@ -110,31 +115,34 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 builder.Services.AddSingleton<IScreenshotStorageManager, ScreenshotStorageManager>();
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.Events = new CookieAuthenticationEvents
-        {
-            OnRedirectToLogin = context =>
-            {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                return Task.CompletedTask;
-            }
-        };
+//builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+//    .AddCookie(options =>
+//    {
+//        options.Events = new CookieAuthenticationEvents
+//        {
+//            OnRedirectToLogin = context =>
+//            {
+//                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+//                return Task.CompletedTask;
+//            }
+//        };
 
-        options.SlidingExpiration = true;
+//        options.SlidingExpiration = true;
 
-        if (builder.Environment.IsProduction())
-        {
-            options.Cookie.SameSite = SameSiteMode.None;
-            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        }
-        else
-        {
-            options.Cookie.SameSite = SameSiteMode.Lax;
-            options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-        }
-    });
+//        if (builder.Environment.IsProduction())
+//        {
+//            options.Cookie.SameSite = SameSiteMode.None;
+//            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+//        }
+//        else
+//        {
+//            options.Cookie.SameSite = SameSiteMode.Lax;
+//            options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+//        }
+//    });
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer();
 
 builder.Services.AddSingleton<ExceptionHandlingMiddleware>();
 builder.Services.AddSingleton<UserContextInitializeMiddleware>();

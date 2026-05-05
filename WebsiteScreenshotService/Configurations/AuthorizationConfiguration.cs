@@ -20,5 +20,7 @@ public class AuthorizationConfiguration
 public enum AuthorizationType
 {
     ConfirmationToken,
-    AuthorizationToken
+    AuthorizationToken,
+    RefreshToken,
+    ApiToken
 }

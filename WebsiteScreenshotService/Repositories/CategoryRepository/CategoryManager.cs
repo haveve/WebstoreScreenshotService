@@ -1,6 +1,7 @@
 ﻿using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Repositories.CategoryRepository.Models;
 using WebsiteScreenshotService.Services.Caching;
+using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.CategoryRepository;
 
@@ -20,52 +21,78 @@ public class CategoryManager : ICategoryManager
         _cache = cache;
     }
 
-    public async Task<Category?> AddAsync(CategoryCreateModel category, Guid userId = default)
+    public async Task<Result<Category>> AddAsync(CategoryCreateModel category, Guid userId = default)
     {
         if (userId == default)
             userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        var result = await _categoryRepository.AddAsync(category, userId);
+        var categoryResult = await _categoryRepository.AddAsync(category, userId);
 
-        if(result is not null)
-            await InvalidateCategoryCache(result.Id, userId);
+        if (categoryResult.IsSuccess)
+        {
+            var addedCategory = categoryResult.Value!;
+            await InvalidateCategoryCache(addedCategory.Id, addedCategory.UserId);
+        }
 
-        return result;
+        return categoryResult;
     }
 
-    public async Task RemoveAsync(Guid categoryId, Guid userId = default)
+    public async Task<Result> RemoveAsync(Guid categoryId, Guid userId = default)
     {
+        if (userId == default)
+            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+
+        var categoryResult = await GetByIdAsync(categoryId, userId);
+
+        if (!categoryResult.IsSuccess)
+            return Result.Error(categoryResult.ErrorMessage!);
+
         await _categoryRepository.RemoveAsync(categoryId);
         await InvalidateCategoryCache(categoryId, userId);
+
+        return Result.Success;
     }
 
-    public async Task<Category?> UpdateAsync(CategoryUpdateModel model, Guid userId = default)
+    public async Task<Result<Category>> UpdateAsync(CategoryUpdateModel model, Guid userId = default)
     {
         if (userId == default)
             userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        var result = await _categoryRepository.UpdateAsync(model);
+        var categoryResult = await GetByIdAsync(model.Id, userId);
 
-        if (result is not null)
-            await InvalidateCategoryCache(result.Id, userId);
+        if (!categoryResult.IsSuccess)
+            return Result<Category>.Error(categoryResult.ErrorMessage!);
 
-        return result;
+        var categoryUpdateResult = await _categoryRepository.UpdateAsync(model);
+
+        if (categoryUpdateResult.IsSuccess)
+        {
+            var updatedCategory = categoryUpdateResult.Value!;
+            await InvalidateCategoryCache(updatedCategory.Id, updatedCategory.UserId);
+        }
+
+        return categoryUpdateResult;
     }
 
-    public async ValueTask<Category?> GetByIdAsync(Guid categoryId)
+    public async Task<Result<Category>> GetByIdAsync(Guid categoryId, Guid userId = default)
     {
+        if (userId == default)
+            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+
         var key = CacheKeys.Category.ById(categoryId);
 
-        return await _cache.GetOrSetAsync(
+        var categoryResult = await _cache.GetOrSetAsync(
             key,
             () => _categoryRepository.GetByIdAsync(categoryId),
             new CacheEntryOptions
             {
-                SlidingExpiration = TimeSpan.FromMinutes(10)
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
             });
+
+        return ValidateUserRights(categoryResult, userId);
     }
 
-    public async ValueTask<List<Category>> GetAllAsync(Guid userId = default)
+    public async Task<Result<List<Category>>> GetAllAsync(Guid userId = default)
     {
         if (userId == default)
             userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
@@ -85,5 +112,13 @@ public class CategoryManager : ICategoryManager
     {
         await _cache.RemoveAsync(CacheKeys.Category.ById(categoryId));
         await _cache.RemoveAsync(CacheKeys.Category.List(userId));
+    }
+
+    private static Result<Category> ValidateUserRights(Result<Category> categoryResult, Guid userId)
+    {
+        if (categoryResult.IsSuccess && categoryResult.Value!.UserId != userId)
+            return Result<Category>.Error("User does not own that category");
+
+        return categoryResult;
     }
 }

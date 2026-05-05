@@ -33,7 +33,7 @@ public class ConnectionConfig
     public required string Password { get; set; }
 
     [Required]
-    public required int Port { get; set; }
+    public required ushort Port { get; set; }
 
     public string VirtualHost { get; set; } = "/";
 }

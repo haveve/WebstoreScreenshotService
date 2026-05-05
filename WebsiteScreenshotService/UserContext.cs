@@ -15,4 +15,21 @@ public class UserSpecificServices
     public IUserEncryptionService EncryptionService { get; init; } = null!; 
 }
 
-public record UserInfo(Guid Id, UserRole Role);
+public record UserInfo(Guid Id, UserRole Role, string[] Permissions);
+
+public static class Permissions
+{
+    public static class User
+    {
+        public static class Screenshot
+        {
+            public const string FetchScreenshots = "user.screenshots.fetch";
+
+            public const string MakeScreenshots = "user.screenshots.make";
+
+            public const string ManageScreenshots = "user.screenshots.manage";
+        }
+
+        public const string FullAccess = "user.fullaccess";
+    }
+}

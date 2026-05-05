@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using WebsiteScreenshotService.Model;
-using WebsiteScreenshotService.Extensions;
-using WebsiteScreenshotService.Entities;
 using Swashbuckle.AspNetCore.Filters;
+using System.Security.Claims;
 using WebsiteScreenshotService.Controllers.Examples.Indentity;
+using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Extensions;
+using WebsiteScreenshotService.Model;
 using WebsiteScreenshotService.Repositories.UserRepository;
 
 namespace WebsiteScreenshotService.Controllers;
@@ -113,7 +113,7 @@ public class IdentityController(IUserManager userManager) : ControllerBase
     {
         var claim = user.GetUserClaims();
 
-        var claimsIdentity = new ClaimsIdentity(claim, CookieAuthenticationDefaults.AuthenticationScheme);
+        var claimsIdentity = new ClaimsIdentity(claim, JwtBearerDefaults.AuthenticationScheme);
         var claimsPricipal = new ClaimsPrincipal(claimsIdentity);
 
         await HttpContext.SignInAsync(claimsPricipal);

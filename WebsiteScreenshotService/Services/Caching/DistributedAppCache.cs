@@ -1,6 +1,8 @@
-﻿using WebsiteScreenshotService.Services.Synchronization;
-using System.Text.Json;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
+using WebsiteScreenshotService.Services.Synchronization;
+using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Services.Caching;
 
@@ -19,7 +21,7 @@ public class CacheManager : ICacheManager
 
     private static string Key(CacheKey key) => key.Build();
 
-    public async Task<T?> GetAsync<T>(CacheKey key)
+    public async Task<T?> GetAsync<T>(CacheKey key) where T : class
     {
         var data = await _cache.GetAsync(Key(key));
 
@@ -31,7 +33,7 @@ public class CacheManager : ICacheManager
     public async Task SetAsync<T>(
         CacheKey key,
         T value,
-        CacheEntryOptions? options = null)
+        CacheEntryOptions? options = null) where T : class
     {
         var entry = new DistributedCacheEntryOptions();
 
@@ -49,24 +51,24 @@ public class CacheManager : ICacheManager
     public async Task RemoveAsync(CacheKey key)
         => await _cache.RemoveAsync(Key(key));
 
-    public async Task<T> GetOrSetAsync<T>(
+    public async Task<Result<T>> GetOrSetAsync<T>(
         CacheKey key,
-        Func<Task<T>> factory,
-        CacheEntryOptions? options = null)
+        Func<Task<Result<T>>> factory,
+        CacheEntryOptions? options = null) where T : class
     {
         var cached = await GetAsync<T>(key);
         if (cached is not null)
-            return cached;
+            return Result<T>.Success(cached);
 
         using (await _locker.AcquireAsync(Key(key)))
         {
             cached = await GetAsync<T>(key);
             if (cached is not null)
-                return cached;
+                return Result<T>.Success(cached);
 
             var value = await factory();
 
-            if (value is not null)
+            if (value.IsSuccess)
                 await SetAsync(key, value, options);
 
             return value;

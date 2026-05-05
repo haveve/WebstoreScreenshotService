@@ -3,10 +3,11 @@ using WebsiteScreenshotService.Repositories.UserRepository;
 
 namespace WebsiteScreenshotService;
 
-public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddleware> logger, IUserRepository userRepository) : IMiddleware
+public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddleware> logger, IUserManager userManager) : IMiddleware
 {
     private readonly ILogger<UserContextInitializeMiddleware> _logger = logger;
-    private readonly IUserRepository _userRepository = userRepository;
+    private readonly IUserManager _userManager = userManager;
+    private readonly IUserEncryptionKeyManager _encryptionKeyManager = encryptionKeyManager;
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
@@ -36,17 +37,26 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
             return null;
         }
 
-        var user = await _userRepository.GetUserByIdAsync(userId.Value);
+        var userResult = await _userManager.GetUser(userId.Value);
 
-        if (user is null)
+        if (!userResult.IsSuccess)
         {
             await httpContext.Response.UnauthorizedAccess();
             return null;
         }
 
+        var user = userResult.Value!;
+        var authType = httpContext.User.GetTokenType();
+
+        if(authType == Constants.Claims.TokenTypes.Api)
+        {
+            var hash = "fgsf";
+            var token = "";
+        }
+
         var subscriptionPlan = user.SubscriptionPlan;
 
-        var userInfo = new UserInfo(userId.Value, UserRole.User);
+        var userInfo = new UserInfo(userId.Value, UserRole.User, [Permissions.User.FullAccess]);
         return new UserContext(userInfo, subscriptionPlan);
     }
 }

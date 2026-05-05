@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using WebsiteScreenshotService.Settings;
 using WebsiteScreenshotService.Entities;
-using WebsiteScreenshotService.Model.ScreenshotOptions;
-
+using Shared.Core.Contracts.ScreeshotModel.Components;
 namespace WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
 
 public class ScreenshotStorageManager(IOptions<ScreenshotStorageConfigurations> options) : IScreenshotStorageManager

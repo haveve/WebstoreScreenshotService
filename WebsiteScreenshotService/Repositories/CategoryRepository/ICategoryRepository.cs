@@ -1,17 +1,18 @@
 ﻿using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Repositories.CategoryRepository.Models;
+using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.CategoryRepository;
 
 public interface ICategoryRepository
 {
-    Task<Category?> AddAsync(CategoryCreateModel category, Guid userId);
+    Task<Result<Category>> AddAsync(CategoryCreateModel category, Guid userId);
 
-    Task RemoveAsync(Guid categoryId);
+    Task<Result> RemoveAsync(Guid categoryId);
 
-    Task<Category?> UpdateAsync(CategoryUpdateModel model);
+    Task<Result<Category>> UpdateAsync(CategoryUpdateModel model);
 
-    Task<Category?> GetByIdAsync(Guid categoryId);
+    Task<Result<Category>> GetByIdAsync(Guid categoryId);
 
-    Task<List<Category>> GetAllAsync(Guid userId);
+    Task<Result<List<Category>>> GetAllAsync(Guid userId);
 }

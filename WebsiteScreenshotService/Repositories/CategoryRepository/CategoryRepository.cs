@@ -4,6 +4,7 @@ using WebsiteScreenshotService.Mappers.EntityMappers;
 using WebsiteScreenshotService.Repositories.CategoryRepository.Models;
 using WebsiteScreenshotService.Repositories.EF;
 using WebsiteScreenshotService.Repositories.EF.DbEntities;
+using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.CategoryRepository;
 
@@ -12,7 +13,7 @@ public class CategoryRepository(ScreenshotDbContext context, ICategoryEntityMapp
     private readonly ScreenshotDbContext _context = context;
     private readonly ICategoryEntityMapper _categoryEntityMapper = categoryEntityMapper;
 
-    public async Task<Category?> AddAsync(CategoryCreateModel category, Guid userId)
+    public async Task<Result<Category>> AddAsync(CategoryCreateModel category, Guid userId)
     {
         var categoryEntity = new CategoryEntity()
         {
@@ -25,48 +26,61 @@ public class CategoryRepository(ScreenshotDbContext context, ICategoryEntityMapp
         await _context.Categories.AddAsync(categoryEntity);
         await _context.SaveChangesAsync();
 
-        return _categoryEntityMapper.FromEntity(categoryEntity);
+        return Result<Category>.Success(_categoryEntityMapper.FromEntity(categoryEntity));
     }
 
-    public async Task RemoveAsync(Guid categoryId)
+    public async Task<Result> RemoveAsync(Guid categoryId)
     {
-        await _context.Categories
-           .Where(c => c.Id == categoryId)
-           .ExecuteDeleteAsync();
+        var affected = await _context.Categories
+            .Where(c => c.Id == categoryId)
+            .ExecuteDeleteAsync();
+
+        if (affected == 0)
+            return Result.Error("Category not found or already deleted");
+
+        return Result.Success;
     }
 
-    public async Task<Category?> UpdateAsync(CategoryUpdateModel model)
+    public async Task<Result<Category>> UpdateAsync(CategoryUpdateModel model)
     {
-        var category = await _context.Categories
+        var entity = await _context.Categories
             .FirstOrDefaultAsync(c => c.Id == model.Id);
 
-        if (category == null)
-            return null;
+        if (entity is null)
+            return Result<Category>.Error("Category not found or access denied");
 
-        category.Name = model.Name;
-        category.Color = model.Color;
+        entity.Name = model.Name;
+        entity.Color = model.Color;
 
         await _context.SaveChangesAsync();
-        return _categoryEntityMapper.FromEntity(category);
+
+        return Result<Category>.Success(_categoryEntityMapper.FromEntity(entity));
     }
 
-    public async Task<Category?> GetByIdAsync(Guid categoryId)
+    public async Task<Result<Category>> GetByIdAsync(Guid categoryId)
     {
-        var category = await _context.Categories
+        var entity = await _context.Categories
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == categoryId);
 
-        return category is not null ? _categoryEntityMapper.FromEntity(category) : null;
+        if (entity is null)
+            return Result<Category>.Error("Category not found");
+
+        return Result<Category>.Success(_categoryEntityMapper.FromEntity(entity));
     }
 
-    public async Task<List<Category>> GetAllAsync(Guid userId)
+    public async Task<Result<List<Category>>> GetAllAsync(Guid userId)
     {
-        var categories = await _context.Categories
+        var entities = await _context.Categories
             .AsNoTracking()
             .Where(c => c.UserId == userId)
             .OrderBy(c => c.Name)
             .ToListAsync();
 
-        return [.. categories.Select(_categoryEntityMapper.FromEntity)];
+        var result = entities
+            .Select(_categoryEntityMapper.FromEntity)
+            .ToList();
+
+        return Result<List<Category>>.Success(result);
     }
 }

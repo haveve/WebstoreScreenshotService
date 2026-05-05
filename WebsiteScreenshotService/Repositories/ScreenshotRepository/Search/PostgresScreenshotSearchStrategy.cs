@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NpgsqlTypes;
+using WebsiteScreenshotService.Repositories.EF;
 using WebsiteScreenshotService.Repositories.EF.DbEntities;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 
@@ -13,15 +15,22 @@ public class PostgresScreenshotSearchStrategy : IScreenshotSearchStrategy
         if (string.IsNullOrWhiteSpace(term) || scope == SearchScope.None)
             return query;
 
-        var tsQuery = EFFunctions.Functions.WebSearchToTsQuery("simple", term);
+        var tsQuery =
+            EFFunctions.Functions.WebSearchToTsQuery("simple", term);
 
         return scope switch
         {
             SearchScope.Title =>
-                query.Where(s => s.TitleVector.Matches(tsQuery)),
+                query.Where(s =>
+                    EFFunctions.Property<NpgsqlTsVector>(s, ScreenshotSearch.TitleSearchVector)
+                        .Matches(tsQuery)),
+
             SearchScope.All =>
-                query.Where(s => s.SearchVector.Matches(tsQuery)),
-            _ => throw new ArgumentException($"Incorrect search scope was set with value {scope}")
+                query.Where(s =>
+                    EFFunctions.Property<NpgsqlTsVector>(s, ScreenshotSearch.FullSearchVector)
+                        .Matches(tsQuery)),
+
+            _ => throw new ArgumentException($"Invalid scope: {scope}")
         };
     }
 }

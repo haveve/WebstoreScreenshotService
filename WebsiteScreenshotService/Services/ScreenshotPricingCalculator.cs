@@ -1,5 +1,5 @@
-﻿using WebsiteScreenshotService.Model.ScreenshotOptions;
-using WebsiteScreenshotService.Model.ScreenshotOptions.Implementation;
+﻿using Shared.Core.Contracts.ScreeshotModel.Components;
+using WebsiteScreenshotService.Model.Validation.Validators;
 
 namespace WebsiteScreenshotService.Services;
 
@@ -45,7 +45,7 @@ public static class ScreenshotPricingCalculator
         return (int)Math.Ceiling(total);
     }
 
-    private static decimal GetAdvancedCost(IAdvancedConfigurationModel? adv)
+    private static decimal GetAdvancedCost(AdvancedConfigurationModel? adv)
     {
         if (adv == null)
             return 0;
@@ -93,7 +93,7 @@ public static class ScreenshotPricingCalculator
         if (options.Clip != null)
         {
             width = options.Clip.Width;
-            height = options.Clip.Height ?? ClipModel.MaxHeight;
+            height = options.Clip.Height ?? InputLimits.ClipModel.MaxHeight;
         }
 
         return (long)width * height;

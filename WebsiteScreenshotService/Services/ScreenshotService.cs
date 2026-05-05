@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
+using Shared.Core.Contracts.ScreeshotModel;
+using Shared.Core.Contracts.ScreeshotModel.Components;
 using WebsiteScreenshotService.Configurations;
 using WebsiteScreenshotService.Entities;
-using WebsiteScreenshotService.Model;
-using WebsiteScreenshotService.Model.ScreenshotOptions;
-using WebsiteScreenshotService.Model.UserInfo.Implementation;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
 using WebsiteScreenshotService.Repositories.Subscription;
 using WebsiteScreenshotService.Services.Messaging;
@@ -30,7 +29,7 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
     /// </summary>
     /// <param name="screenshotOptionsModel">The options for taking the screenshot.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the screenshot as a stream.</returns>
-    public async Task<Result<Screenshot>> MakeScreenshotAsync(IScreenshotOptionsModel screenshotOptionsModel)
+    public async Task<Result<Screenshot>> MakeScreenshotAsync(ScreenshotOptionsModel screenshotOptionsModel)
     {
         var userContext = _userContextAccessor.GetCurrentUser();
         var useInfo = userContext.UserInfo;
