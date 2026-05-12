@@ -3,7 +3,7 @@ using Shared.Core.Utils.Synchronization;
 
 namespace Shared.Core.Utils;
 
-public sealed class AsyncLockManager<TKey> where TKey : notnull
+public sealed class AsyncReadWriteLockManager<TKey> where TKey : notnull
 {
     private readonly ConcurrentDictionary<TKey, LockWrapper> _locks = [];
 
@@ -57,12 +57,12 @@ public sealed class AsyncLockManager<TKey> where TKey : notnull
     private sealed class Releaser : IDisposable
     {
         private readonly TKey _key;
-        private readonly AsyncLockManager<TKey> _manager;
+        private readonly AsyncReadWriteLockManager<TKey> _manager;
         private readonly IDisposable _innerLock;
         private readonly LockWrapper _wrapper;
         private int _disposed;
 
-        public Releaser(TKey key, AsyncLockManager<TKey> manager, IDisposable innerLock, LockWrapper wrapper)
+        public Releaser(TKey key, AsyncReadWriteLockManager<TKey> manager, IDisposable innerLock, LockWrapper wrapper)
         {
             _key = key;
             _manager = manager;
