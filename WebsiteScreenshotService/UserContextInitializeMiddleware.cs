@@ -1,5 +1,6 @@
 ﻿using WebsiteScreenshotService.Extensions;
 using WebsiteScreenshotService.Repositories.UserRepository;
+using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService;
 
@@ -7,7 +8,6 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
 {
     private readonly ILogger<UserContextInitializeMiddleware> _logger = logger;
     private readonly IUserManager _userManager = userManager;
-    private readonly IUserEncryptionKeyManager _encryptionKeyManager = encryptionKeyManager;
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
@@ -37,6 +37,11 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
             return null;
         }
 
+        var tokenVerificationResult = await VerifyApiTokenAsync(httpContext);
+
+        if (!tokenVerificationResult.IsSuccess)
+            return null;
+
         var userResult = await _userManager.GetUser(userId.Value);
 
         if (!userResult.IsSuccess)
@@ -46,17 +51,41 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
         }
 
         var user = userResult.Value!;
-        var authType = httpContext.User.GetTokenType();
-
-        if(authType == Constants.Claims.TokenTypes.Api)
-        {
-            var hash = "fgsf";
-            var token = "";
-        }
-
         var subscriptionPlan = user.SubscriptionPlan;
 
-        var userInfo = new UserInfo(userId.Value, UserRole.User, [Permissions.User.FullAccess]);
+        var tokenResult = tokenVerificationResult.Value!;
+
+        var permission = tokenResult.IsApiToken
+            ? tokenResult.Permissions
+            : [Permissions.User.FullAccess];
+
+        var userInfo = new UserInfo(userId.Value, UserRole.User, permission);
         return new UserContext(userInfo, subscriptionPlan);
+    }
+
+    private static async Task<Result<TokenVerificationResult>> VerifyApiTokenAsync(HttpContext httpContext)
+    {
+        var authType = httpContext.User.GetTokenType();
+
+        if (authType != Constants.Claims.TokenTypes.Api)
+            return Result<TokenVerificationResult>.Success(TokenVerificationResult.NotApiTokenResult);
+
+        var userSpecificServices = httpContext.GetUserSpecificServices()!;
+        var token = httpContext.GetRawAuthToken()!;
+
+        var hash = userSpecificServices.HashingService.Hash(token);
+        var valid = hash == "";
+
+        if (!valid)
+            await httpContext.Response.UnauthorizedAccess();
+
+        return valid
+            ? Result<TokenVerificationResult>.Success(new(Permissions: [], IsApiToken: true))
+            : Result<TokenVerificationResult>.Error("Unauthorized");
+    }
+
+    private record TokenVerificationResult(string[] Permissions, bool IsApiToken)
+    {
+        public static TokenVerificationResult NotApiTokenResult { get; } = new(Permissions: [], IsApiToken: false);
     }
 }

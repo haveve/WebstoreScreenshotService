@@ -2,64 +2,174 @@
 using WebsiteScreenshotService.Mappers.EntityMappers;
 using WebsiteScreenshotService.Repositories.EF.DbEntities;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
+using WebsiteScreenshotService.Services.Caching;
+using WebsiteScreenshotService.Services.Caching.Services;
 using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.ScreenshotRepository;
 
-public class ScreenshotManager(IScreenshotRepository screenshotRepository, IUserContextAccessor userContextAccessor, IScreenshotEntityMapper screenshotEntityMapper) : IScreenshotManager
+public class ScreenshotManager(
+    IScreenshotRepository screenshotRepository,
+    IUserContextAccessor userContextAccessor,
+    IScreenshotEntityMapper screenshotEntityMapper,
+    ICacheManager cache,
+    IScreenshotCacheService screenshotCache)
+    : IScreenshotManager
 {
     private readonly IScreenshotRepository _screenshotRepository = screenshotRepository;
+    private readonly IUserContextAccessor _userContextAccessor = userContextAccessor;
     private readonly IScreenshotEntityMapper _screenshotEntityMapper = screenshotEntityMapper;
+    private readonly ICacheManager _cache = cache;
+    private readonly IScreenshotCacheService _screenshotCache = screenshotCache;
 
     public async ValueTask<Result<Screenshot>> GetScreenshot(string screenshotId)
     {
-        var entity = await _screenshotRepository.GetScreenshot(screenshotId);
-        return FormatScreenshotResult(entity);
+        var result = await GetScreenshotInternal(screenshotId);
+        return FormatScreenshotResult(result);
     }
 
-    public async ValueTask<Result<PaginationResult<Screenshot>>> GetScreenshots(ScreenshotPaging? paging = null, Guid userId = default)
+    private async ValueTask<Result<ScreenshotEntity>> GetScreenshotInternal(string screenshotId)
+    {
+        var key = _screenshotCache.ById(screenshotId);
+
+        var result = await _cache.GetOrSetAsync(
+            key,
+            () => _screenshotRepository.GetScreenshot(screenshotId),
+            CacheOptions.Screenshot.Entry);
+
+        return result;
+    }
+
+    public async ValueTask<Result<PaginationResult<Screenshot>>> GetScreenshots(
+        ScreenshotPaging? paging = null,
+        Guid userId = default)
     {
         if (userId == default)
-            userId = userContextAccessor.GetCurrentUser().UserInfo.Id;
+            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        var screenshots = await _screenshotRepository.GetScreenshots(paging, userId);
+        if (!ShouldCacheList(paging))
+            return await GetScreenshotsInternal(paging, userId);
 
-        if (!screenshots.IsSuccess)
-            return Result<PaginationResult<Screenshot>>.Error(screenshots.ErrorMessage!);
+        var cachePaging = paging is not null
+            ? new PagingCacheModel(paging.Page, paging.PageSize)
+            : null;
 
-        var screenshotsData = screenshots.Value!;
-        var result = new PaginationResult<Screenshot>(screenshotsData.TotalCount,
-            [.. screenshotsData.Items.Select(_screenshotEntityMapper.FromEntity)]);
+        var key = _screenshotCache.List(userId, cachePaging);
 
-        return Result<PaginationResult<Screenshot>>.Success(result);
+        return await _cache.GetOrSetAsync(
+            key,
+            () => GetScreenshotsInternal(paging, userId),
+            CacheOptions.Screenshot.List);
     }
 
-    public async Task DeleteAsync(string id)
-        => await _screenshotRepository.DeleteAsync(id);
+    public async Task<Result> DeleteAsync(IReadOnlyCollection<string> ids)
+    {
+        if (ids.Count == 0)
+            return Result.Success;
+
+        const int maxAttempts = 3;
+
+        foreach (var id in ids.Take(maxAttempts))
+        {
+            var result = await GetScreenshotInternal(id);
+
+            if (!result.IsSuccess)
+                continue;
+
+            var userId = result.Value!.UserId;
+
+            await _screenshotRepository.DeleteAsync(ids);
+            await InvalidateListCacheAsync(userId);
+
+            return Result.Success;
+        }
+
+        return Result.Error($"deletion process was aborted because more than {maxAttempts} products weren't found in the database");
+    }
 
     public async Task<Result<Screenshot>> MakeAsync(ScreenshotCreateModel screenshot)
     {
         var entity = await _screenshotRepository.MakeAsync(screenshot);
-        return FormatScreenshotResult(entity);
+
+        var result = FormatScreenshotResult(entity);
+
+        if (result.IsSuccess)
+            await InvalidateListCacheAsync(entity.Value!.UserId);
+
+        return result;
     }
 
     public async Task<Result<Screenshot>> UpdateAsync(ScreenshotUpdateModel screenshot)
     {
         var entity = await _screenshotRepository.UpdateAsync(screenshot);
-        return FormatScreenshotResult(entity);
+
+        var result = FormatScreenshotResult(entity);
+
+        if (result.IsSuccess)
+            await InvalidateListCacheAsync(entity.Value!.UserId);
+
+        return result;
     }
 
-    public async Task<Result<Screenshot>> UpdateStateAsync(string screenshotId, ScreenshotState state)
+    public async Task<Result<Screenshot>> UpdateStateAsync(
+        string screenshotId,
+        ScreenshotState state)
     {
-        var entity = await _screenshotRepository.UpdateStateAsync(screenshotId, state);
-        return FormatScreenshotResult(entity);
+        var entity = await _screenshotRepository.UpdateStateAsync(
+            screenshotId,
+            state);
+
+        var result = FormatScreenshotResult(entity);
+
+        if (result.IsSuccess)
+            await InvalidateListCacheAsync(entity.Value!.UserId);
+
+        return result;
     }
 
-    private Result<Screenshot> FormatScreenshotResult(Result<ScreenshotEntity> entity)
+    private async Task<Result<PaginationResult<Screenshot>>> GetScreenshotsInternal(
+        ScreenshotPaging? paging,
+        Guid userId)
+    {
+        var screenshots = await _screenshotRepository.GetScreenshots(
+            paging,
+            userId);
+
+        if (!screenshots.IsSuccess)
+            return Result<PaginationResult<Screenshot>>
+                .Error(screenshots.ErrorMessage!);
+
+        var data = screenshots.Value!;
+
+        var result = new PaginationResult<Screenshot>(
+            data.TotalCount,
+            [.. data.Items.Select(_screenshotEntityMapper.FromEntity)]);
+
+        return Result<PaginationResult<Screenshot>>
+            .Success(result);
+    }
+
+    private async Task InvalidateListCacheAsync(Guid userId)
+        => await _screenshotCache.InvalidateUserAsync(userId);
+
+    private static bool ShouldCacheList(ScreenshotPaging? paging)
+    {
+        if (paging is null)
+            return true;
+
+        return paging.Page == 1
+            && paging.PageSize <= 50
+            && string.IsNullOrWhiteSpace(paging.Query)
+            && (paging.CategoryIds is null || paging.CategoryIds.Count == 0);
+    }
+
+    private Result<Screenshot> FormatScreenshotResult(
+        Result<ScreenshotEntity> entity)
     {
         if (!entity.IsSuccess)
             return Result<Screenshot>.Error(entity.ErrorMessage!);
 
-        return Result<Screenshot>.Success(_screenshotEntityMapper.FromEntity(entity.Value!));
+        return Result<Screenshot>.Success(
+            _screenshotEntityMapper.FromEntity(entity.Value!));
     }
 }

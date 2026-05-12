@@ -31,12 +31,12 @@ public class IdentityController(IUserManager userManager) : ControllerBase
     public async Task<IActionResult> GetUserInfo()
     {
         var user = await _userManager.GetUser();
-        var userModel = user is not null ? UserModel.GetModel(user) : null;
 
-        if (userModel is null)
+        if (!user.IsSuccess)
             return BadRequest("User doesn't exist");
-
-        return Ok(userModel);
+        
+        var userData = user.Value!;
+        return Ok(UserModel.GetModel(userData));
     }
 
     /// <summary>
@@ -56,14 +56,15 @@ public class IdentityController(IUserManager userManager) : ControllerBase
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(LoginResponseExample))]
     public async Task<IActionResult> Login(LoginModel login)
     {
-        var user = await _userManager.GetUserByEmailAndPasswordAsync(login.Email, login.Password);
+        var user = await _userManager.GetUserByNickNameAndPasswordAsync(login.NickName, login.Password);
 
-        if (user == null)
+        if (!user.IsSuccess)
             return BadRequest("User doesn't exist");
 
-        await AuthorizeAsync(user);
+        var userData = user.Value!;
+        await AuthorizeAsync(userData);
 
-        return Ok(UserModel.GetModel(user));
+        return Ok(UserModel.GetModel(userData));
     }
 
     /// <summary>
@@ -85,12 +86,14 @@ public class IdentityController(IUserManager userManager) : ControllerBase
     {
         var user = await _userManager.CreateUserAsync(registerModel.ToEntity());
 
-        if (user == null)
+        if (!user.IsSuccess)
             return BadRequest("User with that email already exist");
 
-        await AuthorizeAsync(user);
+        var userData = user.Value!;
 
-        return Ok(UserModel.GetModel(user));
+        await AuthorizeAsync(userData);
+
+        return Ok(UserModel.GetModel(userData));
     }
 
     /// <summary>
@@ -114,9 +117,9 @@ public class IdentityController(IUserManager userManager) : ControllerBase
         var claim = user.GetUserClaims();
 
         var claimsIdentity = new ClaimsIdentity(claim, JwtBearerDefaults.AuthenticationScheme);
-        var claimsPricipal = new ClaimsPrincipal(claimsIdentity);
+        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-        await HttpContext.SignInAsync(claimsPricipal);
+        await HttpContext.SignInAsync(claimsPrincipal);
     }
 }
 

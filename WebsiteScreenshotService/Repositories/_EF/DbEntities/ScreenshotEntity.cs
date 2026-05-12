@@ -23,8 +23,4 @@ public class ScreenshotEntity
     public string? Description { get; set; }
 
     public ICollection<CategoryEntity> Categories { get; set; } = [];
-
-    public NpgsqlTsVector TitleVector { get; set; } = default!;
-
-    public NpgsqlTsVector SearchVector { get; set; } = default!;
 }

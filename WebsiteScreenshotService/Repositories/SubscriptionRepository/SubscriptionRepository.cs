@@ -2,6 +2,7 @@
 using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Repositories.EF;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
+using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.Subscription;
 
@@ -10,15 +11,18 @@ public class SubscriptionRepository(ScreenshotDbContext context, IScreenshotMana
     private readonly ScreenshotDbContext _context = context;
     private readonly IScreenshotManager _screenshotManager = screenshotManager;
 
-    public async Task<bool> CanMakeScreenshotAsync(Guid userId)
+    public async Task<ConditionalResult> CanMakeScreenshotAsync(Guid userId)
     {
-        return await _context.Users
+        var canMakeScreenshot = await _context.Users
+            .AsNoTracking()
             .Where(u => u.Id == userId)
             .Select(u => u.SubscriptionPlan.ScreenshotLeft > 0)
             .FirstOrDefaultAsync();
+
+        return ConditionalResult.Success(canMakeScreenshot);
     }
 
-    public async Task<SubscriptionPlan?> ScreenshotWasMadeAsync(Guid userId)
+    public async Task<Result> ScreenshotWasMadeAsync(Guid userId)
     {
         var subscription = await _context.Users
             .Where(u => u.Id == userId)
@@ -26,7 +30,7 @@ public class SubscriptionRepository(ScreenshotDbContext context, IScreenshotMana
             .FirstOrDefaultAsync();
 
         if (subscription is null)
-            return null;
+            return Result.Error("User does not exist");
 
         if (subscription.ScreenshotLeft > 0)
         {
@@ -34,17 +38,17 @@ public class SubscriptionRepository(ScreenshotDbContext context, IScreenshotMana
             await _context.SaveChangesAsync();
         }
 
-        return new(subscription.Type, subscription.ScreenshotLeft);
+        return Result.Success;
     }
 
-    public async Task RedeemScreenshotAsync(string screenshotId, Guid userId)
+    public async Task<Result> RedeemScreenshotAsync(string screenshotId, Guid userId)
     {
         var user = await _context.Users
             .Include(u => u.SubscriptionPlan)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user?.SubscriptionPlan is null)
-            return;
+            return Result.Error("User does not exist"); ;
 
         user.SubscriptionPlan.ScreenshotLeft++;
 
@@ -53,5 +57,7 @@ public class SubscriptionRepository(ScreenshotDbContext context, IScreenshotMana
         await _screenshotManager.UpdateStateAsync(
             screenshotId,
             ScreenshotState.Failed);
+
+        return Result.Success;
     }
 }

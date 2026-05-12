@@ -3,27 +3,43 @@ using System.Text;
 
 namespace WebsiteScreenshotService.Services.Security;
 
-public class AesEncryptionService : IEncryptionService
+public sealed class AesEncryptionService : IEncryptionService
 {
     private const int NonceSizeBytes = 12;
     private const int TagSizeBytes = 16;
     private const string Version = "v1";
-    private const char Separator = '^';
 
-    public string Encrypt(string input, byte[] key)
+    public string Encrypt(
+        string plaintext,
+        byte[] key,
+        EncryptionContext context)
     {
-        var plaintext = Encoding.UTF8.GetBytes(input);
+        ArgumentNullException.ThrowIfNull(plaintext);
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(context);
 
-        var nonce = new byte[NonceSizeBytes];
-        RandomNumberGenerator.Fill(nonce);
+        var nonce = RandomNumberGenerator.GetBytes(NonceSizeBytes);
 
-        var ciphertext = new byte[plaintext.Length];
+        var plaintextBytes = Encoding.UTF8.GetBytes(plaintext);
+
+        var ciphertext = new byte[plaintextBytes.Length];
         var tag = new byte[TagSizeBytes];
 
-        using var aes = new AesGcm(key, TagSizeBytes);
-        aes.Encrypt(nonce, plaintext, ciphertext, tag);
+        var aad = BuildAad(context);
 
-        var result = new byte[NonceSizeBytes + TagSizeBytes + ciphertext.Length];
+        using var aes = new AesGcm(key, TagSizeBytes);
+
+        aes.Encrypt(
+            nonce,
+            plaintextBytes,
+            ciphertext,
+            tag,
+            aad);
+
+        var result = new byte[
+            NonceSizeBytes +
+            TagSizeBytes +
+            ciphertext.Length];
 
         var offset = 0;
 
@@ -35,41 +51,58 @@ public class AesEncryptionService : IEncryptionService
 
         ciphertext.CopyTo(result.AsSpan(offset));
 
-        var payload = Convert.ToBase64String(result);
-
-        return $"{Version}{Separator}{payload}";
+        return Convert.ToBase64String(result);
     }
 
-    public string Decrypt(string input, byte[] key)
+    public string Decrypt(
+        string encrypted,
+        byte[] key,
+        EncryptionContext context)
     {
-        var payload = ExtractPayload(input);
-        var full = Convert.FromBase64String(payload);
+        ArgumentNullException.ThrowIfNull(encrypted);
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(context);
+
+        var full = Convert.FromBase64String(encrypted);
+
+        if (full.Length < NonceSizeBytes + TagSizeBytes)
+            throw new CryptographicException("Invalid encrypted payload.");
 
         var nonce = full.AsSpan(0, NonceSizeBytes);
-        var tag = full.AsSpan(NonceSizeBytes, TagSizeBytes);
-        var ciphertext = full.AsSpan(NonceSizeBytes + TagSizeBytes);
+
+        var tag = full.AsSpan(
+            NonceSizeBytes,
+            TagSizeBytes);
+
+        var ciphertext = full.AsSpan(
+            NonceSizeBytes + TagSizeBytes);
 
         var plaintext = new byte[ciphertext.Length];
 
+        var aad = BuildAad(context);
+
         using var aes = new AesGcm(key, TagSizeBytes);
-        aes.Decrypt(nonce, ciphertext, tag, plaintext);
+
+        try
+        {
+            aes.Decrypt(
+                nonce,
+                ciphertext,
+                tag,
+                plaintext,
+                aad);
+        }
+        catch (CryptographicException)
+        {
+            throw new CryptographicException("Authentication failed. Ciphertext or AAD may have been tampered with.");
+        }
 
         return Encoding.UTF8.GetString(plaintext);
     }
 
-    private static string ExtractPayload(string input)
+    private static byte[] BuildAad(EncryptionContext context)
     {
-        var split = input.Split(Separator, StringSplitOptions.TrimEntries);
-
-        if (split.Length != 2)
-            throw new FormatException("Invalid encrypted format (missing version).");
-
-        var version = split[0];
-        var payload = split[1];
-
-        if (version != Version)
-            throw new NotSupportedException($"Unsupported encryption version: {version}");
-
-        return payload;
+        var aadString = $"version={Version}|tenant={context.TenantId}|purpose={context.Purpose}";
+        return Encoding.UTF8.GetBytes(aadString);
     }
 }

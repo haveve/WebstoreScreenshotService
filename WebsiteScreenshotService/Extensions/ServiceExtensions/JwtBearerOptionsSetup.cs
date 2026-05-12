@@ -32,7 +32,8 @@ public class JwtBearerOptionsSetup(IOptions<AuthorizationConfiguration> config) 
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_config.Secret)),
 
-            ClockSkew = TimeSpan.FromMinutes(1)
+            ClockSkew = TimeSpan.FromMinutes(1),
+            RoleClaimType = Constants.Claims.Role
         };
 
         options.Events = new JwtBearerEvents

@@ -8,6 +8,7 @@ public static class Constants
         public const string ScreenshotId = "screenshotId";
         public const string WebsiteUrl = "websiteUrl";
         public const string TokenType = "tokenType";
+        public const string Role = "role";
 
         public enum TokenTypes
         {

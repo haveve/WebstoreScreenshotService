@@ -5,7 +5,7 @@ using WebsiteScreenshotService.Repositories.CategoryRepository.Models;
 
 namespace WebsiteScreenshotService.Controllers;
 
-[Authorize]
+[Authorize(Roles = UserRoles.User, Policy = Policies.User.ManageCategories)]
 [ApiController]
 [Route("categories/[action]")]
 public class CategoriesController(ICategoryManager categoryManager) : ControllerBase
@@ -21,6 +21,7 @@ public class CategoriesController(ICategoryManager categoryManager) : Controller
     }
 
     [HttpPost]
+    [ActionName("createCategory")]
     public async Task<IActionResult> CreateCategory([FromBody] CategoryCreateModel model)
     {
         var category = await _categoryManager.AddAsync(model);

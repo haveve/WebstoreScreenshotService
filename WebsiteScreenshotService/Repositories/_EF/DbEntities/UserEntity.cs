@@ -4,7 +4,7 @@ public class UserEntity
 {
     public Guid Id { get; set; }
 
-    public required string EmailHash { get; set; }
+    public required string NickNameHash { get; set; }
 
     public required string PasswordHash { get; set; }
 
@@ -21,5 +21,9 @@ public class UserEntity
     public DateTime LastLoginAt { get; set; }
 };
 
-public record EncryptedData(string Name, string Email, string? TotpSecret);
+public record UserEncryptedData(string NickName, string Email, TwoFactorModel? TwoFactorModel);
+
+public record TwoFactorModel(string TotpSecret, IReadOnlyList<RecoveryCode> RecoveryCodes);
+
+public record RecoveryCode(string Code, bool WasUsed);
 

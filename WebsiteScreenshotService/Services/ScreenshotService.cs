@@ -45,10 +45,10 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
         if (confirmationToken is null)
             return defaultErrorMessage;
 
-        //var screenshotResult = await _subscriptionManager.ScreenshotWasMadeAsync();
+        var screenshotResult = await _subscriptionManager.ScreenshotWasMadeAsync();
 
-        //if (!screenshotResult.IsSuccess)
-        //    return Result<string>.Error(screenshotResult.ErrorMessage!);
+        if (!screenshotResult.IsSuccess)
+            return Result<Screenshot>.Error(screenshotResult.ErrorMessage!);
 
         var savedScreenshotResult = await _screenshotManager.MakeAsync(new
         (

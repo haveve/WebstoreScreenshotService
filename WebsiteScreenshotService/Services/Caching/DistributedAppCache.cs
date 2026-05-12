@@ -1,23 +1,14 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 using WebsiteScreenshotService.Services.Synchronization;
 using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Services.Caching;
 
-public class CacheManager : ICacheManager
+public class CacheManager(IDistributedCache cache) : ICacheManager
 {
-    private readonly IDistributedCache _cache;
-    private readonly IAsyncKeyedLocker _locker;
-
-    public CacheManager(
-        IDistributedCache cache,
-        IAsyncKeyedLocker locker)
-    {
-        _cache = cache;
-        _locker = locker;
-    }
+    private readonly IDistributedCache _cache = cache;
+    private readonly AsyncKeyedLocker<string> _locker = new();
 
     private static string Key(CacheKey key) => key.Build();
 

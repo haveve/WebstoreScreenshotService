@@ -7,10 +7,10 @@ public sealed class LoginModelValidator : Validator<LoginModel>
 {
     public LoginModelValidator()
     {
-        RuleFor(nameof(LoginModel.Email), x => x.Email)
-            .Required("Email is required.")
-            .MaxLen(254, "Email must not exceed 254 characters.")
-            .Must(RegexPatterns.Email.IsMatch, $"Email is not a valid email address.");
+        RuleFor(nameof(LoginModel.NickName), x => x.NickName)
+            .Required("NickName is required.")
+            .MaxLen(50, "NickName must not exceed 50 characters.")
+            .Must(RegexPatterns.NickName.IsMatch, $"NickName is not valid.");
 
         RuleFor(nameof(LoginModel.Password), x => x.Password)
             .Required("Password is required.")

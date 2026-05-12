@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Collections;
 using WebsiteScreenshotService.Entities;
-using WebsiteScreenshotService.Mappers.EntityMappers;
 using WebsiteScreenshotService.Repositories.EF;
 using WebsiteScreenshotService.Repositories.EF.DbEntities;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
@@ -26,8 +26,22 @@ public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearch
         return Result<ScreenshotEntity>.Success(entity);
     }
 
-    public async Task DeleteAsync(string id)
-        => await _context.Screenshots.Where(s => s.Id == id).ExecuteDeleteAsync();
+    public async Task DeleteAsync(IReadOnlyCollection<string> ids)
+    {
+        if(ids.Count == 0) 
+            return;
+
+        if (ids.Count == 1)
+        {
+            var id = ids.First();
+            await _context.Screenshots.Where(s => s.Id == id).ExecuteDeleteAsync();
+            return;
+        }
+
+        await _context.Screenshots
+            .Where(s => ids.Contains(s.Id))
+            .ExecuteDeleteAsync();
+    }
 
     public async Task<Result<PaginationResult<ScreenshotEntity>>> GetScreenshots(ScreenshotPaging? paging, Guid userId)
     {

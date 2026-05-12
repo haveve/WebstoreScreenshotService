@@ -20,10 +20,10 @@ public sealed class RegisterModelValidator : Validator<RegisterModel>
             .Must(HasRequiredComplexity,
                 "Password must contain uppercase, lowercase, digit, and special character.");
 
-        RuleFor(nameof(RegisterModel.Name), x => x.Name)
-            .Required("Name is required.")
-            .MaxLen(100, "Name must not exceed 100 characters.")
-            .Must(v => v.Trim().Length > 0, "Name cannot be empty or whitespace.");
+        RuleFor(nameof(RegisterModel.NickName), x => x.NickName)
+            .Required("NickName is required.")
+            .MaxLen(50, "NickName must not exceed 50 characters.")
+            .Must(RegexPatterns.NickName.IsMatch, $"NickName is not valid.");
     }
 
     private static bool HasRequiredComplexity(string password)

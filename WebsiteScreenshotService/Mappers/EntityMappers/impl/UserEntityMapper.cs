@@ -1,5 +1,6 @@
 ﻿using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Repositories.EF.DbEntities;
+using WebsiteScreenshotService.Services.Security;
 
 namespace WebsiteScreenshotService.Mappers.EntityMappers.impl;
 
@@ -7,14 +8,14 @@ public class UserEntityMapper(IUserContextAccessor userContextAccessor) : Encryp
 {
     public User FromEntity(UserEntity entity)
     {
-        var userData = Decrypt<EncryptedData>(entity.EncryptedData);
-        var subscriptionPlan = new SubscriptionPlan(entity.SubscriptionPlan.Type, entity.SubscriptionPlan.ScreenshotLeft); ;
-        return new User(entity.Id, userData.Name, userData.Email, subscriptionPlan);
+        var userData = Decrypt(entity.EncryptedData);
+        var subscriptionPlan = new SubscriptionPlan(entity.SubscriptionPlan.Type, entity.SubscriptionPlan.ScreenshotLeft);
+        return new User(entity.Id, userData.NickName, userData.Email, subscriptionPlan);
     }
 
-    public EncryptedData Decrypt(string data)
-        => Decrypt<EncryptedData>(data);
+    public UserEncryptedData Decrypt(string data)
+        => Decrypt<UserEncryptedData>(data, UserEncryptionContextFactory.UserEncEntityData);
 
-    public string Encrypt(EncryptedData data)
-        => EncryptAsJson(data);
+    public string Encrypt(UserEncryptedData data)
+        => EncryptAsJson(data, UserEncryptionContextFactory.UserEncEntityData);
 }

@@ -1,25 +1,21 @@
 ﻿using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Repositories.CategoryRepository.Models;
 using WebsiteScreenshotService.Services.Caching;
+using WebsiteScreenshotService.Services.Caching.Services;
 using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.CategoryRepository;
 
-public class CategoryManager : ICategoryManager
-{
-    private readonly ICategoryRepository _categoryRepository;
-    private readonly IUserContextAccessor _userContextAccessor;
-    private readonly ICacheManager _cache;
-
-    public CategoryManager(
+public class CategoryManager(
         ICategoryRepository categoryRepository,
         IUserContextAccessor userContextAccessor,
-        ICacheManager cache)
-    {
-        _categoryRepository = categoryRepository;
-        _userContextAccessor = userContextAccessor;
-        _cache = cache;
-    }
+        ICacheManager cache,
+        ICategoryCacheService categoryCacheService) : ICategoryManager
+{
+    private readonly ICategoryRepository _categoryRepository = categoryRepository;
+    private readonly IUserContextAccessor _userContextAccessor = userContextAccessor;
+    private readonly ICacheManager _cache = cache;
+    private readonly ICategoryCacheService _categoryCacheService = categoryCacheService;
 
     public async Task<Result<Category>> AddAsync(CategoryCreateModel category, Guid userId = default)
     {
@@ -79,17 +75,14 @@ public class CategoryManager : ICategoryManager
         if (userId == default)
             userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        var key = CacheKeys.Category.ById(categoryId);
+        var key = _categoryCacheService.ById(categoryId);
 
         var categoryResult = await _cache.GetOrSetAsync(
             key,
-            () => _categoryRepository.GetByIdAsync(categoryId),
-            new CacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-            });
+            async () => ValidateUserRights(await _categoryRepository.GetByIdAsync(categoryId), userId),
+            CacheOptions.Category.Entry);
 
-        return ValidateUserRights(categoryResult, userId);
+        return categoryResult;
     }
 
     public async Task<Result<List<Category>>> GetAllAsync(Guid userId = default)
@@ -97,21 +90,18 @@ public class CategoryManager : ICategoryManager
         if (userId == default)
             userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        var key = CacheKeys.Category.List(userId);
+        var key = _categoryCacheService.List(userId);
 
         return await _cache.GetOrSetAsync(
             key,
             () => _categoryRepository.GetAllAsync(userId),
-            new CacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-            });
+            CacheOptions.Category.List);
     }
 
     private async Task InvalidateCategoryCache(Guid categoryId, Guid userId)
     {
-        await _cache.RemoveAsync(CacheKeys.Category.ById(categoryId));
-        await _cache.RemoveAsync(CacheKeys.Category.List(userId));
+        await _cache.RemoveAsync(_categoryCacheService.ById(categoryId));
+        await _cache.RemoveAsync(_categoryCacheService.List(userId));
     }
 
     private static Result<Category> ValidateUserRights(Result<Category> categoryResult, Guid userId)

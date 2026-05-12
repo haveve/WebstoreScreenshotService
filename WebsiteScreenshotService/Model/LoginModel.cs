@@ -8,7 +8,7 @@ public class LoginModel
     /// <summary>
     /// Gets or sets the email address of the user.
     /// </summary>
-    public string Email { get; set; } = default!;
+    public string NickName { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the password of the user.

@@ -5,13 +5,14 @@ using WebsiteScreenshotService.Services.Security;
 
 namespace WebsiteScreenshotService;
 
-public class UserSpecificServicesInitializeMiddleware(ILogger<UserContextInitializeMiddleware> logger, IUserCryptographicDataManager cryptographicDataManager, IKeyService keyService, IEncryptionService encryptionService, IOptions<EncryptionConfigurations> config) : IMiddleware
+public class UserSpecificServicesInitializeMiddleware(ILogger<UserContextInitializeMiddleware> logger, IUserCryptographicDataManager cryptographicDataManager, IKeyService keyService, IEncryptionService encryptionService, IHashingService hashingService, IOptions<EncryptionConfigurations> config) : IMiddleware
 {
     private readonly ILogger<UserContextInitializeMiddleware> _logger = logger;
     private readonly IUserCryptographicDataManager _cryptographicDataManager = cryptographicDataManager;
     private readonly EncryptionConfigurations _encryptionConfigurations = config.Value;
     private readonly IKeyService _keyService = keyService;
     private readonly IEncryptionService _encryptionService = encryptionService;
+    private readonly IHashingService _hashingService = hashingService;
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
@@ -41,19 +42,23 @@ public class UserSpecificServicesInitializeMiddleware(ILogger<UserContextInitial
             return null;
         }
 
-        var (encryptionKey, _) = await _cryptographicDataManager.GetUseCryptographicDataAsync(userId.Value);
+        var result = await _cryptographicDataManager.GetUseCryptographicDataAsync(userId.Value);
 
-        if (encryptionKey is null)
+        if (!result.IsSuccess)
         {
             await httpContext.Response.UnauthorizedAccess();
             return null;
         }
 
-        var encryptionService = new UserEncryptionService(_keyService, _encryptionService, _encryptionConfigurations, encryptionKey);
+        var (salt, encryptionKey) = result.Value!;
+
+        var encryptionService = new UserEncryptionService(_keyService, _encryptionService, _encryptionConfigurations, encryptionKey, userId.Value);
+        var hashingService = new UserHashingService(_hashingService, salt);
 
         return new()
         {
             EncryptionService = encryptionService,
+            HashingService = hashingService
         };
     }
 }

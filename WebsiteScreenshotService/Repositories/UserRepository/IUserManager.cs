@@ -1,5 +1,6 @@
 ﻿using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
+using WebsiteScreenshotService.Repositories.UserRepository.Models;
 using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.UserRepository;
@@ -9,7 +10,9 @@ namespace WebsiteScreenshotService.Repositories.UserRepository;
 /// </summary>
 public interface IUserManager
 {
-    public Task<Result<User>> UpdateUserAsync(Guid id, UserUpdateModel model);
+    public Task<Result> Change2faModelAsync(Change2faManagerModel model, Guid id = default);
+
+    public Task<Result> UpdateUserPasswordAsync(UserPasswordUpdateManagerModel model, Guid id = default);
 
     /// <summary>
     /// Retrieves a user by their email and password.
@@ -17,7 +20,7 @@ public interface IUserManager
     /// <param name="email">The email of the user.</param>
     /// <param name="password">The password of the user.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the user if found; otherwise, null.</returns>
-    public Task<Result<User>> GetUserByEmailAndPasswordAsync(string email, string password);
+    public Task<Result<User>> GetUserByNickNameAndPasswordAsync(string nickName, string password);
 
     /// <summary>
     /// Retrieves a user by their unique identifier.
@@ -31,5 +34,7 @@ public interface IUserManager
     /// </summary>
     /// <param name="user">The user to create.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created user.</returns>
-    public Task<Result<User>> CreateUserAsync(UserCreateModel user);
+    public Task<Result<User>> CreateUserAsync(UserCreateManagerModel user);
+
+    public Task<ConditionalResult> DoesUserExistWithNickNameAsync(string nickNameHash);
 }

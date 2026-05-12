@@ -26,13 +26,13 @@ public class RegisterModel
     /// Gets or sets the first name of the user.
     /// </summary>
     [Required]
-    public string Name { get; set; } = default!;
+    public string NickName { get; set; } = default!;
 
     /// <summary>
     /// Converts the <see cref="RegisterModel"/> to a <see cref="User"/> entity.
     /// </summary>
     /// <returns>A new <see cref="User"/> entity with the registration details.</returns>
-    public UserCreateModel ToEntity()
-        => new(Guid.NewGuid(), Name, Email, Password, SubscriptionPlan.GetRegularSubscriptionPlan());
+    public UserCreateManagerModel ToEntity()
+        => new(NickName, Email, Password, SubscriptionPlan.GetRegularSubscriptionPlan());
 }
 

@@ -11,7 +11,7 @@ public interface IScreenshotRepository
 
     public Task<Result<ScreenshotEntity>> UpdateAsync(ScreenshotUpdateModel screenshot);
 
-    public Task DeleteAsync(string id);
+    public Task DeleteAsync(IReadOnlyCollection<string> ids);
 
     public Task<Result<ScreenshotEntity>> UpdateStateAsync(string screenshotId, ScreenshotState state);
 

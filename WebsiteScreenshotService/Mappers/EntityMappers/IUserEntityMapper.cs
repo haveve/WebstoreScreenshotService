@@ -5,7 +5,7 @@ namespace WebsiteScreenshotService.Mappers.EntityMappers;
 
 public interface IUserEntityMapper : IEntityMapper<UserEntity, User>
 {
-    public EncryptedData Decrypt(string data);
+    public UserEncryptedData Decrypt(string data);
 
-    public string Encrypt(EncryptedData data);
+    public string Encrypt(UserEncryptedData data);
 };

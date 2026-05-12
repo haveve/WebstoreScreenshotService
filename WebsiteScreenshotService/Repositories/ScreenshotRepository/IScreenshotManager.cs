@@ -8,7 +8,7 @@ public interface IScreenshotManager
 {
     public Task<Result<Screenshot>> MakeAsync(ScreenshotCreateModel screenshot);
 
-    public Task DeleteAsync(string id);
+    public Task<Result> DeleteAsync(IReadOnlyCollection<string> ids);
 
     public Task<Result<Screenshot>> UpdateAsync(ScreenshotUpdateModel screenshot);
 

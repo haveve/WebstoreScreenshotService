@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Options;
 using NpgsqlTypes;
 using WebsiteScreenshotService.Configurations;
@@ -35,9 +36,9 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
 
     public DbSet<SubscriptionEntity> Subscriptions => Set<SubscriptionEntity>();
 
-    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<RefreshTokenEntity> RefreshTokens => Set<RefreshTokenEntity>();
 
-    public DbSet<ApiToken> ApiTokens => Set<ApiToken>();
+    public DbSet<ApiTokenEntity> ApiTokens => Set<ApiTokenEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -64,7 +65,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
                    .IsRequired()
                    .HasMaxLength(128);
 
-            builder.Property(u => u.EmailHash)
+            builder.Property(u => u.NickNameHash)
                    .IsRequired()
                    .HasMaxLength(128);
 
@@ -76,7 +77,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
                    .IsRequired()
                    .HasMaxLength(128);
 
-            builder.HasIndex(u => u.EmailHash)
+            builder.HasIndex(u => u.NickNameHash)
                    .IsUnique();
 
             builder.OwnsOne(u => u.SubscriptionPlan, sp =>
@@ -142,7 +143,6 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
 
             if (consifurations.Value.Provider == Provider.Postgres)
             {
-                // TITLE ONLY (fast, precise)
                 builder.Property<NpgsqlTsVector>(ScreenshotSearch.TitleSearchVector)
                     .HasComputedColumnSql(@"
                     to_tsvector('simple', coalesce(""Title"", ''))
@@ -151,7 +151,6 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
                 builder.HasIndex(ScreenshotSearch.TitleSearchVector)
                     .HasMethod("GIN");
 
-                // TITLE + DESCRIPTION (broader search)
                 builder.Property<NpgsqlTsVector>(ScreenshotSearch.FullSearchVector)
                     .HasComputedColumnSql(@"
                     to_tsvector('simple',
@@ -163,7 +162,6 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
                     .HasMethod("GIN");
             }
 
-            // MANY-TO-MANY
             builder.HasMany(s => s.Categories)
                    .WithMany()
                    .UsingEntity<Dictionary<string, object>>(
@@ -335,13 +333,12 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
             builder.HasIndex(p => p.OrderId);
             builder.HasIndex(p => p.UserId);
 
-            // Important for webhook lookup
             builder.HasIndex(p => p.ProviderPaymentId)
                    .IsUnique(false);
 
-            // Ensure only ONE primary attempt per order
-            builder.HasIndex(p => new { p.OrderId, p.IsPrimary })
-                   .HasFilter("\"IsPrimary\" = true"); // works in PostgreSQL
+            builder.HasIndex(p => p.OrderId)
+                   .IsUnique()
+                   .HasFilter("\"IsPrimary\" = true");
         });
     }
 
@@ -381,30 +378,64 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
             builder.Property(s => s.EncryptedData)
                    .IsRequired();
 
-            // 🔥 Indexes
             builder.HasIndex(s => s.UserId);
             builder.HasIndex(s => s.ProviderSubscriptionId)
                    .IsUnique();
         });
     }
 
-    private void ConfigureAuth(ModelBuilder modelBuilder)
+    private static void ConfigureAuth(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<RefreshToken>(entity =>
+        modelBuilder.Entity<ApiTokenEntity>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.HasIndex(x => x.TokenHash).IsUnique();
+            entity.HasIndex(x => x.Expires);
+            entity.HasIndex(x => x.UserId);
+
+            entity.Property(x => x.TokenHash).IsRequired();
+            entity.Property(x => x.Name).IsRequired();
+            entity.Property(x => x.EncryptedData).IsRequired();
+
+            entity.OwnsOne(x => x.TokenMetadata, meta =>
+            {
+                meta.Property(x => x.Issued);
+
+                meta.OwnsOne(x => x.IssuedLocation);
+
+                meta.Property(x => x.LastUsed);
+
+                meta.OwnsOne(x => x.LastUsedLocation);
+
+                meta.Property(x => x.Revoked);
+
+                meta.OwnsOne(x => x.RevokeLocation);
+            });
+        });
+
+        modelBuilder.Entity<RefreshTokenEntity>(entity =>
         {
             entity.HasKey(x => x.Id);
 
             entity.HasIndex(x => x.TokenHash).IsUnique();
             entity.HasIndex(x => x.FamilyId);
             entity.HasIndex(x => x.UserId);
-        });
+            entity.HasIndex(x => x.Expires);
 
-        modelBuilder.Entity<ApiToken>(entity =>
-        {
-            entity.HasKey(x => x.Id);
+            entity.Property(x => x.TokenHash).IsRequired();
+            entity.Property(x => x.FamilyId).IsRequired();
 
-            entity.HasIndex(x => x.TokenHash).IsUnique();
-            entity.HasIndex(x => new { x.UserId, x.Name }).IsUnique();
+            entity.OwnsOne(x => x.TokenMetadata, meta =>
+            {
+                meta.Property(x => x.Issued);
+
+                meta.OwnsOne(x => x.IssuedLocation);
+
+                meta.Property(x => x.Revoked);
+
+                meta.OwnsOne(x => x.RevokeLocation);
+            });
         });
     }
 }

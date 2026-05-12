@@ -9,10 +9,10 @@ public interface ISubscriptionManager
     /// Updates the subscription plan when a screenshot is made by the user.
     /// </summary>
     /// <returns>A task that represents the asynchronous operation. The task result contains the updated subscription plan if found; otherwise, null.</returns>
-    public Task<Result<SubscriptionPlan>> ScreenshotWasMadeAsync(Guid userId = default);
+    public Task<Result> ScreenshotWasMadeAsync(Guid userId = default);
 
-    public Task<bool> CanMakeScreenshotAsync(Guid userId = default);
+    public Task<ConditionalResult> CanMakeScreenshotAsync(Guid userId = default);
 
-    public Task RedeemScreenshotAsync(string screenshotId, Guid userId = default);
+    public Task<Result> RedeemScreenshotAsync(string screenshotId, Guid userId = default);
 
 }

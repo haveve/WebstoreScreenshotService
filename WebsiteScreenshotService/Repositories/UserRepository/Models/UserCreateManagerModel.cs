@@ -2,4 +2,4 @@
 
 namespace WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 
-public record UserCreateModel(Guid Id, string Name, string Email, string Password, SubscriptionPlan SubscriptionPlan);
+public record UserCreateManagerModel(string NickName, string Email, string Password, SubscriptionPlan SubscriptionPlan);

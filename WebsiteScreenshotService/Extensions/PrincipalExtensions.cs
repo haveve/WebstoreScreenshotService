@@ -50,6 +50,9 @@ public static class PrincipalExtensions
     public static Guid? GetUserId(this ClaimsPrincipal currentPrincipal)
         => Guid.TryParse(currentPrincipal.GetClaimValue(Constants.Claims.UserId), out Guid Id) ? Id : null;
 
+    public static UserRole? GetUserRole(this ClaimsPrincipal currentPrincipal)
+        => Enum.TryParse(currentPrincipal.GetClaimValue(Constants.Claims.Role), out UserRole type) ? type : null;
+    
     public static Constants.Claims.TokenTypes? GetTokenType(this ClaimsPrincipal currentPrincipal)
         => Enum.TryParse(currentPrincipal.GetClaimValue(Constants.Claims.TokenType), out Constants.Claims.TokenTypes type) ? type : null;
 }

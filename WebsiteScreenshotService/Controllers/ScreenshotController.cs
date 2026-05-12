@@ -13,7 +13,7 @@ using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Controllers;
 
-[Authorize]
+[Authorize(Roles = UserRoles.User)]
 [ApiController]
 [Route("screenshots/[action]")]
 public class ScreenshotController(IScreenshotService screenshotService, IScreenshotManager screenshotManager, IScreenshotStorageManager screenshotStorageManager, IUserContextAccessor userContextAccessor) : ControllerBase
@@ -34,6 +34,7 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
     /// <response code="400">User does not exist or has exceeded their available screenshots limit or Input data is invalid.</response>
     /// <response code="401">Unauthorized</response>
     [HttpPost]
+    [Authorize(Policy = Policies.User.MakeScreenshots)]
     [ActionName("makeScreenshot")]
     [ProducesResponseType<FileStream>(StatusCodes.Status200OK, "image/png", "image/jpeg")]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, "application/json")]
@@ -58,6 +59,7 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
     }
 
     [HttpGet]
+    [Authorize(Policy = Policies.User.FetchScreenshots)]
     [ActionName("getScreenshots")]
     public async Task<IActionResult> GetScreenshots([FromQuery] Paging paging)
     {
@@ -83,6 +85,7 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
     }
 
     [HttpGet]
+    [Authorize(Policy = Policies.User.FetchScreenshots)]
     [ActionName("getScreenshot")]
     public async Task<IActionResult> GetScreenshot([FromQuery] string id)
     {
