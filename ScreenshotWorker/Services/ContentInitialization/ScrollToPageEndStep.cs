@@ -4,6 +4,7 @@ using ScreenshotWorker.Settings;
 using ScreenshotWorker.Settings.InitializationStep;
 using ScreenshotWorker.Utils;
 using Shared.Core.Contracts.ScreeshotModel.Components;
+using Shared.Core.Contracts.ScreeshotModel.Validation;
 
 namespace ScreenshotWorker.Services.ContentInitialization;
 
@@ -26,7 +27,7 @@ public class ScrollToPageEndStep(IOptions<BrowserServiceSettings> browserService
         var scrollDelay = scrollSettings.PollingInterval * 1000;
         var waitForPossibleContentLoad = scrollSettings.WaitForPossibleContentLoad * 1000;
         var maxExecutionTimeout = scrollSettings.ExecutionTimeoutInSeconds * 1000;
-        var maxRenderedHeight = ClipModel.MaxHeight;
+        var maxRenderedHeight = Limits.ClipModel.MaxHeight;
 
         page.SetDefaultTimeout(maxExecutionTimeout);
 
