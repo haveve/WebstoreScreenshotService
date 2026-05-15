@@ -37,12 +37,11 @@ public class UserManager(
     private readonly ICacheManager _cache = cache;
     private readonly IUserCacheService _userCache = userCache;
 
-    public async ValueTask<Result<User>> GetUser(Guid id = default)
+    public async ValueTask<Result<User>> GetUser(Guid? userId = null)
     {
-        if (id == default)
-            id = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        var entityResult = await GetUserProfileCachedAsync(id);
+        var entityResult = await GetUserProfileCachedAsync(userId.Value);
 
         return FormatUserResult(entityResult);
     }
@@ -85,12 +84,11 @@ public class UserManager(
         return FormatUserResult(entity);
     }
 
-    public async Task<Result> UpdateUserPasswordAsync(UserPasswordUpdateManagerModel model, Guid id = default)
+    public async Task<Result> UpdateUserPasswordAsync(UserPasswordUpdateManagerModel model, Guid? userId = null)
     {
-        if (id == default)
-            id = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        var user = await GetUserProfileCachedAsync(id);
+        var user = await GetUserProfileCachedAsync(userId.Value);
 
         if (!user.IsSuccess)
             return Result.Error(user.ErrorMessage!);
@@ -100,20 +98,19 @@ public class UserManager(
 
         var repositoryModel = new UserPasswordUpdateRepositoryModel(passwordHash);
 
-        var result = await _userRepository.UpdateUserPasswordAsync(id, repositoryModel);
+        var result = await _userRepository.UpdateUserPasswordAsync(userId.Value, repositoryModel);
 
         if (result.IsSuccess)
-            await InvalidateUserCacheAsync(id);
+            await InvalidateUserCacheAsync(userId.Value);
 
         return result;
     }
 
-    public async Task<Result> Change2faModelAsync(Change2faManagerModel model, Guid id = default)
+    public async Task<Result> Change2faModelAsync(Change2faManagerModel model, Guid? userId = null)
     {
-        if (id == default)
-            id = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        var user = await GetUserProfileCachedAsync(id);
+        var user = await GetUserProfileCachedAsync(userId.Value);
 
         if (!user.IsSuccess)
             return Result.Error(user.ErrorMessage!);
@@ -132,10 +129,10 @@ public class UserManager(
         var repositoryModel = new Change2faRepositoryModel(
             _userEntityMapper.Encrypt(updatedData));
 
-        var result = await _userRepository.Change2faModelAsync(id, repositoryModel);
+        var result = await _userRepository.Change2faModelAsync(userId.Value, repositoryModel);
 
         if (result.IsSuccess)
-            await InvalidateUserCacheAsync(id);
+            await InvalidateUserCacheAsync(userId.Value);
 
         return result;
     }

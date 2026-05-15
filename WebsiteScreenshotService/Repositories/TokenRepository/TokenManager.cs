@@ -5,7 +5,6 @@ using WebsiteScreenshotService.Repositories.TokenRepository.Models;
 using WebsiteScreenshotService.Services.Caching;
 using WebsiteScreenshotService.Services.Caching.Services;
 using WebsiteScreenshotService.Utils;
-using static Grpc.Core.Metadata;
 
 namespace WebsiteScreenshotService.Repositories.TokenRepository;
 
@@ -29,10 +28,9 @@ public class TokenManager(
 
     public async Task<Result<ApiToken>> CreateApiTokenAsync(
         CreateApiTokenManagerModel model,
-        Guid userId = default)
+        Guid? userId = null)
     {
-        if (userId == default)
-            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         var encryptedData = new ApiTokenEncryptedData(
             model.AllowedIps,
@@ -46,7 +44,7 @@ public class TokenManager(
             model.IssuerLocation);
 
         var result = await _tokenRepository.CreateApiTokenAsync(
-            userId,
+            userId.Value,
             repositoryModel);
 
         if (!result.IsSuccess)
@@ -75,13 +73,12 @@ public class TokenManager(
 
     public async Task<Result<RefreshToken>> CreateRefreshTokenAsync(
         CreateRefreshTokenModel model,
-        Guid userId = default)
+        Guid? userId = null)
     {
-        if (userId == default)
-            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         var result = await _tokenRepository.CreateRefreshTokenAsync(
-            userId,
+            userId.Value,
             model);
 
         if (!result.IsSuccess)
@@ -163,19 +160,18 @@ public class TokenManager(
     }
 
     public async Task<Result<List<RefreshToken>>> GetAllActiveRefreshTokensAsync(
-        Guid userId = default)
+        Guid? userId = null)
     {
-        if (userId == default)
-            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        var key = _refreshTokenCache.ActiveList(userId);
+        var key = _refreshTokenCache.ActiveList(userId.Value);
 
         return await _cache.GetOrSetAsync(
             key,
             async () =>
             {
                 var result = await _tokenRepository
-                    .GetAllActiveRefreshTokensAsync(userId);
+                    .GetAllActiveRefreshTokensAsync(userId.Value);
 
                 if (!result.IsSuccess)
                     return Result<List<RefreshToken>>
@@ -192,19 +188,18 @@ public class TokenManager(
     }
 
     public async Task<Result<List<ApiToken>>> GetAllActiveApiTokensAsync(
-        Guid userId = default)
+        Guid? userId = null)
     {
-        if (userId == default)
-            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        var key = _apiTokenCache.ActiveList(userId);
+        var key = _apiTokenCache.ActiveList(userId.Value);
 
         return await _cache.GetOrSetAsync(
             key,
             async () =>
             {
                 var result = await _tokenRepository
-                    .GetAllActiveApiTokensAsync(userId);
+                    .GetAllActiveApiTokensAsync(userId.Value);
 
                 if (!result.IsSuccess)
                     return Result<List<ApiToken>>

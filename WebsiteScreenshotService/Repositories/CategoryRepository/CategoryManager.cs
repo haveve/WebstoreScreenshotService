@@ -17,12 +17,11 @@ public class CategoryManager(
     private readonly ICacheManager _cache = cache;
     private readonly ICategoryCacheService _categoryCacheService = categoryCacheService;
 
-    public async Task<Result<Category>> AddAsync(CategoryCreateModel category, Guid userId = default)
+    public async Task<Result<Category>> AddAsync(CategoryCreateModel category, Guid? userId = null)
     {
-        if (userId == default)
-            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        var categoryResult = await _categoryRepository.AddAsync(category, userId);
+        var categoryResult = await _categoryRepository.AddAsync(category, userId.Value);
 
         if (categoryResult.IsSuccess)
         {
@@ -33,10 +32,9 @@ public class CategoryManager(
         return categoryResult;
     }
 
-    public async Task<Result> RemoveAsync(Guid categoryId, Guid userId = default)
+    public async Task<Result> RemoveAsync(Guid categoryId, Guid? userId = null)
     {
-        if (userId == default)
-            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         var categoryResult = await GetByIdAsync(categoryId, userId);
 
@@ -44,15 +42,14 @@ public class CategoryManager(
             return Result.Error(categoryResult.ErrorMessage!);
 
         await _categoryRepository.RemoveAsync(categoryId);
-        await InvalidateCategoryCache(categoryId, userId);
+        await InvalidateCategoryCache(categoryId, userId.Value);
 
         return Result.Success;
     }
 
-    public async Task<Result<Category>> UpdateAsync(CategoryUpdateModel model, Guid userId = default)
+    public async Task<Result<Category>> UpdateAsync(CategoryUpdateModel model, Guid? userId = null)
     {
-        if (userId == default)
-            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         var categoryResult = await GetByIdAsync(model.Id, userId);
 
@@ -70,31 +67,29 @@ public class CategoryManager(
         return categoryUpdateResult;
     }
 
-    public async Task<Result<Category>> GetByIdAsync(Guid categoryId, Guid userId = default)
+    public async Task<Result<Category>> GetByIdAsync(Guid categoryId, Guid? userId = null)
     {
-        if (userId == default)
-            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         var key = _categoryCacheService.ById(categoryId);
 
         var categoryResult = await _cache.GetOrSetAsync(
             key,
-            async () => ValidateUserRights(await _categoryRepository.GetByIdAsync(categoryId), userId),
+            async () => ValidateUserRights(await _categoryRepository.GetByIdAsync(categoryId), userId.Value),
             CacheOptions.Category.Entry);
 
         return categoryResult;
     }
 
-    public async Task<Result<List<Category>>> GetAllAsync(Guid userId = default)
+    public async Task<Result<List<Category>>> GetAllAsync(Guid? userId = null)
     {
-        if (userId == default)
-            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        var key = _categoryCacheService.List(userId);
+        var key = _categoryCacheService.List(userId.Value);
 
         return await _cache.GetOrSetAsync(
             key,
-            () => _categoryRepository.GetAllAsync(userId),
+            () => _categoryRepository.GetAllAsync(userId.Value),
             CacheOptions.Category.List);
     }
 

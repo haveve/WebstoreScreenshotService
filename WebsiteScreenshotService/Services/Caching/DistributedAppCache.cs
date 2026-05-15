@@ -17,7 +17,7 @@ public class CacheManager(IDistributedCache cache) : ICacheManager
         var data = await _cache.GetAsync(Key(key));
 
         return data is null
-            ? default
+            ? null
             : JsonSerializer.Deserialize<T>(data);
     }
 

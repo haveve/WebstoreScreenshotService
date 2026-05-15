@@ -10,9 +10,9 @@ namespace WebsiteScreenshotService.Repositories.UserRepository;
 /// </summary>
 public interface IUserManager
 {
-    public Task<Result> Change2faModelAsync(Change2faManagerModel model, Guid id = default);
+    public Task<Result> Change2faModelAsync(Change2faManagerModel model, Guid? userId = null);
 
-    public Task<Result> UpdateUserPasswordAsync(UserPasswordUpdateManagerModel model, Guid id = default);
+    public Task<Result> UpdateUserPasswordAsync(UserPasswordUpdateManagerModel model, Guid? userId = null);
 
     /// <summary>
     /// Retrieves a user by their email and password.
@@ -27,7 +27,7 @@ public interface IUserManager
     /// </summary>
     /// <param name="id">The unique identifier of the user.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the user if found; otherwise, null.</returns>
-    public ValueTask<Result<User>> GetUser(Guid id = default);
+    public ValueTask<Result<User>> GetUser(Guid? userId = null);
 
     /// <summary>
     /// Creates a new user.

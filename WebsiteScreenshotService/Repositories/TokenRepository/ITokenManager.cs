@@ -8,7 +8,7 @@ public interface ITokenManager
 {
     Task<Result<ApiToken>> CreateApiTokenAsync(
         CreateApiTokenManagerModel model,
-        Guid userId = default);
+        Guid? userId = null);
 
     Task<Result> UpdateApiTokenUsageAsync(
         UpdateApiTokenUsageModel model);
@@ -18,7 +18,7 @@ public interface ITokenManager
 
     Task<Result<RefreshToken>> CreateRefreshTokenAsync(
         CreateRefreshTokenModel model,
-        Guid userId = default);
+        Guid? userId = null);
 
     Task<Result> RevokeRefreshTokenAsync(
         RevokeRefreshTokenModel model);
@@ -33,8 +33,8 @@ public interface ITokenManager
         RevokeRefreshTokenFamilyModel model);
 
     Task<Result<List<RefreshToken>>> GetAllActiveRefreshTokensAsync(
-        Guid userId = default);
+        Guid? userId = null);
 
     Task<Result<List<ApiToken>>> GetAllActiveApiTokensAsync(
-        Guid userId = default);
+        Guid? userId = null);
 }

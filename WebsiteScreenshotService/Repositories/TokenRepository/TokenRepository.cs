@@ -211,13 +211,13 @@ public class TokenRepository(ScreenshotDbContext context) : ITokenRepository
         var userId = await _context.RefreshTokens
             .AsNoTracking()
             .Where(x => x.FamilyId == familyId)
-            .Select(x => x.UserId)
+            .Select(x => (Guid?)x.UserId)
             .FirstOrDefaultAsync();
 
-        if (userId == default)
+        if (userId is null)
             return IdResult.Error("Specified family wasn't found");
 
-        return IdResult.Success(userId);
+        return IdResult.Success(userId.Value);
     }
 
     public async Task<Result<List<RefreshTokenEntity>>> GetAllActiveRefreshTokensAsync(Guid userId)

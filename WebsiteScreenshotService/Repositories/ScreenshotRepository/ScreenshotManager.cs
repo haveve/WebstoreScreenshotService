@@ -42,23 +42,22 @@ public class ScreenshotManager(
 
     public async ValueTask<Result<PaginationResult<Screenshot>>> GetScreenshots(
         ScreenshotPaging? paging = null,
-        Guid userId = default)
+        Guid? userId = null)
     {
-        if (userId == default)
-            userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         if (!ShouldCacheList(paging))
-            return await GetScreenshotsInternal(paging, userId);
+            return await GetScreenshotsInternal(paging, userId.Value);
 
         var cachePaging = paging is not null
             ? new PagingCacheModel(paging.Page, paging.PageSize)
             : null;
 
-        var key = _screenshotCache.List(userId, cachePaging);
+        var key = _screenshotCache.List(userId.Value, cachePaging);
 
         return await _cache.GetOrSetAsync(
             key,
-            () => GetScreenshotsInternal(paging, userId),
+            () => GetScreenshotsInternal(paging, userId.Value),
             CacheOptions.Screenshot.List);
     }
 

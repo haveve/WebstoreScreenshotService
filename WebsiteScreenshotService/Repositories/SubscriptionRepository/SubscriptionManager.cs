@@ -6,8 +6,8 @@ using WebsiteScreenshotService.Utils;
 namespace WebsiteScreenshotService.Repositories.Subscription;
 
 public class SubscriptionManager(
-    ISubscriptionRepository screenshotRepository, 
-    IUserContextAccessor userContextAccessor, 
+    ISubscriptionRepository screenshotRepository,
+    IUserContextAccessor userContextAccessor,
     ICacheManager cacheManager,
     IUserCacheService userCache) : ISubscriptionManager
 {
@@ -26,23 +26,21 @@ public class SubscriptionManager(
             : _lockPerUser.EnterWriteAsync(userId);
     }
 
-    public async Task<ConditionalResult> CanMakeScreenshotAsync(Guid userId = default)
+    public async Task<ConditionalResult> CanMakeScreenshotAsync(Guid? userId = null)
     {
-        if (userId == default)
-            userId = userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        using var _ = await EnterLockAsync(userId);
-        return await _screenshotRepository.CanMakeScreenshotAsync(userId);
+        using var _ = await EnterLockAsync(userId.Value);
+        return await _screenshotRepository.CanMakeScreenshotAsync(userId.Value);
     }
 
-    public async Task<Result> ScreenshotWasMadeAsync(Guid userId = default)
+    public async Task<Result> ScreenshotWasMadeAsync(Guid? userId = null)
     {
-        if (userId == default)
-            userId = userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        using var _ = await EnterLockAsync(userId, isRead: false);
+        using var _ = await EnterLockAsync(userId.Value, isRead: false);
 
-        var result = await _screenshotRepository.CanMakeScreenshotAsync(userId);
+        var result = await _screenshotRepository.CanMakeScreenshotAsync(userId.Value);
 
         if (!result.IsSuccess)
             return Result.Error(result.ErrorMessage!);
@@ -50,23 +48,22 @@ public class SubscriptionManager(
         if (!result.Value!)
             return Result.Error("You cannot make screenshot any more because you ran out of available screenshots");
 
-        var subscription = await _screenshotRepository.ScreenshotWasMadeAsync(userId);
+        var subscription = await _screenshotRepository.ScreenshotWasMadeAsync(userId.Value);
 
         if (!subscription.IsSuccess)
             return Result.Error(subscription.ErrorMessage!);
 
-        await InvalidateUserCacheAsync(userId);
+        await InvalidateUserCacheAsync(userId.Value);
 
         return Result.Success;
     }
 
-    public async Task<Result> RedeemScreenshotAsync(string screenshotId, Guid userId = default)
+    public async Task<Result> RedeemScreenshotAsync(string screenshotId, Guid? userId = null)
     {
-        if (userId == default)
-            userId = userContextAccessor.GetCurrentUser().UserInfo.Id;
+        userId ??= userContextAccessor.GetCurrentUser().UserInfo.Id;
 
-        using var _ = await EnterLockAsync(userId, isRead: false);
-        return await _screenshotRepository.RedeemScreenshotAsync(screenshotId, userId);
+        using var _ = await EnterLockAsync(userId.Value, isRead: false);
+        return await _screenshotRepository.RedeemScreenshotAsync(screenshotId, userId.Value);
     }
 
     private async Task InvalidateUserCacheAsync(Guid userId)
