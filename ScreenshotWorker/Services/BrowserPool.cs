@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 
 namespace ScreenshotWorker.Services;
 
-public sealed class BrowserPool(int maxContexts = 10, int restartAfterJobs = 1000) : IAsyncDisposable
+public sealed class BrowserPool(int maxContexts, int restartAfterJobs) : IAsyncDisposable
 {
     private readonly SemaphoreSlim _contextSemaphore = new(maxContexts, maxContexts);
     private readonly SemaphoreSlim _browserRotationSemaphore = new(1, 1);

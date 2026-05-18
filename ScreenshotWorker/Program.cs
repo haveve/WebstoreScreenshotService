@@ -34,7 +34,7 @@ builder
                services.AddSingleton<IContentInitializationStep, WaitForSelectorStep>();
                services.AddSingleton<IContentInitializationStep, WaitForElementToAppearStep>();
 
-               services.AddSingleton(new BrowserPool());
+               services.AddSingleton(new BrowserPool(maxContexts: 10, restartAfterJobs: 1000));
 
                services.AddSingleton<IScreenshotService, ScreenshotService>();
                services.AddSingleton<IBrowserService, BrowserService>();

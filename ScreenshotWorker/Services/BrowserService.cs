@@ -33,7 +33,7 @@ public class BrowserService(IContentInitializationManager contentInitializationM
 
             await page.GotoAsync(screenshotOptionsModel.Url, new()
             {
-                WaitUntil = WaitUntilState.Commit,
+                WaitUntil = WaitUntilState.DOMContentLoaded,
             });
 
             await ConfigureResourceBlockingAsync(page, screenshotOptionsModel);
