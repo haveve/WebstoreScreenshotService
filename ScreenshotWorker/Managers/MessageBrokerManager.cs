@@ -1,15 +1,16 @@
-﻿using RabbitMQ.Client.Events;
-using RabbitMQ.Client;
-using ScreenshotWorker.Serialization;
-using System.Text.Json;
-using Microsoft.Extensions.Logging;
-using System.Text;
-using ScreenshotWorker.Services;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ScreenshotWorker.Settings;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using ScreenshotWorker.Exceptions;
 using ScreenshotWorker.Repositories;
+using ScreenshotWorker.Serialization;
+using ScreenshotWorker.Services;
+using ScreenshotWorker.Settings;
 using Shared.Core.Contracts.ScreeshotModel;
 using Shared.Core.Contracts.ScreeshotModel.Validation;
+using System.Text;
+using System.Text.Json;
 
 namespace ScreenshotWorker.Managers;
 
@@ -51,28 +52,17 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowser
 
                 confirmationToken = parsedValue.ConfirmationToken;
 
-                await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
-
                 var screenshotData = await _browserService.MakeScreenshotAsync(parsedValue.ScreenshotOptionsModel);
 
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        var saveScreenshotModel = new SaveScreenshotModel(parsedValue.ScreenshotId,
-                             parsedValue.UserInformation.UserId.ToString(),
-                             screenshotData,
-                             parsedValue.ScreenshotOptionsModel.ScreenshotType);
+                var saveScreenshotModel = new SaveScreenshotModel(parsedValue.ScreenshotId,
+                     parsedValue.UserInformation.UserId.ToString(),
+                     screenshotData,
+                     parsedValue.ScreenshotOptionsModel.ScreenshotType);
 
-                        var savedSuccessfully = await _screenshotRepository.SaveScreenshot(saveScreenshotModel);
+                var savedSuccessfully = await _screenshotRepository.SaveScreenshot(saveScreenshotModel);
 
-                        await _screenshotServiceCommunicator.ConfirmScreenshotAttemptAsync(parsedValue.ConfirmationToken);
-                    }
-                    catch
-                    {
-                        await _screenshotServiceCommunicator.RedeemScreenshotAttemptAsync(parsedValue.ConfirmationToken);
-                    }
-                });
+                await _screenshotServiceCommunicator.ConfirmScreenshotAttemptAsync(parsedValue.ConfirmationToken);
+                await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
 
             }
             catch (JsonException ex)
@@ -82,9 +72,17 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowser
 
                 await NackAsync(channel, ea.DeliveryTag, messageJsonAsString, errors);
             }
+            catch(ProcessAbortException ex)
+            {
+                _logger.LogError(ex, "An error occurred while processing the screenshot: {Message}", Encoding.UTF8.GetString(ea.Body.ToArray()));
+
+                await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
+                if (confirmationToken is not null)
+                    await _screenshotServiceCommunicator.FailedScreenshotAttemptAsync(confirmationToken);
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while processing the message: {Message}", Encoding.UTF8.GetString(ea.Body.ToArray()));
+                _logger.LogError(ex, "A redeemable error occurred while processing the screenshot: {Message}", Encoding.UTF8.GetString(ea.Body.ToArray()));
 
                 await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
                 if (confirmationToken is not null)

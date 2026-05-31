@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
+using ScreenshotWorker.Exceptions;
 using ScreenshotWorker.Services.ContentInitialization;
 using ScreenshotWorker.Settings;
 using Shared.Core.Contracts.ScreeshotModel.Components;
+using Shared.Core.Validation.Validators;
 using System.Collections.Immutable;
 
 namespace ScreenshotWorker.Services;
@@ -31,11 +33,20 @@ public class BrowserService(IContentInitializationManager contentInitializationM
             var context = pooledContext.Context;
             var page = await context.NewPageAsync();
 
+            var blocked = await UrlSecurity.IsIpBlockedWithDnsLookup(
+                screenshotOptionsModel.Url,
+                additionalBlockedHosts: [],
+                additionalBlockedIps: []);
+
+            if (blocked)
+                throw new ProcessAbortException("Url was blocked.");
+
             await page.GotoAsync(screenshotOptionsModel.Url, new()
             {
                 WaitUntil = WaitUntilState.DOMContentLoaded,
             });
 
+            await ConfigureTrafficInterceptor(page, screenshotOptionsModel);
             await ConfigureResourceBlockingAsync(page, screenshotOptionsModel);
 
             await _contentInitializationManager.InitializeContentAsync(page, screenshotOptionsModel);
@@ -46,7 +57,7 @@ public class BrowserService(IContentInitializationManager contentInitializationM
             if (screenshotOptionsModel.Element is not null)
             {
                 var element = await page.QuerySelectorAsync(screenshotOptionsModel.Element.Selector)
-                    ?? throw new InvalidOperationException("Element not found.");
+                    ?? throw new ProcessAbortException("Element not found.");
 
                 return await element.ScreenshotAsync(FormatElementScreenshotOptions(screenshotOptionsModel));
             }
@@ -55,7 +66,7 @@ public class BrowserService(IContentInitializationManager contentInitializationM
                 return await page.ScreenshotAsync(FormatScreenshotOptions(screenshotOptionsModel));
 
             //never should be throws and either Clip or Element is required during parsing
-            throw new InvalidOperationException("You must provide either Clip or Element.");
+            throw new ProcessAbortException("You must provide either Clip or Element.");
         }
         finally
         {
@@ -139,7 +150,7 @@ public class BrowserService(IContentInitializationManager contentInitializationM
         {
             Shared.Core.Contracts.ScreeshotModel.Components.ScreenshotType.Png => Microsoft.Playwright.ScreenshotType.Png,
             Shared.Core.Contracts.ScreeshotModel.Components.ScreenshotType.Jpeg => Microsoft.Playwright.ScreenshotType.Jpeg,
-            _ => throw new NotImplementedException("Invalid image type")
+            _ => throw new ProcessAbortException("Invalid image type")
         };
     }
 
@@ -228,6 +239,25 @@ public class BrowserService(IContentInitializationManager contentInitializationM
                 node.replaceWith(span);
             });
         }", options.HighlightWord);
+    }
+
+    private static async Task ConfigureTrafficInterceptor(IPage page, ScreenshotOptionsModel options)
+    {
+        await page.RouteAsync("**/*", async route =>
+        {
+            var blocked = await UrlSecurity.IsIpBlockedWithDnsLookup(
+                route.Request.Url,
+                additionalBlockedHosts: [],
+                additionalBlockedIps: []);
+
+            if (blocked)
+            {
+                await route.AbortAsync();
+                throw new ProcessAbortException($"Blocked Url was detected: {route.Request.Url}");
+            }
+
+            await route.ContinueAsync();
+        });
     }
 
     private static async Task ConfigureResourceBlockingAsync(IPage page, ScreenshotOptionsModel options)
