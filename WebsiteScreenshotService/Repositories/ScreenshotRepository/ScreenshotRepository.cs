@@ -116,7 +116,8 @@ public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearch
             State = ScreenshotState.New,
             Type = m.Type,
             Title = m.Title,
-            Description = m.Description
+            Description = m.Description,
+            Cost = m.PointsCost
         };
 
     public async Task<Result<ScreenshotEntity>> UpdateAsync(ScreenshotUpdateModel update)

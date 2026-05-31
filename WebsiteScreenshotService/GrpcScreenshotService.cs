@@ -29,17 +29,20 @@ public class GrpcScreenshotService(IAuthorizationManager authorizationManager, I
         Message = "An error occurred while processing your request. Please contact administrator."
     };
 
+    public override async Task<ConfirmationResponse> FailedScreenshotAttempt(ConfirmationRequest request, ServerCallContext context)
+        => await HandlerOperationAsync(request, async (data) => await screenshotManager.UpdateStateAsync(data.ScreenshotId, ScreenshotState.Failed));
+
     public override async Task<ConfirmationResponse> ConfirmScreenshotAttempt(ConfirmationRequest request, ServerCallContext context)
         => await HandlerOperationAsync(request, async (data) => await screenshotManager.UpdateStateAsync(data.ScreenshotId, ScreenshotState.Successful));
 
     public override async Task<ConfirmationResponse> RedeemScreenshotAttempt(ConfirmationRequest request, ServerCallContext context)
-        => await HandlerOperationAsync(request, async (data) => await subscriptionManager.RedeemScreenshotAsync(data.ScreenshotId, data!.UserId));
+        => await HandlerOperationAsync(request, async (data) => await subscriptionManager.RedeemScreenshotAsync(new(data.ScreenshotId, data.PointsCost), data!.UserId));
 
     private async Task<ConfirmationResponse> HandlerOperationAsync(ConfirmationRequest request, Func<ConfirmationData, Task> action)
     {
         try
         {
-            var data = _authorizationManager.ValidateConfirmationToken(request.Token);
+            var data = await _authorizationManager.ValidateConfirmationToken(request.Token);
 
             if (data is null)
                 return _invalidTokenError;

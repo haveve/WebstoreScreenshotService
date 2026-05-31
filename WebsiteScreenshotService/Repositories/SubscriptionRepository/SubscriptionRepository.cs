@@ -2,6 +2,7 @@
 using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Repositories.EF;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
+using WebsiteScreenshotService.Repositories.SubscriptionRepository.Models;
 using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.Subscription;
@@ -11,18 +12,18 @@ public class SubscriptionRepository(ScreenshotDbContext context, IScreenshotMana
     private readonly ScreenshotDbContext _context = context;
     private readonly IScreenshotManager _screenshotManager = screenshotManager;
 
-    public async Task<ConditionalResult> CanMakeScreenshotAsync(Guid userId)
+    public async Task<ConditionalResult> CanMakeScreenshotAsync(CanMakeScreenshotModel model, Guid userId)
     {
         var canMakeScreenshot = await _context.Users
             .AsNoTracking()
             .Where(u => u.Id == userId)
-            .Select(u => u.SubscriptionPlan.ScreenshotLeft > 0)
+            .Select(u => u.SubscriptionPlan.Points >= model.PointsCost)
             .FirstOrDefaultAsync();
 
         return ConditionalResult.Success(canMakeScreenshot);
     }
 
-    public async Task<Result> ScreenshotWasMadeAsync(Guid userId)
+    public async Task<Result> ScreenshotWasMadeAsync(MakeScreenshotModel model, Guid userId)
     {
         var subscription = await _context.Users
             .Where(u => u.Id == userId)
@@ -32,16 +33,16 @@ public class SubscriptionRepository(ScreenshotDbContext context, IScreenshotMana
         if (subscription is null)
             return Result.Error("User does not exist");
 
-        if (subscription.ScreenshotLeft > 0)
+        if (subscription.Points >= model.PointsCost)
         {
-            subscription.ScreenshotLeft--;
+            subscription.Points -= model.PointsCost;
             await _context.SaveChangesAsync();
         }
 
         return Result.Success;
     }
 
-    public async Task<Result> RedeemScreenshotAsync(string screenshotId, Guid userId)
+    public async Task<Result> RedeemScreenshotAsync(RedeemScreenshotModel model, Guid userId)
     {
         var user = await _context.Users
             .Include(u => u.SubscriptionPlan)
@@ -50,12 +51,12 @@ public class SubscriptionRepository(ScreenshotDbContext context, IScreenshotMana
         if (user?.SubscriptionPlan is null)
             return Result.Error("User does not exist"); ;
 
-        user.SubscriptionPlan.ScreenshotLeft++;
+        user.SubscriptionPlan.Points += model.PointsCost;
 
         await _context.SaveChangesAsync();
 
         await _screenshotManager.UpdateStateAsync(
-            screenshotId,
+            model.ScreenshotId,
             ScreenshotState.Failed);
 
         return Result.Success;

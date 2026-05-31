@@ -39,19 +39,6 @@ public sealed class InputScreenshotModelValidator : Validator<InputScreenshotMod
             .Must(v => Enum.IsDefined(v),
                 $"Invalid ScreenshotType. Allowed values: {string.Join(", ", Enum.GetNames<ScreenshotType>())}");
 
-        RuleFor(nameof(InputScreenshotModel.ContentLoadingOptions), x => x.ContentLoadingOptions)
-            .Must(v => v != ContentLoadingOptions.None,
-                "At least one ContentLoadingOption must be selected.")
-            .Must(v =>
-            {
-                var allowed =
-                    ContentLoadingOptions.WaitForRequestsToComplete |
-                    ContentLoadingOptions.ScrollToTheEndOfThePage;
-
-                return (v & ~allowed) == 0;
-            },
-            "ContentLoadingOptions contains invalid flags. Allowed: WaitForRequestsToComplete, ScrollToTheEndOfThePage.");
-
         RuleFor("ClipElementExclusivity", x => x)
             .Must(x => (x.Clip is null) != (x.Element is null),
                 "Either Clip or Element must be provided, but not both.");

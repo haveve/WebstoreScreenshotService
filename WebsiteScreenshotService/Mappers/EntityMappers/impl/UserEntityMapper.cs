@@ -9,8 +9,8 @@ public class UserEntityMapper(IUserContextAccessor userContextAccessor) : Encryp
     public User FromEntity(UserEntity entity)
     {
         var userData = Decrypt(entity.EncryptedData);
-        var subscriptionPlan = new SubscriptionPlan(entity.SubscriptionPlan.Type, entity.SubscriptionPlan.ScreenshotLeft);
-        return new User(entity.Id, userData.NickName, userData.Email, subscriptionPlan);
+        var subscriptionPlan = new SubscriptionPlan(entity.SubscriptionPlan.Type, entity.SubscriptionPlan.Points);
+        return new User(entity.Id, userData.NickName, userData.Email, entity.IsDisactivated, subscriptionPlan);
     }
 
     public UserEncryptedData Decrypt(string data)

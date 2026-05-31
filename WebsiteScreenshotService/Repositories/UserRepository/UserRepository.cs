@@ -69,8 +69,9 @@ public class UserRepository(ScreenshotDbContext context) : IUserRepository
             Salt = user.Salt,
             PasswordHash = user.PasswordHash,
             EncKey = user.EncKey,
-            SubscriptionPlan = new() { Type = user.SubscriptionPlan.Type, ScreenshotLeft = user.SubscriptionPlan.ScreenshotLeft },
-            EncryptedData = user.EncryptedData
+            SubscriptionPlan = new() { Type = user.SubscriptionPlan.Type, Points = user.SubscriptionPlan.Points },
+            EncryptedData = user.EncryptedData,
+            CreatedAt = DateTime.UtcNow,
         };
 
         _context.Users.Add(userEntity);

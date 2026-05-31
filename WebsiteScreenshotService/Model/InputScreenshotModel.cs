@@ -32,17 +32,6 @@ public class InputScreenshotModel
     public HighlightWordModel? HighlightWord { get; set; }
 
     public AdvancedConfigurationModel? AdvancedConfiguration { get; set; }
-
-    public required ContentLoadingOptions ContentLoadingOptions { get; set; }
-}
-
-[Flags]
-public enum ContentLoadingOptions
-{
-    None = 0,
-    WaitForRequestsToComplete = 1 << 0,
-    ScrollToTheEndOfThePage = 1 << 1,
-    All = WaitForRequestsToComplete | ScrollToTheEndOfThePage
 }
 
 /// <summary>

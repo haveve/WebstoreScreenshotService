@@ -7,4 +7,4 @@
 /// <param name="Name">The first name of the user.</param>
 /// <param name="Email">The email address of the user.</param>
 /// <param name="SubscriptionPlan">The subscription plan associated with the user.</param>
-public record User(Guid Id, string Name, string Email, SubscriptionPlan SubscriptionPlan);
+public record User(Guid Id, string NickName, string Email, bool IsDisactivated, SubscriptionPlan SubscriptionPlan);

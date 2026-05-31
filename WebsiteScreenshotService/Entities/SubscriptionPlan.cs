@@ -7,20 +7,20 @@ namespace WebsiteScreenshotService.Entities;
 /// </summary>
 /// <param name="Type">The type of the subscription plan.</param>
 /// <param name="ScreenshotLeft">The number of screenshots left in the subscription plan.</param>
-public record SubscriptionPlan(SubscriptionType Type, long ScreenshotLeft)
+public record SubscriptionPlan(SubscriptionType Type, long Points)
 {
     /// <summary>
     /// Gets a regular subscription plan with a default number of screenshots.
     /// </summary>
     /// <returns>A regular subscription plan.</returns>
     public static SubscriptionPlan GetRegularSubscriptionPlan()
-        => new(Type: SubscriptionType.Regular, ScreenshotLeft: 50);
+        => new(Type: SubscriptionType.Regular, Points: 250);
 
     public static SubscriptionPlan GetProSubscriptionPlan()
-        => new(Type: SubscriptionType.Pro, ScreenshotLeft: 5_000);
+        => new(Type: SubscriptionType.Pro, Points: 5_000);
 
     public static SubscriptionPlan GetAdvancedSubscriptionPlan()
-        => new(Type: SubscriptionType.Advanced, ScreenshotLeft: 50_000);
+        => new(Type: SubscriptionType.Advanced, Points: 50_000);
 }
 
 /// <summary>

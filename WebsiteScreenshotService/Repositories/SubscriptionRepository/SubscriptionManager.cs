@@ -1,4 +1,5 @@
 ﻿using Shared.Core.Utils;
+using WebsiteScreenshotService.Repositories.SubscriptionRepository.Models;
 using WebsiteScreenshotService.Services.Caching;
 using WebsiteScreenshotService.Services.Caching.Services;
 using WebsiteScreenshotService.Utils;
@@ -26,21 +27,21 @@ public class SubscriptionManager(
             : _lockPerUser.EnterWriteAsync(userId);
     }
 
-    public async Task<ConditionalResult> CanMakeScreenshotAsync(Guid? userId = null)
+    public async Task<ConditionalResult> CanMakeScreenshotAsync(CanMakeScreenshotModel model, Guid? userId = null)
     {
         userId ??= userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         using var _ = await EnterLockAsync(userId.Value);
-        return await _screenshotRepository.CanMakeScreenshotAsync(userId.Value);
+        return await _screenshotRepository.CanMakeScreenshotAsync(model, userId.Value);
     }
 
-    public async Task<Result> ScreenshotWasMadeAsync(Guid? userId = null)
+    public async Task<Result> ScreenshotWasMadeAsync(MakeScreenshotModel model, Guid? userId = null)
     {
         userId ??= userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         using var _ = await EnterLockAsync(userId.Value, isRead: false);
 
-        var result = await _screenshotRepository.CanMakeScreenshotAsync(userId.Value);
+        var result = await _screenshotRepository.CanMakeScreenshotAsync(new(model.PointsCost), userId.Value);
 
         if (!result.IsSuccess)
             return Result.Error(result.ErrorMessage!);
@@ -48,7 +49,7 @@ public class SubscriptionManager(
         if (!result.Value!)
             return Result.Error("You cannot make screenshot any more because you ran out of available screenshots");
 
-        var subscription = await _screenshotRepository.ScreenshotWasMadeAsync(userId.Value);
+        var subscription = await _screenshotRepository.ScreenshotWasMadeAsync(model, userId.Value);
 
         if (!subscription.IsSuccess)
             return Result.Error(subscription.ErrorMessage!);
@@ -58,12 +59,12 @@ public class SubscriptionManager(
         return Result.Success;
     }
 
-    public async Task<Result> RedeemScreenshotAsync(string screenshotId, Guid? userId = null)
+    public async Task<Result> RedeemScreenshotAsync(RedeemScreenshotModel model, Guid? userId = null)
     {
         userId ??= userContextAccessor.GetCurrentUser().UserInfo.Id;
 
         using var _ = await EnterLockAsync(userId.Value, isRead: false);
-        return await _screenshotRepository.RedeemScreenshotAsync(screenshotId, userId.Value);
+        return await _screenshotRepository.RedeemScreenshotAsync(model, userId.Value);
     }
 
     private async Task InvalidateUserCacheAsync(Guid userId)

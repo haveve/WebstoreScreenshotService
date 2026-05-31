@@ -1,4 +1,5 @@
-﻿using WebsiteScreenshotService.Utils;
+﻿using WebsiteScreenshotService.Repositories.SubscriptionRepository.Models;
+using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.Subscription;
 
@@ -9,9 +10,9 @@ public interface ISubscriptionRepository
     /// </summary>
     /// <param name="userId">The ID of the user.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the updated subscription plan if found; otherwise, null.</returns>
-    public Task<Result> ScreenshotWasMadeAsync(Guid userId);
+    public Task<Result> ScreenshotWasMadeAsync(MakeScreenshotModel model, Guid userId);
 
-    public Task<ConditionalResult> CanMakeScreenshotAsync(Guid userId);
+    public Task<ConditionalResult> CanMakeScreenshotAsync(CanMakeScreenshotModel model, Guid userId);
 
-    public Task<Result> RedeemScreenshotAsync(string screenshotId, Guid userId);
+    public Task<Result> RedeemScreenshotAsync(RedeemScreenshotModel model, Guid userId);
 }
