@@ -5,5 +5,5 @@ namespace WebsiteScreenshotService.Services.Payment;
 
 public interface IPaymentProviderDataProcessor
 {
-    public Task<Result<PaymentCallbackInput>> ProcessCallbackRequestDataAsync(HttpRequest httpRequest);
+    Task<Result<PaymentCallbackInput>> ProcessCallbackRequestDataAsync(HttpRequest httpRequest);
 }

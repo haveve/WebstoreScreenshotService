@@ -28,34 +28,12 @@ public class Subscription
 
 public enum PaymentCallbackStatus
 {
-    // =========================
-    // 💳 PAYMENTS
-    // =========================
     PaymentSucceeded,
     PaymentProcessing,
     PaymentFailed,
     PaymentCanceled,
 
-    // =========================
-    // 💸 REFUNDS
-    // =========================
-    RefundSucceeded,
-    RefundFailed,
-
-    // =========================
-    // 🔁 SUBSCRIPTION BILLING
-    // =========================
-    SubscriptionPaymentSucceeded,   // invoice.payment_succeeded
-    SubscriptionPaymentFailed,      // invoice.payment_failed
-    SubscriptionPaymentActionRequired,
-
-    // =========================
-    // 🔄 SUBSCRIPTION LIFECYCLE
-    // =========================
     SubscriptionCreated,
-    SubscriptionActivated,
     SubscriptionUpdated,
-    SubscriptionCanceled,
-    SubscriptionPaused,
-    SubscriptionResumed,
+    SubscriptionCanceled
 }

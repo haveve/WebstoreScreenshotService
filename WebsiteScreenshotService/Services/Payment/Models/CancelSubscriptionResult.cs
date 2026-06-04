@@ -9,6 +9,6 @@ public class CancelSubscriptionResult
 
 public enum CancelSubscriptionStatus
 {
-    Scheduled,   // cancel_at_period_end = true
-    Canceled     // immediate delete
+    Canceled,
+    Failed
 }

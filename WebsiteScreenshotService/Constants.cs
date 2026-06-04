@@ -6,9 +6,12 @@ public static class Constants
     {
         public const string UserId = "userId";
         public const string ScreenshotId = "screenshotId";
+        public const string ScreenshotCost = "screenshotCost";
         public const string WebsiteUrl = "websiteUrl";
         public const string TokenType = "tokenType";
         public const string Role = "role";
+
+        public const string ConfirmationTokenId = "confirmationTokenId";
 
         public enum TokenTypes
         {

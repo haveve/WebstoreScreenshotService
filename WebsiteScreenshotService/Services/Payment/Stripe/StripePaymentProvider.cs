@@ -1,448 +1,300 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Services.Payment.Exceptions;
 using WebsiteScreenshotService.Services.Payment.Models;
 
 namespace WebsiteScreenshotService.Services.Payment.Stripe;
 
-public class StripePaymentProvider(HttpClient http, IConfiguration config) : IPaymentProvider
+public class StripePaymentProvider(IHttpClientFactory httpClientFactory, IPaymentProviderConfigurationManager ConfigurationManager) : IPaymentProvider
 {
-    public string ProviderName => "Stripe";
-
-    private readonly HttpClient _http = http;
-    private readonly string _secretKey =
-        config["Stripe:SecretKey"] ?? throw new Exception("Missing Stripe key");
-
-    private const string BaseUrl = StripeConstants.BaseUrl;
+    public string ProviderName => StripeConstants.ProviderName;
+    private HttpClient Http => httpClientFactory.CreateClient();
 
     private const string ProviderCustomerId = StripeConstants.MetadataProviderCustomerId;
-
     private const string ClientSecret = StripeConstants.MetadataClientSecret;
 
-    // PRICE RESOLUTION
-    private static string PickPriceIdBasedOnSubscription(SubscriptionInfo subscriptionInfo)
-        => subscriptionInfo.SubscriptionType switch
+    private HttpRequestMessage CreateRequest(
+        HttpMethod method,
+        string endpoint,
+        string? idempotencyKey = null)
+    {
+        var ordinal = ConfigurationManager.GetConfigurations();
+        var baseUrl = ordinal.Data[StripeConstants.Settings.Ordinal.Url];
+
+        var request = new HttpRequestMessage(method, $"{baseUrl}{endpoint}");
+
+        var sensitive = ConfigurationManager.GetSensitiveConfigurations();
+        var secret = sensitive.Data[StripeConstants.Settings.Sensitive.Secret];
+
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", secret);
+
+        if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            request.Headers.Add("Idempotency-Key", idempotencyKey);
+
+        return request;
+    }
+
+    private async Task<T> PostForm<T>(
+        string endpoint,
+        IDictionary<string, string> form,
+        string? idempotencyKey = null)
+    {
+        var request = CreateRequest(HttpMethod.Post, endpoint, idempotencyKey);
+        request.Content = new FormUrlEncodedContent(form);
+
+        var response = await Http.SendAsync(request);
+        await EnsureSuccessfulAsync<T>(response, endpoint);
+
+        return await Deserialize<T>(response);
+    }
+
+    private async Task<T> Get<T>(string endpoint)
+    {
+        var request = CreateRequest(HttpMethod.Get, endpoint);
+
+        var response = await Http.SendAsync(request);
+        await EnsureSuccessfulAsync<T>(response, endpoint);
+
+        return await Deserialize<T>(response);
+    }
+
+    private static async ValueTask EnsureSuccessfulAsync<T>(HttpResponseMessage response, string requestUrl)
+    {
+        if (!response.IsSuccessStatusCode)
         {
-            SubscriptionType.Pro =>
-                subscriptionInfo.Duration == Duration.Monthly
-                    ? "price_1TQaL1KGfL2wdOOTVsySR6Z9"
-                    : "price_1TQaLeKGfL2wdOOT5tIwpKTD",
+            var body = await response.Content.ReadAsStringAsync();
 
-            SubscriptionType.Advanced =>
-                subscriptionInfo.Duration == Duration.Monthly
-                    ? "price_1TQaM2KGfL2wdOOTxA5MZ1mT"
-                    : "price_1TQaNCKGfL2wdOOTNRmoYxxE",
+            throw new TransactionProcessingException(
+                $"Stripe request failed. " +
+                $"Type={typeof(T).Name}, " +
+                $"StatusCode={(int)response.StatusCode} ({response.StatusCode}), " +
+                $"Endpoint={requestUrl}, " +
+                $"ResponseBody={Truncate(body, 500)}"
+            );
+        }
+    }
 
-            _ => throw new TransactionProcessingException($"Invalid subscription type: {subscriptionInfo.SubscriptionType}")
-        };
+    private static string Truncate(string input, int maxLength)
+    {
+        if (string.IsNullOrEmpty(input))
+            return string.Empty;
+
+        return input.Length <= maxLength
+            ? input
+            : input[..maxLength] + "...";
+    }
+
+    private static async Task<T> Deserialize<T>(HttpResponseMessage response)
+    {
+        var dto = await response.Content.ReadFromJsonAsync<T>()
+            ?? throw new TransactionProcessingException($"Invalid Stripe response: {typeof(T).Name}");
+
+        return dto;
+    }
+
+    private static void Validate(StartPaymentRequest request)
+    {
+        if (request.OrderId == Guid.Empty)
+            throw new TransactionProcessingException("OrderId is required");
+
+        if (string.IsNullOrWhiteSpace(request.UserId))
+            throw new TransactionProcessingException("UserId is required");
+
+        if (request.Amount.Amount <= 0)
+            throw new TransactionProcessingException("Amount must be greater than 0");
+
+        if (string.IsNullOrWhiteSpace(request.Amount.Currency))
+            throw new TransactionProcessingException("Currency is required");
+    }
+
+    private static void Validate(CreateSubscriptionRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.UserId))
+            throw new TransactionProcessingException("UserId is required");
+
+        if (request.SubscriptionInfo.SubscriptionType == SubscriptionType.Regular)
+            throw new TransactionProcessingException("Regular subscription cannot be purchased");
+
+        if (request.SubscriptionInfo.Price.Amount <= 0)
+            throw new TransactionProcessingException("Subscription price must be greater than 0");
+    }
+
+    private static void Validate(RefundRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.PaymentTransactionId))
+            throw new TransactionProcessingException("PaymentTransactionId is required");
+    }
 
     public async Task<StartPaymentResult> StartPayment(StartPaymentRequest request)
     {
-        var httpRequest = new HttpRequestMessage(
-            HttpMethod.Post,
-            $"{BaseUrl}{StripeConstants.PaymentIntents}"
-        );
+        Validate(request);
 
-        httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _secretKey);
-        httpRequest.Headers.Add("Idempotency-Key", $"order_{request.OrderId}");
+        var dto = await PostForm<StripePaymentIntentResponse>(
+            StripeConstants.PaymentIntents,
+            new Dictionary<string, string>
+            {
+                ["amount"] = request.Amount.ToMinorUnits().ToString(),
+                ["currency"] = request.Amount.Currency,
+                ["metadata[order_id]"] = request.OrderId.ToString(),
+                ["payment_method_types[]"] = "card"
+            },
+            $"order_{request.OrderId}");
 
-        httpRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+        if (!dto.IsValid())
         {
-            ["amount"] = request.Amount.ToMinorUnits().ToString(),
-            ["currency"] = request.Amount.Currency,
-            ["metadata[order_id]"] = request.OrderId.ToString(),
-            ["payment_method_types[]"] = "card"
-        });
-
-        var response = await _http.SendAsync(httpRequest);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            return new StartPaymentResult
-            (
-                PaymentId: string.Empty,
-                Metadata: ReadOnlyDictionary<string, string>.Empty,
-                Status: StartPaymentStatus.Failed
+            return new StartPaymentResult(
+                string.Empty,
+                StartPaymentStatus.Failed,
+                ReadOnlyDictionary<string, string>.Empty
             );
         }
 
-        var jsonStream = await response.Content.ReadAsStreamAsync();
-        var dto = await JsonSerializer.DeserializeAsync<StripePaymentIntentResponse>(jsonStream);
-
-        if (dto is null || !dto.IsValid())
-        {
-            return new StartPaymentResult
-            (
-                PaymentId: string.Empty,
-                Metadata: ReadOnlyDictionary<string, string>.Empty,
-                Status: StartPaymentStatus.Failed
-            );
-        }
-
-        var metadata = new Dictionary<string, string>(1)
-        {
-            [ClientSecret] = dto.ClientSecret
-        };
-
-        return new StartPaymentResult
-        (
-            PaymentId: dto.Id,
-            Metadata: new ReadOnlyDictionary<string, string>(metadata),
-            Status: MapStartPaymentStatus(dto.Status)
-        );
+        return new StartPaymentResult(
+            dto.Id,
+            StartPaymentStatus.Pending,
+            new Dictionary<string, string>
+            {
+                [ClientSecret] = dto.ClientSecret
+            }.AsReadOnly());
     }
 
     public async Task<CreateSubscriptionResult> CreateSubscription(CreateSubscriptionRequest request)
     {
-        var priceId = PickPriceIdBasedOnSubscription(request.SubscriptionInfo);
+        Validate(request);
+
+        var priceId = ResolvePriceId(request.SubscriptionInfo);
+
         var customerId = await GetOrCreateCustomer(request);
 
-        var existingSubscription = await GetActiveSubscription(customerId);
+        var existing = await GetActiveSubscription(customerId);
 
-        var metadata = new Dictionary<string, string>(1)
+        var metadata = new Dictionary<string, string>
         {
             [ProviderCustomerId] = customerId
         };
 
-        if (existingSubscription is not null)
+        if (existing is not null)
         {
-            var mappedStatus = MapStatus(existingSubscription.Status);
+            var status = MapStatus(existing.Status);
 
-            if (mappedStatus == CreateSubscriptionStatus.AlreadyActive)
+            if (status == CreateSubscriptionStatus.AlreadyActive)
             {
-                return new CreateSubscriptionResult
-                (
-                    SubscriptionId: existingSubscription.Id,
-                    Status: CreateSubscriptionStatus.AlreadyActive,
-                    Metadata: new ReadOnlyDictionary<string, string>(metadata)
-                );
+                return new CreateSubscriptionResult(
+                    existing.Id,
+                    status,
+                    metadata.AsReadOnly());
             }
 
-            if (mappedStatus == CreateSubscriptionStatus.AlreadyExistsIncomplete)
+            if (status == CreateSubscriptionStatus.AlreadyExistsIncomplete)
             {
-                var clientSecretValue = existingSubscription.LatestInvoice?.PaymentIntent?.ClientSecret;
+                var secret = existing.LatestInvoice?.PaymentIntent?.ClientSecret
+                    ?? throw new TransactionProcessingException(
+                        "Missing client secret");
 
-                if (string.IsNullOrEmpty(clientSecretValue))
-                    throw new TransactionProcessingException("Incomplete subscription missing payment intent client secret");
+                metadata[ClientSecret] = secret;
 
-                metadata.Add(ClientSecret, clientSecretValue);
-
-                return new CreateSubscriptionResult
-                (
-                    SubscriptionId: existingSubscription.Id,
-                    Status: CreateSubscriptionStatus.AlreadyExistsIncomplete,
-                    Metadata: new ReadOnlyDictionary<string, string>(metadata)
-                );
+                return new CreateSubscriptionResult(
+                    existing.Id,
+                    status,
+                    metadata.AsReadOnly());
             }
         }
 
-        // CREATE NEW SUBSCRIPTION
-        var httpRequest = new HttpRequestMessage(
-            HttpMethod.Post,
-            $"{BaseUrl}{StripeConstants.Subscriptions}"
-        );
-
-        httpRequest.Headers.Authorization =
-            new AuthenticationHeaderValue("Bearer", _secretKey);
-
-        httpRequest.Headers.Add("Idempotency-Key", Guid.NewGuid().ToString());
-
-        httpRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["customer"] = customerId,
-            ["items[0][price]"] = priceId,
-            ["payment_behavior"] = "default_incomplete",
-            ["expand[]"] = "latest_invoice.payment_intent"
-        });
-
-        var response = await _http.SendAsync(httpRequest);
-        response.EnsureSuccessStatusCode();
-
-        var json = await response.Content.ReadAsStringAsync();
-
-        var dto = JsonSerializer.Deserialize<StripeSubscriptionResponse>(json)
-                  ?? throw new TransactionProcessingException("Invalid subscription response");
+        var dto = await PostForm<StripeSubscriptionResponse>(
+            StripeConstants.Subscriptions,
+            new Dictionary<string, string>
+            {
+                ["customer"] = customerId,
+                ["items[0][price]"] = priceId,
+                ["payment_behavior"] = "default_incomplete",
+                ["expand[]"] = "latest_invoice.payment_intent"
+            });
 
         var clientSecret = dto.LatestInvoice?.PaymentIntent?.ClientSecret;
 
-        if (string.IsNullOrEmpty(clientSecret))
-            throw new TransactionProcessingException("Missing payment intent client secret");
-
-        metadata.Add(ClientSecret, clientSecret);
-
-        return new CreateSubscriptionResult
-        (
-            SubscriptionId: dto.Id,
-            Status: CreateSubscriptionStatus.Created,
-            Metadata: new ReadOnlyDictionary<string, string>(metadata)
-        );
-    }
-
-    private static CreateSubscriptionStatus MapStatus(string stripeStatus)
-    {
-        return stripeStatus switch
-        {
-            "active" or "trialing" => CreateSubscriptionStatus.AlreadyActive,
-            "incomplete" => CreateSubscriptionStatus.AlreadyExistsIncomplete,
-            "past_due" => CreateSubscriptionStatus.AlreadyExistsIncomplete,
-            "canceled" => CreateSubscriptionStatus.Created,
-            _ => CreateSubscriptionStatus.Created
-        };
-    }
-
-    private async Task<StripeSubscriptionResponse?> GetActiveSubscription(string customerId)
-    {
-        var request = new HttpRequestMessage(
-            HttpMethod.Get,
-            $"{BaseUrl}{StripeConstants.Subscriptions}?customer={customerId}&status=all&limit=10&order=desc"
-        );
-
-        request.Headers.Authorization =
-            new AuthenticationHeaderValue("Bearer", _secretKey);
-
-        var response = await _http.SendAsync(request);
-        response.EnsureSuccessStatusCode();
-
-        var json = await response.Content.ReadAsStringAsync();
-
-        var list = JsonSerializer.Deserialize<StripeSubscriptionListResponse>(json);
-
-        var subscriptions = list?.Data ?? [];
-
-        var active = subscriptions
-            .Where(s => s.Status is "active"
-                or "trialing"
-                or "past_due"
-                or "incomplete")
-            .ToList();
-
-        if (active.Count > 1)
-            throw new TransactionProcessingException("Stripe invariant violation: multiple active subscriptions");
-
-        return active.FirstOrDefault();
-    }
-
-    private async Task<StripeSubscriptionResponse?> GetExistingSubscription(string subscriptionId)
-    {
-        var request = new HttpRequestMessage(
-            HttpMethod.Get,
-            $"{BaseUrl}{StripeConstants.Subscriptions}/{subscriptionId}"
-        );
-
-        request.Headers.Authorization =
-            new AuthenticationHeaderValue("Bearer", _secretKey);
-
-        var response = await _http.SendAsync(request);
-
-        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            return null;
-
-        response.EnsureSuccessStatusCode();
-
-        var json = await response.Content.ReadAsStringAsync();
-
-        var subscription = JsonSerializer.Deserialize<StripeSubscriptionResponse>(json);
-
-        return subscription
-            ?? throw new TransactionProcessingException($"Invalid Stripe response for subscription {subscriptionId}");
-    }
-
-    public async Task<ChangeSubscriptionPlanResult> ChangeSubscriptionPlan(ChangeSubscriptionPlanRequest request)
-    {
-        var newPriceId = PickPriceIdBasedOnSubscription(request.NewSubscriptionInfo);
-        var isDowngrade = IsDowngrade(request);
-
-        var subscription = await GetExistingSubscription(request.SubscriptionId)
-            ?? throw new TransactionProcessingException(
-                $"Subscription {request.SubscriptionId} not found"
-            );
-
-        ValidateSubscriptionState(subscription);
-
-        var item = subscription.Items?.Data?.SingleOrDefault()
-            ?? throw new TransactionProcessingException(
-                $"Subscription {subscription.Id} must contain exactly 1 item"
-            );
-
-        var currentPriceId = item.Price?.Id;
-
-        if (currentPriceId == newPriceId)
-        {
-            return new ChangeSubscriptionPlanResult
-            {
-                SubscriptionId = subscription.Id,
-                Status = ChangeSubscriptionStatus.AlreadyOnSamePlan
-            };
-        }
-
-        var httpRequest = new HttpRequestMessage(
-            HttpMethod.Post,
-            $"{BaseUrl}{StripeConstants.Subscriptions}/{request.SubscriptionId}"
-        );
-
-        httpRequest.Headers.Authorization =
-            new AuthenticationHeaderValue("Bearer", _secretKey);
-
-        httpRequest.Headers.Add(
-            "Idempotency-Key",
-            $"sub-change-{subscription.Id}-{newPriceId}-{request.UpgradeTiming}"
-        );
-
-        var data = new Dictionary<string, string>
-        {
-            ["items[0][id]"] = item.Id,
-            ["items[0][price]"] = newPriceId
-        };
-
-        ApplyProrationRules(data, request, isDowngrade);
-
-        httpRequest.Content = new FormUrlEncodedContent(data);
-
-        var response = await _http.SendAsync(httpRequest);
-        response.EnsureSuccessStatusCode();
-
-        return new ChangeSubscriptionPlanResult
-        {
-            SubscriptionId = subscription.Id,
-            Status = MapChangeStatus(request.UpgradeTiming)
-        };
-    }
-
-    private static readonly HashSet<string> ValidActiveStates = new()
-        {
-            "active",
-            "trialing",
-            "past_due"
-        };
-
-    private static void ApplyProrationRules(
-    Dictionary<string, string> data,
-    ChangeSubscriptionPlanRequest request,
-    bool isDowngrade)
-    {
-        if (isDowngrade)
-        {
-            // business rule: downgrades never immediate
-            data["proration_behavior"] = "none";
-            return;
-        }
-
-        data["proration_behavior"] =
-            request.UpgradeTiming == SubscriptionChangeTiming.Immediate
-                ? "create_prorations"
-                : "none";
-    }
-
-    private static ChangeSubscriptionStatus MapChangeStatus(SubscriptionChangeTiming timing)
-    {
-        return timing switch
-        {
-            SubscriptionChangeTiming.Immediate => ChangeSubscriptionStatus.UpgradeApplied,
-            SubscriptionChangeTiming.EndOfPeriod => ChangeSubscriptionStatus.UpgradeScheduled,
-            _ => throw new TransactionProcessingException($"Invalid timing type: {timing}")
-        };
-    }
-
-    private static void ValidateSubscriptionState(StripeSubscriptionResponse subscription)
-    {
-        if (subscription == null)
-            throw new TransactionProcessingException("Subscription is null");
-
-        if (subscription.Status == "canceled")
-            throw new TransactionProcessingException("Cannot modify a canceled subscription");
-
-        if (!ValidActiveStates.Contains(subscription.Status))
+        if (string.IsNullOrWhiteSpace(clientSecret))
             throw new TransactionProcessingException(
-                $"Subscription is not in a modifiable state: {subscription.Status}"
-            );
+                "Missing subscription client secret");
+
+        metadata[ClientSecret] = clientSecret;
+
+        return new CreateSubscriptionResult(
+            dto.Id,
+            CreateSubscriptionStatus.Created,
+            metadata.AsReadOnly());
     }
 
     public async Task<CancelSubscriptionResult> CancelSubscription(CancelSubscriptionRequest request)
     {
-        var url = $"{BaseUrl}{StripeConstants.Subscriptions}/{request.SubscriptionId}";
+        if (string.IsNullOrWhiteSpace(request.SubscriptionId))
+            throw new ValidationException("SubscriptionId is required");
 
-        var httpRequest = new HttpRequestMessage(HttpMethod.Post, url);
-
-        httpRequest.Headers.Authorization =
-            new AuthenticationHeaderValue("Bearer", _secretKey);
-
-        httpRequest.Headers.Add(
-            "Idempotency-Key",
-            $"cancel-sub-{request.SubscriptionId}-{request.CancelAtPeriodEnd}"
-        );
-
-        var data = new Dictionary<string, string>();
-
-        if (request.CancelAtPeriodEnd)
-        {
-            data["cancel_at_period_end"] = "true";
-        }
-        else
-        {
-            data["cancel_at_period_end"] = "false";
-            data["proration_behavior"] = "none";
-        }
-
-        httpRequest.Content = new FormUrlEncodedContent(data);
-
-        var response = await _http.SendAsync(httpRequest);
-        response.EnsureSuccessStatusCode();
+        var dto = await PostForm<StripeSubscriptionCancelResponse>(
+            $"{StripeConstants.Subscriptions}/{request.SubscriptionId}",
+            new Dictionary<string, string>
+            {
+                ["cancel_at_period_end"] = "true",
+                ["proration_behavior"] = "none"
+            },
+            $"cancel-{request.SubscriptionId}");
 
         return new CancelSubscriptionResult
         {
             SubscriptionId = request.SubscriptionId,
-            Status = request.CancelAtPeriodEnd
-                ? CancelSubscriptionStatus.Scheduled
-                : CancelSubscriptionStatus.Canceled
+            Status = dto.CancelAtPeriodEnd
+                ? CancelSubscriptionStatus.Canceled
+                : CancelSubscriptionStatus.Failed
         };
     }
 
     public async Task<RefundResult> Refund(RefundRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.PaymentTransactionId))
-            throw new TransactionProcessingException("PaymentIntentId is required for refund");
+        Validate(request);
 
-        var httpRequest = new HttpRequestMessage(
-            HttpMethod.Post,
-            $"{BaseUrl}{StripeConstants.Refunds}"
-        );
+        await ValidateRefundable(request.PaymentTransactionId);
 
-        httpRequest.Headers.Authorization =
-            new AuthenticationHeaderValue("Bearer", _secretKey);
+        var dto = await PostForm<StripeRefundResponse>(
+            StripeConstants.Refunds,
+            new Dictionary<string, string>
+            {
+                ["payment_intent"] = request.PaymentTransactionId
+            },
+            $"refund-{request.PaymentTransactionId}");
 
-        httpRequest.Headers.Add(
-            "Idempotency-Key",
-            $"refund-full-{request.PaymentTransactionId}"
-        );
-
-        httpRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["payment_intent"] = request.PaymentTransactionId
-        });
-
-        var response = await _http.SendAsync(httpRequest);
-        response.EnsureSuccessStatusCode();
-
-        var json = await response.Content.ReadAsStringAsync();
-
-        var refund = JsonSerializer.Deserialize<StripeRefundResponse>(json)
-            ?? throw new TransactionProcessingException("Invalid Stripe refund response");
+        if (!dto.IsValid())
+            throw new TransactionProcessingException("Invalid refund response");
 
         return new RefundResult
         {
-            RefundId = refund.Id,
-            Status = MapRefundStatus(refund.Status),
-            OriginalPaymentTransactionId = request.PaymentTransactionId
+            RefundId = dto.Id,
+            OriginalPaymentTransactionId = request.PaymentTransactionId,
+            Status = MapRefundStatus(dto.Status)
         };
     }
 
-    public async Task<PaymentCallbackResult> ProcessCallback(PaymentCallbackInput input)
+    private async Task ValidateRefundable(string paymentIntentId)
     {
+        var intent = await Get<StripePaymentIntentResponse>(
+            $"{StripeConstants.PaymentIntents}/{paymentIntentId}");
+
+        if (intent.Status != "succeeded")
+            throw new TransactionProcessingException(
+                "Only succeeded payments can be refunded");
+    }
+
+    public Task<PaymentCallbackResult> ProcessCallback(PaymentCallbackInput input)
+    {
+        if (string.IsNullOrWhiteSpace(input.PaymentTransactionId))
+            throw new ValidationException("PaymentTransactionId is required");
+
+        if (input.Metadata.Count == 0)
+            throw new ValidationException("Metadata is missing");
+
         if (!input.Metadata.TryGetValue(StripeConstants.MetadataType, out var type))
-            throw new TransactionProcessingException("Missing Stripe metadata: type");
+            throw new TransactionProcessingException("Missing event type");
 
         var result = new PaymentCallbackResult
         {
@@ -451,8 +303,7 @@ public class StripePaymentProvider(HttpClient http, IConfiguration config) : IPa
             Status = MapCallbackStatus(type)
         };
 
-        if (input.Metadata.TryGetValue(StripeConstants.MetadataSubscriptionId, out var subId)
-            && !string.IsNullOrWhiteSpace(subId))
+        if (input.Metadata.TryGetValue(StripeConstants.MetadataSubscriptionId, out var subId))
         {
             result.SubscriptionInfo = new Subscription
             {
@@ -461,201 +312,144 @@ public class StripePaymentProvider(HttpClient http, IConfiguration config) : IPa
             };
         }
 
-        return result;
+        return Task.FromResult(result);
     }
 
-    private async Task<string> GetOrCreateCustomer(CreateSubscriptionRequest data)
+    private async Task<string> GetOrCreateCustomer(CreateSubscriptionRequest request)
     {
-        if (data.Metadata.TryGetValue(ProviderCustomerId, out var existing) &&
-            !string.IsNullOrWhiteSpace(existing))
+        if (request.Metadata.TryGetValue(ProviderCustomerId, out var existing)
+            && !string.IsNullOrWhiteSpace(existing))
         {
             return existing;
         }
 
-        var httpRequest = new HttpRequestMessage(
-            HttpMethod.Post,
-            $"{BaseUrl}{StripeConstants.Customers}"
-        );
+        var dto = await PostForm<JsonElement>(
+            StripeConstants.Customers,
+            new Dictionary<string, string>
+            {
+                ["metadata[user_id]"] = request.UserId
+            },
+            $"customer-{request.UserId}");
 
-        httpRequest.Headers.Authorization =
-            new AuthenticationHeaderValue("Bearer", _secretKey);
-
-        // IMPORTANT: prevent duplicate customers on retry
-        httpRequest.Headers.Add(
-            "Idempotency-Key",
-            $"customer-{data.UserId}"
-        );
-
-        httpRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["metadata[user_id]"] = data.UserId
-            // optionally: ["email"] = data.Email
-        });
-
-        var response = await _http.SendAsync(httpRequest);
-        response.EnsureSuccessStatusCode();
-
-        var json = await response.Content.ReadAsStringAsync();
-        var doc = JsonDocument.Parse(json);
-
-        return doc.RootElement.GetProperty("id").GetString()!;
+        return dto.GetProperty("id").GetString()
+            ?? throw new TransactionProcessingException("Customer id missing");
     }
 
-    private static StartPaymentStatus MapStartPaymentStatus(string status) => status switch
+    private async Task<StripeSubscriptionResponse?> GetActiveSubscription(string customerId)
     {
-        // 🔹 All "needs user interaction" states → Pending
-        "requires_payment_method" => StartPaymentStatus.Pending,
-        "requires_confirmation" => StartPaymentStatus.Pending,
-        "requires_action" => StartPaymentStatus.Pending,
-        "processing" => StartPaymentStatus.Pending,
+        var list = await Get<StripeSubscriptionListResponse>(
+            $"{StripeConstants.Subscriptions}?customer={customerId}&status=all&limit=10");
 
-        // 🔹 Already completed (rare, but supported)
-        "succeeded" => StartPaymentStatus.Succeeded,
+        var active = list.Data
+            .Where(x => x.Status is "active" or "trialing" or "past_due" or "incomplete")
+            .ToList();
 
-        // 🔹 Explicit cancel
-        "canceled" => StartPaymentStatus.Failed,
+        if (active.Count > 1)
+            throw new TransactionProcessingException("Multiple active subscriptions");
 
-        // 🔹 Unknown → treat as failed (safe default)
-        _ => StartPaymentStatus.Failed
-    };
+        return active.SingleOrDefault();
+    }
 
-    private static RefundStatus MapRefundStatus(string status) => status switch
-    {
-        "succeeded" => RefundStatus.Succeeded,
-        "pending" => RefundStatus.Pending,
-        "failed" => RefundStatus.Failed,
-        "canceled" => RefundStatus.Failed,
-        _ => RefundStatus.Failed
-    };
+    private static string ResolvePriceId(SubscriptionInfo info)
+        => info.SubscriptionType switch
+        {
+            SubscriptionType.Pro => info.Duration == Duration.Monthly
+                    ? "price_1TQaL1KGfL2wdOOTVsySR6Z9"
+                    : "price_1TQaLeKGfL2wdOOT5tIwpKTD",
+            SubscriptionType.Advanced => info.Duration == Duration.Monthly
+                    ? "price_1TQaM2KGfL2wdOOTxA5MZ1mT"
+                    : "price_1TQaNCKGfL2wdOOTNRmoYxxE",
+            _ => throw new TransactionProcessingException($"Invalid subscription type: {info.SubscriptionType}")
+        };
 
-    private static PaymentCallbackStatus MapCallbackStatus(string type) => type switch
-    {
-        StripeConstants.Events.PaymentSucceeded => PaymentCallbackStatus.PaymentSucceeded,
-        StripeConstants.Events.PaymentProcessing => PaymentCallbackStatus.PaymentProcessing,
-        StripeConstants.Events.PaymentFailed => PaymentCallbackStatus.PaymentFailed,
-        StripeConstants.Events.PaymentCanceled => PaymentCallbackStatus.PaymentCanceled,
+    private static CreateSubscriptionStatus MapStatus(string status)
+        => status switch
+        {
+            "active" or "trialing" => CreateSubscriptionStatus.AlreadyActive,
+            "incomplete" or "past_due" => CreateSubscriptionStatus.AlreadyExistsIncomplete,
+            "canceled" => CreateSubscriptionStatus.Created,
+            _ => CreateSubscriptionStatus.Created
+        };
 
-        StripeConstants.Events.ChargeRefunded => PaymentCallbackStatus.RefundSucceeded,
-        StripeConstants.Events.RefundCreated => PaymentCallbackStatus.RefundSucceeded,
-        StripeConstants.Events.RefundFailed => PaymentCallbackStatus.RefundFailed,
+    private static RefundStatus MapRefundStatus(string status)
+        => status switch
+        {
+            "succeeded" => RefundStatus.Succeeded,
+            "pending" => RefundStatus.Pending,
+            "failed" => RefundStatus.Failed,
+            "canceled" => RefundStatus.Canceled,
+            _ => RefundStatus.Unknown
+        };
 
-        StripeConstants.Events.InvoiceSucceeded => PaymentCallbackStatus.SubscriptionPaymentSucceeded,
-        StripeConstants.Events.InvoiceFailed => PaymentCallbackStatus.SubscriptionPaymentFailed,
-        StripeConstants.Events.InvoiceActionRequired => PaymentCallbackStatus.SubscriptionPaymentActionRequired,
+    private static PaymentCallbackStatus MapCallbackStatus(string type)
+        => type switch
+        {
+            StripeConstants.Events.PaymentSucceeded => PaymentCallbackStatus.PaymentSucceeded,
+            StripeConstants.Events.PaymentFailed => PaymentCallbackStatus.PaymentFailed,
+            StripeConstants.Events.PaymentProcessing => PaymentCallbackStatus.PaymentProcessing,
+            StripeConstants.Events.PaymentCanceled => PaymentCallbackStatus.PaymentCanceled,
 
-        StripeConstants.Events.SubscriptionCreated => PaymentCallbackStatus.SubscriptionCreated,
-        StripeConstants.Events.SubscriptionUpdated => PaymentCallbackStatus.SubscriptionUpdated,
-        StripeConstants.Events.SubscriptionDeleted => PaymentCallbackStatus.SubscriptionCanceled,
-        StripeConstants.Events.SubscriptionPaused => PaymentCallbackStatus.SubscriptionPaused,
-        StripeConstants.Events.SubscriptionResumed => PaymentCallbackStatus.SubscriptionResumed,
+            StripeConstants.Events.SubscriptionCreated => PaymentCallbackStatus.SubscriptionCreated,
+            StripeConstants.Events.SubscriptionUpdated => PaymentCallbackStatus.SubscriptionUpdated,
+            StripeConstants.Events.SubscriptionDeleted => PaymentCallbackStatus.SubscriptionCanceled,
 
-        _ => throw new TransactionProcessingException($"Unknown stripe callback type: {type}")
-    };
-
-    private static bool IsDowngrade(ChangeSubscriptionPlanRequest request)
-        => request.NewSubscriptionInfo.SubscriptionType < request.SubscriptionInfo.SubscriptionType;
+            _ => throw new TransactionProcessingException($"Unknown event: {type}")
+        };
 
     private static DateTime? TryParsePeriodEnd(PaymentCallbackInput input)
     {
-        if (input.Metadata.TryGetValue("period_end", out var raw) &&
-            long.TryParse(raw, out var unix))
+        if (input.Metadata.TryGetValue("period_end", out var raw)
+            && long.TryParse(raw, out var unix))
         {
             return DateTimeOffset.FromUnixTimeSeconds(unix).UtcDateTime;
         }
 
         return null;
     }
-}
 
-public class StripeSubscriptionCancelResponse
-{
-    [JsonPropertyName("id")]
-    public string Id { get; set; } = default!;
+    public class StripeSubscriptionCancelResponse
+    {
+        public bool CancelAtPeriodEnd { get; set; }
+    }
 
-    [JsonPropertyName("status")]
-    public string Status { get; set; } = default!;
+    public class StripeSubscriptionResponse
+    {
+        public string Id { get; set; } = default!;
+        public string Status { get; set; } = default!;
+        public StripeInvoice? LatestInvoice { get; set; }
+    }
 
-    [JsonPropertyName("cancel_at_period_end")]
-    public bool CancelAtPeriodEnd { get; set; }
-}
+    public class StripeInvoice
+    {
+        public StripePaymentIntent? PaymentIntent { get; set; }
+    }
 
-public class StripeSubscriptionResponse
-{
-    [JsonPropertyName("id")]
-    public string Id { get; set; } = default!;
+    public class StripePaymentIntent
+    {
+        public string? ClientSecret { get; set; }
+    }
 
-    [JsonPropertyName("status")]
-    public string Status { get; set; } = default!;
+    public class StripeRefundResponse
+    {
+        public string Id { get; set; } = default!;
+        public string Status { get; set; } = default!;
 
-    [JsonPropertyName("latest_invoice")]
-    public StripeInvoice? LatestInvoice { get; set; }
+        public bool IsValid() => !string.IsNullOrWhiteSpace(Id);
+    }
 
-    [JsonPropertyName("items")]
-    public StripeSubscriptionItemCollection Items { get; set; } = default!;
-}
+    public class StripePaymentIntentResponse
+    {
+        public string Id { get; set; } = default!;
+        public string ClientSecret { get; set; } = default!;
+        public string Status { get; set; } = default!;
 
-public class StripeSubscriptionItemCollection
-{
-    [JsonPropertyName("data")]
-    public List<StripeSubscriptionItem> Data { get; set; } = [];
-}
+        public bool IsValid()
+            => !string.IsNullOrWhiteSpace(Id)
+            && !string.IsNullOrWhiteSpace(ClientSecret);
+    }
 
-public class StripeSubscriptionItem
-{
-    [JsonPropertyName("id")]
-    public string Id { get; set; } = default!;
-
-    [JsonPropertyName("price")]
-    public StripePrice Price { get; set; } = default!;
-}
-
-public class StripePrice
-{
-    [JsonPropertyName("id")]
-    public string Id { get; set; } = default!;
-}
-
-public class StripeInvoice
-{
-    [JsonPropertyName("payment_intent")]
-    public StripePaymentIntent? PaymentIntent { get; set; }
-}
-
-public class StripePaymentIntent
-{
-    [JsonPropertyName("client_secret")]
-    public string? ClientSecret { get; set; }
-}
-
-public class StripeRefundResponse
-{
-    [JsonPropertyName("id")]
-    public required string Id { get; set; }
-
-    [JsonPropertyName("status")]
-    public required string Status { get; set; }
-
-    public bool IsValid()
-        => !string.IsNullOrEmpty(Id) && !string.IsNullOrEmpty(Status);
-}
-
-public class StripePaymentIntentResponse
-{
-    [JsonPropertyName("id")]
-    public required string Id { get; set; }
-
-    [JsonPropertyName("client_secret")]
-    public required string ClientSecret { get; set; }
-
-    [JsonPropertyName("status")]
-    public required string Status { get; set; }
-
-    public bool IsValid()
-        => !string.IsNullOrEmpty(Id) && !string.IsNullOrEmpty(ClientSecret) && !string.IsNullOrEmpty(Status);
-}
-
-public class StripeSubscriptionListResponse
-{
-    [JsonPropertyName("data")]
-    public List<StripeSubscriptionResponse> Data { get; set; } = [];
+    public class StripeSubscriptionListResponse
+    {
+        public List<StripeSubscriptionResponse> Data { get; set; } = [];
+    }
 }

@@ -8,15 +8,13 @@ using WebsiteScreenshotService.Services.Payment.Exceptions;
 using WebsiteScreenshotService.Services.Payment.Models;
 using WebsiteScreenshotService.Utils;
 
-public class StripePaymentProviderDataProcessor(IConfiguration config) : IPaymentProviderDataProcessor
+public class StripePaymentProviderDataProcessor(IPaymentProviderCallbackConfigurationManager ConfigurationManager) : IPaymentProviderDataProcessor
 {
-    private readonly string secret = config["Stripe:WebhookSecret"]
-                         ?? throw new InvalidDataException("Stripe webhook secret missing");
-
     public async Task<Result<PaymentCallbackInput>> ProcessCallbackRequestDataAsync(HttpRequest httpRequest)
     {
         try
         {
+            httpRequest.EnableBuffering();
             httpRequest.Body.Seek(0, SeekOrigin.Begin);
 
             using var reader = new StreamReader(httpRequest.Body);
@@ -24,7 +22,7 @@ public class StripePaymentProviderDataProcessor(IConfiguration config) : IPaymen
 
             var signatureHeader = httpRequest.Headers["Stripe-Signature"].ToString();
 
-            VerifySignature(body, signatureHeader, secret);
+            VerifySignature(body, signatureHeader);
 
             using var json = JsonDocument.Parse(body);
             var root = json.RootElement;
@@ -81,7 +79,6 @@ public class StripePaymentProviderDataProcessor(IConfiguration config) : IPaymen
                 }
             }
 
-            // fallback id
             if (string.IsNullOrWhiteSpace(result.PaymentTransactionId) &&
                 obj.TryGetProperty("id", out var idProp))
             {
@@ -142,70 +139,97 @@ public class StripePaymentProviderDataProcessor(IConfiguration config) : IPaymen
         return eventType switch
         {
             "payment_intent.succeeded" => GetRequiredId(eventType, obj),
-
             "payment_intent.payment_failed" => GetRequiredId(eventType, obj),
-
             "invoice.payment_succeeded" =>
                 obj.TryGetProperty("payment_intent", out var pi)
                     ? GetPaymentIntentId(eventType, pi)
                     : GetRequiredId(eventType, obj),
-
             "invoice.payment_failed" => GetRequiredId(eventType, obj),
-
             "charge.refunded" =>
                 obj.TryGetProperty("payment_intent", out var refundPi)
                     ? GetPaymentIntentId(eventType, refundPi)
                     : throw new InvalidOperationException(
                         $"Stripe event '{eventType}' missing payment_intent."
                     ),
-
             _ => GetRequiredId(eventType, obj)
         };
     }
 
-    // Stripe signature verification
-    private static void VerifySignature(string payload, string header, string secret)
+    private void VerifySignature(string payload, string header)
     {
-        var elements = header.Split(',');
+        var secret = ConfigurationManager
+            .GetSensitiveConfigurations()
+            .Data[StripeConstants.Settings.Sensitive.Secret];
+
+        if (string.IsNullOrWhiteSpace(header))
+            throw new PaymentDataProcessingException("Missing Stripe signature header");
 
         string? timestamp = null;
-        string? signature = null;
+        var signatures = new List<string>();
 
-        foreach (var element in elements)
+        foreach (var element in header.Split(',', StringSplitOptions.RemoveEmptyEntries))
         {
-            var parts = element.Split('=');
+            var parts = element.Split('=', 2, StringSplitOptions.TrimEntries);
+
+            if (parts.Length != 2)
+                continue;
 
             if (parts[0] == "t")
                 timestamp = parts[1];
 
             if (parts[0] == "v1")
-                signature = parts[1];
+                signatures.Add(parts[1]);
         }
 
-        if (timestamp == null || signature == null)
+        if (timestamp is null || signatures.Count == 0)
             throw new PaymentDataProcessingException("Invalid Stripe signature header");
 
-        var eventTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(timestamp));
+        if (!long.TryParse(timestamp, out var unixTime))
+            throw new PaymentDataProcessingException("Invalid Stripe timestamp");
+
+        var eventTime = DateTimeOffset.FromUnixTimeSeconds(unixTime);
 
         if (Math.Abs((DateTimeOffset.UtcNow - eventTime).TotalMinutes) > 5)
             throw new PaymentDataProcessingException("Stripe webhook expired");
 
         var signedPayload = $"{timestamp}.{payload}";
 
-        var expectedBytes = ComputeHmac(secret, signedPayload);
-        var actualBytes = Convert.FromHexString(signature);
+        var expectedSignature = ComputeHexHmac(secret, signedPayload);
 
-        if (!CryptographicOperations.FixedTimeEquals(expectedBytes, actualBytes))
+        var valid = false;
+
+        foreach (var sig in signatures)
+        {
+            if (CryptographicOperations.FixedTimeEquals(
+                    HexToBytes(expectedSignature),
+                    HexToBytes(sig)))
+            {
+                valid = true;
+            }
+        }
+
+        if (!valid)
             throw new PaymentDataProcessingException("Invalid Stripe signature");
     }
 
-    private static byte[] ComputeHmac(string secret, string payload)
+    private static string ComputeHexHmac(string secret, string payload)
     {
         var keyBytes = Encoding.UTF8.GetBytes(secret);
         var msgBytes = Encoding.UTF8.GetBytes(payload);
 
         using var hmac = new HMACSHA256(keyBytes);
+        var hash = hmac.ComputeHash(msgBytes);
 
-        return hmac.ComputeHash(msgBytes);
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private static byte[] HexToBytes(string hex)
+    {
+        var bytes = new byte[hex.Length / 2];
+
+        for (int i = 0; i < bytes.Length; i++)
+            bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+
+        return bytes;
     }
 }

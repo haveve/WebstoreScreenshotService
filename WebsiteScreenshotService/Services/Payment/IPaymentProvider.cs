@@ -4,7 +4,7 @@ using WebsiteScreenshotService.Services.Payment.Models;
 
 public interface IPaymentProvider
 {
-    string ProviderName { get; }
+    public string ProviderName { get; }
 
     Task<StartPaymentResult> StartPayment(StartPaymentRequest request);
 
@@ -13,8 +13,6 @@ public interface IPaymentProvider
     Task<PaymentCallbackResult> ProcessCallback(PaymentCallbackInput paymentCallbackInput);
 
     Task<CreateSubscriptionResult> CreateSubscription(CreateSubscriptionRequest request);
-
-    Task<ChangeSubscriptionPlanResult> ChangeSubscriptionPlan(ChangeSubscriptionPlanRequest request);
 
     Task<CancelSubscriptionResult> CancelSubscription(CancelSubscriptionRequest request);
 }

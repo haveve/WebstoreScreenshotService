@@ -41,12 +41,6 @@ builder.Services.AddControllerServices()
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSingleton<ICacheManager, CacheManager>();
 
-var databaseProvider = builder.Environment.IsProduction()
-    ? Provider.Postgres
-    : Provider.Sqlite;
-
-builder.Services.AddSingleton(new StorageConfigurations() { Provider = databaseProvider });
-
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddSingleton<IScreenshotSearchStrategy, SqliteScreenshotSearchStrategy>();
@@ -81,10 +75,17 @@ builder.Services.AddOptionsWithValidation<ScreenshotStorageConfigurations>(build
 builder.Services.AddOptionsWithValidation<EncryptionConfigurations>(builder.Configuration.GetSection("MessageBroker"));
 builder.Services.AddOptionsWithValidation<HashingConfigurations>(builder.Configuration.GetSection("Hashing"));
 
+
+builder.Services.AddSingleton<IPaymentProviderCallbackConfigurationManager, PaymentProviderCallbackConfigurationManager>();
+builder.Services.AddSingleton<IPaymentProviderConfigurationManager, PaymentProviderConfigurationManager>();
+
+builder.Services.AddHttpClient();
+
 builder.Services.AddSingleton<IKeyService, KeyService>();
 builder.Services.AddSingleton<IEncryptionService, AesEncryptionService>();
 builder.Services.AddSingleton<IHashingService>(c => new Pbkdf2HashingService(c.GetService<IOptions<HashingConfigurations>>()!.Value!));
 
+builder.Services.AddSingleton<IScreenshotCalculator, ScreenshotPricingCalculator>();
 builder.Services.AddSingleton<ICacheGroupStateStore, InMemoryCacheGroupStateStore>();
 
 builder.Services.AddSingleton<IUserCacheService, UserCacheService>();
@@ -92,9 +93,6 @@ builder.Services.AddSingleton<ICategoryCacheService, CategoryCacheService>();
 builder.Services.AddSingleton<IScreenshotCacheService, ScreenshotCacheService>();
 builder.Services.AddSingleton<IApiTokenCacheService, ApiTokenCacheService>();
 builder.Services.AddSingleton<IRefreshTokenCacheService, RefreshTokenCacheService>();
-
-builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
-
 builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerOptionsSetup>();
 
 builder.Services.AddMessageBrokerMassTransit();
@@ -169,26 +167,7 @@ builder.Services.AddSingleton<IScreenshotStorageManager, ScreenshotStorageManage
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer();
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy(Policies.User.FetchScreenshots, p =>
-    {
-        string[] permissions = [Permissions.User.FullAccess, Permissions.User.Screenshot.ManageScreenshots, Permissions.User.Screenshot.FetchScreenshots];
-        p.Requirements.Add(new PermissionRequirements(permissions));
-    });
-
-    options.AddPolicy(Policies.User.MakeScreenshots, p =>
-    {
-        string[] permissions = [Permissions.User.FullAccess, Permissions.User.Screenshot.ManageScreenshots, Permissions.User.Screenshot.MakeScreenshots];
-        p.Requirements.Add(new PermissionRequirements(permissions));
-    });
-
-    options.AddPolicy(Policies.User.ManageCategories, p =>
-    {
-        string[] permissions = [Permissions.User.FullAccess, Permissions.User.Category.ManageCategories];
-        p.Requirements.Add(new PermissionRequirements(permissions));
-    });
-});
+builder.Services.AddJwtAuthorization();
 
 builder.Services.AddSingleton<ExceptionHandlingMiddleware>();
 builder.Services.AddSingleton<UserContextInitializeMiddleware>();
@@ -212,6 +191,8 @@ app.UseHttpsRedirection();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+app.UsePaymentCallback();
+
 app.UseAuthentication();
 
 app.UseMiddleware<UserSpecificServicesInitializeMiddleware>();
@@ -221,25 +202,3 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.Run();
-
-public record PermissionRequirements(string[] Permissions) : IAuthorizationRequirement;
-
-public class PermissionHandler(IUserContextAccessor userContextAccessor) : AuthorizationHandler<PermissionRequirements>
-{
-    protected override async Task HandleRequirementAsync(
-        AuthorizationHandlerContext context,
-        PermissionRequirements requirement)
-    {
-        var currentUser = userContextAccessor.TryCurrentUser();
-
-        if (currentUser is null)
-            return;
-
-        var currentUserPermissions = currentUser.UserInfo.Permissions;
-
-        var hasPermission = requirement.Permissions.Any(rp => currentUserPermissions.Any(p => p == rp));
-
-        if (hasPermission)
-            context.Succeed(requirement);
-    }
-}
