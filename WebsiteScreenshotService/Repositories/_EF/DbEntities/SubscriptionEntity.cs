@@ -18,6 +18,10 @@ public record SubscriptionEntity
 
     public DateTime CurrentPeriodEnd { get; set; }
 
+    public decimal Amount { get; set; }
+
+    public bool IsActive { get; set; }
+
     public DateTime CreatedAt { get; init; }
 
     public required string EncryptedData { get; set; }

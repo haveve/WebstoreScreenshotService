@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Repositories._EF.DbEntities;
 using WebsiteScreenshotService.Services.Payment.Exceptions;
 using WebsiteScreenshotService.Services.Payment.Models;
 
@@ -139,7 +140,10 @@ public class StripePaymentProvider(IHttpClientFactory httpClientFactory, IPaymen
                 ["amount"] = request.Amount.ToMinorUnits().ToString(),
                 ["currency"] = request.Amount.Currency,
                 ["metadata[order_id]"] = request.OrderId.ToString(),
-                ["payment_method_types[]"] = "card"
+                ["payment_method_types[]"] = "card",
+                ["metadata[payment_attempt_id]"] = request.PaymentAttemptId.ToString(),
+                ["metadata[user_id]"] = request.UserId,
+                ["metadata[payment_type]"] = "points"
             },
             $"order_{request.OrderId}");
 
@@ -210,7 +214,11 @@ public class StripePaymentProvider(IHttpClientFactory httpClientFactory, IPaymen
                 ["customer"] = customerId,
                 ["items[0][price]"] = priceId,
                 ["payment_behavior"] = "default_incomplete",
-                ["expand[]"] = "latest_invoice.payment_intent"
+                ["expand[]"] = "latest_invoice.payment_intent",
+                ["metadata[user_id]"] = request.UserId,
+                ["metadata[subscription_type]"] = request.SubscriptionInfo.SubscriptionType.ToString(),
+                ["metadata[subscription_period]"] = request.SubscriptionInfo.Duration.ToString(),
+                ["metadata[internal_subscription_id]"] = Guid.CreateVersion7().ToString()
             });
 
         var clientSecret = dto.LatestInvoice?.PaymentIntent?.ClientSecret;
@@ -307,7 +315,7 @@ public class StripePaymentProvider(IHttpClientFactory httpClientFactory, IPaymen
         {
             result.SubscriptionInfo = new Subscription
             {
-                SubscriptionId = subId,
+                ProviderSubscriptionId = subId,
                 PeriodEnd = TryParsePeriodEnd(input)
             };
         }
@@ -353,10 +361,10 @@ public class StripePaymentProvider(IHttpClientFactory httpClientFactory, IPaymen
     private static string ResolvePriceId(SubscriptionInfo info)
         => info.SubscriptionType switch
         {
-            SubscriptionType.Pro => info.Duration == Duration.Monthly
+            SubscriptionType.Pro => info.Duration == SubscriptionPeriod.Monthly
                     ? "price_1TQaL1KGfL2wdOOTVsySR6Z9"
                     : "price_1TQaLeKGfL2wdOOT5tIwpKTD",
-            SubscriptionType.Advanced => info.Duration == Duration.Monthly
+            SubscriptionType.Advanced => info.Duration == SubscriptionPeriod.Monthly
                     ? "price_1TQaM2KGfL2wdOOTxA5MZ1mT"
                     : "price_1TQaNCKGfL2wdOOTNRmoYxxE",
             _ => throw new TransactionProcessingException($"Invalid subscription type: {info.SubscriptionType}")

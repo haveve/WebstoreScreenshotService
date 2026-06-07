@@ -1,4 +1,5 @@
-﻿using WebsiteScreenshotService.Repositories.SubscriptionRepository.Models;
+﻿using WebsiteScreenshotService.Repositories._EF.DbEntities;
+using WebsiteScreenshotService.Repositories.SubscriptionRepository.Models;
 using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.Subscription;
@@ -15,4 +16,18 @@ public interface ISubscriptionRepository
     public Task<ConditionalResult> CanMakeScreenshotAsync(CanMakeScreenshotModel model, Guid userId);
 
     public Task<Result> RedeemScreenshotAsync(RedeemScreenshotModel model, Guid userId);
+
+    public Task<Result> AddPointsAsync(int points, Guid userId);
+
+    Task<Result<SubscriptionEntity>> GetByProviderIdAsync(string subscriptionId);
+
+    Task<SubscriptionEntity> AddAsync(SubscriptionEntity subscription);
+
+    Task<Result> ProlongAsync(Guid subscriptionId, DateTime newPeriodEnd);
+
+    Task<Result> CancelAndRemoveAsync(Guid subscriptionId);
+
+    Task<SubscriptionEntity?> GetActiveByUserIdAsync(Guid userId);
+
+    Task<bool> HasActiveSubscriptionAsync(Guid userId);
 }

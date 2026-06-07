@@ -1,6 +1,6 @@
-﻿namespace WebsiteScreenshotService.Repositories.EF.DbEntities;
+﻿namespace WebsiteScreenshotService.Repositories._EF.DbEntities;
 
-public class UserEntity
+public class AdminEntity
 {
     public Guid Id { get; set; }
 
@@ -12,18 +12,13 @@ public class UserEntity
 
     public required string EncKey { get; set; }
 
-    public bool IsDisactivated { get; set; }
-
-    public required SubscriptionPlanValueObject SubscriptionPlan { get; set; }
-
     public required string EncryptedData { get; set; }
 
     public DateTime CreatedAt { get; set; }
-};
+}
 
-public record UserEncryptedData(string NickName, string Email, TwoFactorModel? TwoFactorModel);
+public record AdminEncryptedData(string NickName, string Email, TwoFactorModel TwoFactorModel);
 
 public record TwoFactorModel(string TotpSecret, IReadOnlyList<RecoveryCode> RecoveryCodes);
 
 public record RecoveryCode(string Code, bool WasUsed);
-

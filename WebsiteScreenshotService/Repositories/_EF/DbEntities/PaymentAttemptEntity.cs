@@ -14,11 +14,13 @@ public record PaymentAttemptEntity
 
     public required string Provider { get; init; }
 
-    public string? ProviderPaymentId { get; init; }
+    public string? ProviderPaymentId { get; set; }
 
     public bool IsPrimary { get; set; }
 
     public DateTime CreatedAt { get; init; }
+
+    public DateTime Refunded { get; set; }
 }
 
 public enum PaymentAttemptStatus

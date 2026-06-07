@@ -1,4 +1,5 @@
 ﻿using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Repositories._EF.DbEntities;
 
 namespace WebsiteScreenshotService.Services.Payment.Models;
 
@@ -6,13 +7,7 @@ public class SubscriptionInfo
 {
     public required Money Price { get; set; }
 
-    public Duration Duration { get; set; }
+    public required SubscriptionPeriod Duration { get; set; }
 
-    public SubscriptionType SubscriptionType { get; set; }
-}
-
-public enum Duration
-{
-    Monthly = 0,
-    Yearly = 1
+    public required SubscriptionType SubscriptionType { get; set; }
 }

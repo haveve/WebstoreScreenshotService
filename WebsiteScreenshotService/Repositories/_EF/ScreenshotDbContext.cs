@@ -1,8 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.Extensions.Options;
 using NpgsqlTypes;
-using WebsiteScreenshotService.Configurations;
 using WebsiteScreenshotService.Repositories._EF.DbEntities;
 using WebsiteScreenshotService.Repositories._EF.DbEntities.Auth;
 using WebsiteScreenshotService.Repositories.EF.DbEntities;
@@ -16,7 +13,7 @@ public static class ScreenshotSearch
     public const string FullSearchVector = "FullSearchVector";
 }
 
-public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, IOptions<StorageConfigurations> consifurations) : DbContext(options)
+public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options) : DbContext(options)
 {
     public DbSet<UserEntity> Users => Set<UserEntity>();
 
@@ -50,6 +47,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
         ConfigurePaymentAttempt(modelBuilder);
         ConfigureSubscription(modelBuilder);
         ConfigureAuth(modelBuilder);
+        ConfigureLog(modelBuilder);
     }
 
     private static void ConfigureUser(ModelBuilder modelBuilder)
@@ -87,7 +85,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
                    .HasMaxLength(20)
                    .IsRequired();
 
-                sp.Property(p => p.ScreenshotLeft)
+                sp.Property(p => p.Points)
                    .IsRequired();
             });
         });
@@ -141,7 +139,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
             builder.HasIndex(s => s.Title);
             builder.HasIndex(s => s.Description);
 
-            if (consifurations.Value.Provider == Provider.Postgres)
+            if (Database.IsNpgsql())
             {
                 builder.Property<NpgsqlTsVector>(ScreenshotSearch.TitleSearchVector)
                     .HasComputedColumnSql(@"
@@ -213,13 +211,12 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
             builder.Property(b => b.UserId)
                    .IsRequired();
 
-            // Enforce ONE basket per user
             builder.HasIndex(b => b.UserId)
                    .IsUnique();
 
             builder.HasMany(b => b.Lines)
                    .WithOne()
-                   .HasForeignKey("BasketId")
+                   .HasForeignKey(l => l.BasketId)
                    .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -227,7 +224,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
         {
             builder.HasKey(l => l.Id);
 
-            builder.Property<Guid>("BasketId") // shadow FK
+            builder.Property(l => l.BasketId)
                    .IsRequired();
 
             builder.Property(l => l.ProductId)
@@ -236,8 +233,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
             builder.Property(l => l.Quantity)
                    .IsRequired();
 
-            // Optional: prevent duplicate product in same basket
-            builder.HasIndex("BasketId", nameof(BasketLineEntity.ProductId))
+            builder.HasIndex(l => new { l.BasketId, l.ProductId })
                    .IsUnique();
         });
     }
@@ -269,7 +265,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
 
             builder.HasMany(o => o.Lines)
                    .WithOne()
-                   .HasForeignKey("OrderId")
+                   .HasForeignKey(l => l.OrderId)
                    .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasIndex(o => o.UserId);
@@ -280,7 +276,7 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
         {
             builder.HasKey(l => l.Id);
 
-            builder.Property<Guid>("OrderId")
+            builder.Property(l => l.OrderId)
                    .IsRequired();
 
             builder.Property(l => l.ProductId)
@@ -299,7 +295,58 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
         });
     }
 
-    private static void ConfigurePaymentAttempt(ModelBuilder modelBuilder)
+    private void ConfigureLog(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<LogEntity>(builder =>
+        {
+            builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.Message)
+                   .IsRequired()
+                   .HasMaxLength(4000);
+
+            builder.Property(x => x.Created)
+                   .IsRequired();
+
+            builder.Property(x => x.Severity)
+                   .HasConversion<string>()
+                   .HasMaxLength(20)
+                   .IsRequired();
+
+            builder.Property(x => x.Source)
+                   .HasMaxLength(200);
+
+            builder.Property(x => x.PropertiesJson);
+
+            builder.HasIndex(x => x.Created);
+            builder.HasIndex(x => x.Severity);
+            builder.HasIndex(x => x.Source);
+
+            if (Database.IsNpgsql())
+            {
+                builder.Property(x => x.Created)
+                       .HasColumnType("timestamptz");
+
+                builder.Property(x => x.PropertiesJson)
+                       .HasColumnType("jsonb");
+
+                builder.HasIndex(x => x.PropertiesJson)
+                       .HasMethod("gin");
+
+                builder.HasIndex(x => x.Created);
+            }
+            else if (Database.IsSqlite())
+            {
+                builder.Property(x => x.Created)
+                       .HasColumnType("TEXT");
+
+                builder.Property(x => x.PropertiesJson)
+                       .HasColumnType("TEXT");
+            }
+        });
+    }
+
+    private void ConfigurePaymentAttempt(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<PaymentAttemptEntity>(builder =>
         {
@@ -330,15 +377,27 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
             builder.Property(p => p.CreatedAt)
                    .IsRequired();
 
+            builder.Property(p => p.Refunded)
+                    .IsRequired();
+
             builder.HasIndex(p => p.OrderId);
             builder.HasIndex(p => p.UserId);
 
             builder.HasIndex(p => p.ProviderPaymentId)
                    .IsUnique(false);
 
-            builder.HasIndex(p => p.OrderId)
-                   .IsUnique()
-                   .HasFilter("\"IsPrimary\" = true");
+            if (Database.IsNpgsql())
+            {
+                builder.HasIndex(p => p.OrderId)
+                       .IsUnique()
+                       .HasFilter("\"IsPrimary\" = true");
+            }
+            else if (Database.IsSqlite())
+            {
+                builder.HasIndex(p => p.OrderId)
+                       .IsUnique()
+                       .HasFilter("IsPrimary = 1");
+            }
         });
     }
 
@@ -371,6 +430,12 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options, 
 
             builder.Property(s => s.CurrentPeriodEnd)
                    .IsRequired();
+
+            builder.Property(s => s.Amount)
+                    .IsRequired();
+
+            builder.Property(s => s.IsActive)
+                    .IsRequired();
 
             builder.Property(s => s.CreatedAt)
                    .IsRequired();

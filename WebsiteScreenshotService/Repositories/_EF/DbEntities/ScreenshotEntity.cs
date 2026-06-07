@@ -1,5 +1,4 @@
-﻿using NpgsqlTypes;
-using Shared.Core.Contracts.ScreeshotModel.Components;
+﻿using Shared.Core.Contracts.ScreeshotModel.Components;
 using WebsiteScreenshotService.Entities;
 
 namespace WebsiteScreenshotService.Repositories.EF.DbEntities;
@@ -17,6 +16,8 @@ public class ScreenshotEntity
     public required ScreenshotState State { get; set; }
 
     public required ScreenshotType Type { get; set; }
+
+    public required int Cost { get; init; }
 
     public string? Title { get; set; }
 

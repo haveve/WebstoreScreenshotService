@@ -37,7 +37,32 @@ public class UserManager(
     private readonly ICacheManager _cache = cache;
     private readonly IUserCacheService _userCache = userCache;
 
+    public async Task<Result> EnableUserAsync(Guid? userId = null)
+    {
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        var entityResult = await _userRepository.EnableUserAsync(userId.Value);
+        return entityResult;
+
+    }
+
+    public async Task<Result> DisableUserAsync(Guid? userId = null)
+    {
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        var entityResult = await _userRepository.DisableUserAsync(userId.Value);
+        return entityResult;
+    }
+
+
     public async ValueTask<Result<User>> GetUser(Guid? userId = null)
+    {
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
+
+        var entityResult = await GetUserProfileCachedAsync(userId.Value);
+
+        return FormatUserResult(entityResult);
+    }
+
+    public async Task<Result<User>> DisableUser(Guid? userId = null)
     {
         userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 

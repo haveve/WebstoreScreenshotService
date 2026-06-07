@@ -97,5 +97,41 @@ public class UserRepository(ScreenshotDbContext context) : IUserRepository
 
         return ConditionalResult.Success(exists);
     }
+
+    public async Task<Result> DisableUserAsync(Guid id)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+        if (user is null)
+            return Result.Error("User does not exist");
+
+        if (user.IsDisactivated)
+            return Result.Success;
+
+        user.IsDisactivated = true;
+
+        await _context.SaveChangesAsync();
+
+        return Result.Success;
+    }
+
+    public async Task<Result> EnableUserAsync(Guid id)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+        if (user is null)
+            return Result.Error("User does not exist");
+
+        if (!user.IsDisactivated)
+            return Result.Success;
+
+        user.IsDisactivated = false;
+
+        await _context.SaveChangesAsync();
+
+        return Result.Success;
+    }
 }
 

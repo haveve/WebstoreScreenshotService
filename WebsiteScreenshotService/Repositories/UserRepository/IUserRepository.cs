@@ -10,6 +10,10 @@ namespace WebsiteScreenshotService.Repositories.UserRepository;
 /// </summary>
 public interface IUserRepository
 {
+    public Task<Result> EnableUserAsync(Guid id);
+
+    public Task<Result> DisableUserAsync(Guid id);
+
     public Task<Result> Change2faModelAsync(Guid id, Change2faRepositoryModel model);
 
     public Task<Result> UpdateUserPasswordAsync(Guid id, UserPasswordUpdateRepositoryModel model);

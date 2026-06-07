@@ -20,7 +20,7 @@ public class PaymentCallbackResult
 
 public class Subscription
 {
-    public required string SubscriptionId { get; set; }
+    public required string ProviderSubscriptionId { get; set; }
 
     public required DateTime? PeriodEnd { get; set; }
 }
