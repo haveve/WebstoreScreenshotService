@@ -27,4 +27,12 @@ public class CategoriesController(ICategoryManager categoryManager) : Controller
         var category = await _categoryManager.AddAsync(model);
         return Ok(category);
     }
+
+    [HttpDelete]
+    [ActionName("deleteCategory")]
+    public async Task<IActionResult> DeleteCategory([FromQuery] Guid id)
+    {
+        var category = await _categoryManager.RemoveAsync(id);
+        return Ok(category);
+    }
 }

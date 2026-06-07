@@ -16,12 +16,18 @@ namespace WebsiteScreenshotService.Controllers;
 [Authorize(Roles = UserRoles.User)]
 [ApiController]
 [Route("screenshots/[action]")]
-public class ScreenshotController(IScreenshotService screenshotService, IScreenshotManager screenshotManager, IScreenshotStorageManager screenshotStorageManager, IUserContextAccessor userContextAccessor) : ControllerBase
+public class ScreenshotController(
+    IScreenshotService screenshotService,
+    IScreenshotManager screenshotManager,
+    IScreenshotStorageManager screenshotStorageManager,
+    IUserContextAccessor userContextAccessor,
+    IScreenshotCalculator screenshotCalculator) : ControllerBase
 {
     private readonly IScreenshotService _screenshotService = screenshotService;
     private readonly IScreenshotManager _screenshotManager = screenshotManager;
     private readonly IScreenshotStorageManager _screenshotStorageManager = screenshotStorageManager;
     private readonly IUserContextAccessor _userContextAccessor = userContextAccessor;
+    private readonly IScreenshotCalculator _screenshotCalculator = screenshotCalculator;
 
     /// <summary>
     /// Captures a screenshot based on the specified options and returns the image file.
@@ -44,7 +50,7 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
         var userContext = _userContextAccessor.GetCurrentUser();
         var model = screenshotOptions.ToScreenshotOptions(userContext);
 
-        if(!model.IsSuccess)
+        if (!model.IsSuccess)
             return BadRequest(new ErrorResponse(model.ErrorMessage!));
 
         var screenshotResult = await _screenshotService.MakeScreenshotAsync(model.Value!);
@@ -56,6 +62,23 @@ public class ScreenshotController(IScreenshotService screenshotService, IScreens
         var screenshot = screenshotResult.Value!;
         var responseModel = new ScreenshotModel(screenshot, _screenshotStorageManager.GetScreenshotUrl(screenshot, useInfo.Id));
         return Ok(responseModel);
+    }
+
+    [HttpPost]
+    [Authorize(Policy = Policies.User.MakeScreenshots)]
+    [ActionName("calculateScreenshotCost")]
+    public IActionResult CalculateScreenshotCost([FromBody] InputScreenshotModel screenshotOptions)
+    {
+        var userContext = _userContextAccessor.GetCurrentUser();
+        var model = screenshotOptions.ToScreenshotOptions(userContext);
+
+        if (!model.IsSuccess)
+            return BadRequest(new ErrorResponse(model.ErrorMessage!));
+
+        var pointsCost = _screenshotCalculator.CalculatePoints(model.Value!);
+        var calculationModel = new ScreenshotCalculationModel(pointsCost);
+
+        return Ok(calculationModel);
     }
 
     [HttpGet]
