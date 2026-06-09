@@ -41,6 +41,7 @@ public class UserManager(
     {
         userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
         var entityResult = await _userRepository.EnableUserAsync(userId.Value);
+        await InvalidateUserCacheAsync(userId.Value);
         return entityResult;
 
     }
@@ -49,20 +50,12 @@ public class UserManager(
     {
         userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
         var entityResult = await _userRepository.DisableUserAsync(userId.Value);
+        await InvalidateUserCacheAsync(userId.Value);
         return entityResult;
     }
 
 
     public async ValueTask<Result<User>> GetUser(Guid? userId = null)
-    {
-        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
-
-        var entityResult = await GetUserProfileCachedAsync(userId.Value);
-
-        return FormatUserResult(entityResult);
-    }
-
-    public async Task<Result<User>> DisableUser(Guid? userId = null)
     {
         userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
 
@@ -176,9 +169,28 @@ public class UserManager(
         return FormatUserResult(entity);
     }
 
+    public async Task<Result<User>> GetUserByNickNameAsync(string nickName)
+    {
+        var nickNameHash = _hashingService.Hash(nickName);
+        var entity = await _userRepository.GetUserByNickNameAsync(nickNameHash);
+
+        if (!entity.IsSuccess)
+            return Result<User>.Error("User does not exist");
+
+        return FormatUserResult(entity);
+    }
+
     public async Task<ConditionalResult> DoesUserExistWithNickNameAsync(string nickNameHash)
     {
         return await _userRepository.DoesUserExistWithNickNameAsync(nickNameHash);
+    }
+
+
+    public async Task<Result> UpdateUserSubscriptionAsync(SubscriptionPlan plan, Guid? userId = null)
+    {
+        userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        await InvalidateUserCacheAsync(userId.Value);
+        return await _userRepository.UpdateUserSubscriptionAsync(plan, userId.Value);
     }
 
     private async Task<Result<UserEntity>> GetUserProfileCachedAsync(Guid id)

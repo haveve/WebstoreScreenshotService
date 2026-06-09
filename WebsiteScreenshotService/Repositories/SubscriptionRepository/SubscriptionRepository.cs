@@ -62,7 +62,7 @@ public class SubscriptionRepository(ScreenshotDbContext context, IScreenshotMana
 
         subscription.CurrentPeriodEnd = newPeriodEnd;
 
-        if(!subscription.IsActive)
+        if (!subscription.IsActive)
             subscription.IsActive = true;   
 
         await _context.SaveChangesAsync();

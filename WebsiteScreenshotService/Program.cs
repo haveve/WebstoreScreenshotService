@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Shared.Core.Services;
 using System.Text.Json;
 using WebsiteScreenshotService;
 using WebsiteScreenshotService.Configurations;
@@ -11,8 +11,10 @@ using WebsiteScreenshotService.Mappers.EntityMappers;
 using WebsiteScreenshotService.Mappers.EntityMappers.impl;
 using WebsiteScreenshotService.Model.Validation;
 using WebsiteScreenshotService.Model.Validation.Validators;
+using WebsiteScreenshotService.Repositories.AdminRepository;
 using WebsiteScreenshotService.Repositories.CategoryRepository;
 using WebsiteScreenshotService.Repositories.EF;
+using WebsiteScreenshotService.Repositories.ProductRepository;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository.Search;
 using WebsiteScreenshotService.Repositories.ScreenshotStorageRepository;
@@ -23,6 +25,7 @@ using WebsiteScreenshotService.Services;
 using WebsiteScreenshotService.Services.Caching;
 using WebsiteScreenshotService.Services.Caching.Services;
 using WebsiteScreenshotService.Services.Caching.Services.impl;
+using WebsiteScreenshotService.Services.Checkout;
 using WebsiteScreenshotService.Services.Messaging;
 using WebsiteScreenshotService.Services.Payment;
 using WebsiteScreenshotService.Services.Payment.Stripe;
@@ -45,13 +48,13 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddSingleton<IScreenshotSearchStrategy, SqliteScreenshotSearchStrategy>();
     builder.Services.AddDbContext<ScreenshotDbContext>(options =>
-        options.UseSqlite("Data Source=screenshots.db"));
+        options.UseSqlite(builder.Configuration.GetConnectionString("Dev")));
 }
 else
 {
     builder.Services.AddSingleton<IScreenshotSearchStrategy, PostgresScreenshotSearchStrategy>();
     builder.Services.AddDbContext<ScreenshotDbContext>(options =>
-        options.UseNpgsql("host=localhost port=5432 dbname=mydb user=myuser password=mypassword"));
+        options.UseNpgsql(builder.Configuration.GetConnectionString("Live")));
 }
 
 builder.Services.AddGrpc();
@@ -71,10 +74,20 @@ builder.Services.AddSingleton<IValidatorRegistry>(sp =>
 builder.Services.Configure<KestrelServerOptions>(builder.Configuration.GetSection("Server"));
 builder.Services.AddOptionsWithValidation<MessageBrokerConfigurations>(builder.Configuration.GetSection("MessageBroker"));
 builder.Services.AddOptionsWithValidation<AuthorizationConfiguration>(builder.Configuration.GetSection("Authorization"));
-builder.Services.AddOptionsWithValidation<ScreenshotStorageConfigurations>(builder.Configuration.GetSection("ScreenshotStorageSettings"));
 builder.Services.AddOptionsWithValidation<EncryptionConfigurations>(builder.Configuration.GetSection("MessageBroker"));
 builder.Services.AddOptionsWithValidation<HashingConfigurations>(builder.Configuration.GetSection("Hashing"));
+builder.Services.AddOptionsWithValidation<EmailConfigurations>(builder.Configuration.GetSection("Email"));
+builder.Services.AddOptionsWithValidation<FrontendConfigurations>(builder.Configuration.GetSection("FrontendSettings"));
+builder.Services.AddOptionsWithValidation<InitializeAdminConfiguration>(builder.Configuration.GetSection("InitializeAdmin"));
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddOptionsWithValidation<ScreenshotStorageConfigurations>(builder.Configuration.GetSection("ScreenshotStorageSettings"));
+}
+else
+{
+    builder.Services.AddOptionsWithValidation<BlobConfigurations>(builder.Configuration.GetSection("Blob"));
+}
 
 builder.Services.AddSingleton<IPaymentProviderCallbackConfigurationManager, PaymentProviderCallbackConfigurationManager>();
 builder.Services.AddSingleton<IPaymentProviderConfigurationManager, PaymentProviderConfigurationManager>();
@@ -136,33 +149,22 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddScoped<ITokenManager, TokenManager>();
 
-builder.Services.AddSingleton<IScreenshotStorageManager, ScreenshotStorageManager>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddScoped<IAdminManager, AdminManager>();
 
-//builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-//    .AddCookie(options =>
-//    {
-//        options.Events = new CookieAuthenticationEvents
-//        {
-//            OnRedirectToLogin = context =>
-//            {
-//                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-//                return Task.CompletedTask;
-//            }
-//        };
+builder.Services.AddScoped<IProductManager, ProductManager>();
+builder.Services.AddScoped<IProductPriceManager, ProductPriceManager>();
 
-//        options.SlidingExpiration = true;
+builder.Services.AddScoped<ICheckoutManager, CheckoutManager>();
 
-//        if (builder.Environment.IsProduction())
-//        {
-//            options.Cookie.SameSite = SameSiteMode.None;
-//            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-//        }
-//        else
-//        {
-//            options.Cookie.SameSite = SameSiteMode.Lax;
-//            options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-//        }
-//    });
+if (builder.Environment.IsDevelopment())
+    builder.Services.AddSingleton<IScreenshotStorageManager, ScreenshotStorageManager>();
+else
+    builder.Services.AddSingleton<IScreenshotStorageManager, BlobScreenshotStorageManager>();
+
+builder.Services.AddSingleton<IEmailService, AzureEmailService>();
+
+builder.Services.AddHostedService<AdminRegistrationInitializer>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer();
@@ -182,7 +184,7 @@ if (app.Environment.IsDevelopment())
 
 app.MapGrpcService<GrpcScreenshotService>();
 
-app.UseCors(builder => builder.WithOrigins(app.Configuration.GetValue<string>("FrontUrl")!)
+app.UseCors(builder => builder.WithOrigins(app.Configuration.GetValue<string>("FrontendSettings:FrontUrl")!)
                  .AllowAnyHeader()
                  .WithMethods(["POST", "GET"])
                  .AllowCredentials());

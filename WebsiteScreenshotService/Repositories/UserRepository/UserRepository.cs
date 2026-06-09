@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Repositories.EF;
 using WebsiteScreenshotService.Repositories.EF.DbEntities;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
@@ -128,6 +129,22 @@ public class UserRepository(ScreenshotDbContext context) : IUserRepository
             return Result.Success;
 
         user.IsDisactivated = false;
+
+        await _context.SaveChangesAsync();
+
+        return Result.Success;
+    }
+
+    public async Task<Result> UpdateUserSubscriptionAsync(SubscriptionPlan plan, Guid userId)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null)
+            return Result.Error("User does not exist");
+
+        user.SubscriptionPlan.Type = plan.Type;
+        user.SubscriptionPlan.Points += plan.Points;
 
         await _context.SaveChangesAsync();
 

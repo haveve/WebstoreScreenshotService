@@ -148,7 +148,7 @@ public static class ScreenshotOptionsExtension
         if (subscriptionType == SubscriptionType.Regular && (isElementScreenshot || hasAdvancedConfigurations || isHighQualityScreenshot))
             return "You cannot perform this operation with 'Regular' subscription. If you think this is an issue, please, contact the administration";
 
-        if (subscriptionType == SubscriptionType.Pro && isHighQualityScreenshot)
+        if (subscriptionType == SubscriptionType.Pro && (isHighQualityScreenshot || hasAdvancedConfigurations))
             return "You cannot perform this operation with 'Pro' subscription. If you think this is an issue, please, contact the administration";
 
         return null;

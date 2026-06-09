@@ -1,12 +1,20 @@
-﻿using WebsiteScreenshotService.Extensions;
+﻿using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Extensions;
+using WebsiteScreenshotService.Repositories.Subscription;
+using WebsiteScreenshotService.Repositories.TokenRepository;
 using WebsiteScreenshotService.Repositories.UserRepository;
 using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService;
 
-public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddleware> logger, IUserManager userManager) : IMiddleware
+public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddleware> logger,
+    IUserManager userManager,
+    ITokenManager tokenManager,
+    ISubscriptionRepository subscriptionRepository) : IMiddleware
 {
     private readonly ILogger<UserContextInitializeMiddleware> _logger = logger;
+    private readonly ITokenManager _tokenManager = tokenManager;
+    private readonly ISubscriptionRepository _subscriptionRepository = subscriptionRepository;
     private readonly IUserManager _userManager = userManager;
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -22,9 +30,24 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
         if (userContext is null)
             return;
 
+        await InitializeSubscription(userContext.UserInfo.Id);
         context.SetUserContext(userContext);
 
         await next(context);
+    }
+
+    private async Task InitializeSubscription(Guid userId)
+    {
+        var subscription = await _subscriptionRepository.GetActiveByUserIdAsync(userId);
+
+        var subscriptionPlan = subscription?.Type switch
+        {
+            SubscriptionType.Pro => SubscriptionPlan.GetProSubscriptionPlan(),
+            SubscriptionType.Advanced => SubscriptionPlan.GetProSubscriptionPlan(),
+            _ => SubscriptionPlan.GetRegularSubscriptionPlan()
+        };
+
+        await _userManager.UpdateUserSubscriptionAsync(subscriptionPlan, userId);
     }
 
     private async Task<UserContext?> CreateUserContext(HttpContext httpContext)
@@ -53,6 +76,12 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
         var user = userResult.Value!;
         var subscriptionPlan = user.SubscriptionPlan;
 
+        if (user.IsDisactivated)
+        {
+            await httpContext.Response.UserIsDisabled();
+            return null;
+        }
+
         var tokenResult = tokenVerificationResult.Value!;
 
         var permission = tokenResult.IsApiToken
@@ -63,7 +92,7 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
         return new UserContext(userInfo, subscriptionPlan);
     }
 
-    private static async Task<Result<TokenVerificationResult>> VerifyApiTokenAsync(HttpContext httpContext)
+    private async Task<Result<TokenVerificationResult>> VerifyApiTokenAsync(HttpContext httpContext)
     {
         var authType = httpContext.User.GetTokenType();
 
@@ -74,14 +103,20 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
         var token = httpContext.GetRawAuthToken()!;
 
         var hash = userSpecificServices.HashingService.Hash(token);
-        var valid = hash == "";
+        var storedToken = await _tokenManager.GetApiTokenByHashAsync(hash);
 
-        if (!valid)
+        if (!storedToken.IsSuccess)
+        {
             await httpContext.Response.UnauthorizedAccess();
+            return Result<TokenVerificationResult>.Error("Unauthorized");
+        }
 
-        return valid
-            ? Result<TokenVerificationResult>.Success(new(Permissions: [], IsApiToken: true))
-            : Result<TokenVerificationResult>.Error("Unauthorized");
+        var tokenValue = storedToken.Value!;
+
+        if (tokenValue.Expires >= DateTime.UtcNow)
+            return Result<TokenVerificationResult>.Success(new(Permissions: [.. tokenValue.Scopes], IsApiToken: true));
+
+        return Result<TokenVerificationResult>.Error("Unauthorized");
     }
 
     private record TokenVerificationResult(string[] Permissions, bool IsApiToken)

@@ -11,6 +11,13 @@ public static class HttpResponseExtensions
         await response.WriteAsJsonAsync(errorMessage);
     }
 
+    public static async Task UserIsDisabled(this HttpResponse response)
+    {
+        response.StatusCode = StatusCodes.Status403Forbidden;
+        var errorMessage = new ErrorResponse("Access denied due to invalid credentials");
+        await response.WriteAsJsonAsync(errorMessage);
+    }
+
     public static async Task InternalServerError(this HttpResponse response)
     {
         response.StatusCode = StatusCodes.Status500InternalServerError;

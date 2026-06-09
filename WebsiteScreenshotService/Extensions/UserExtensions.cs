@@ -24,6 +24,8 @@ public static class UserExtensions
     {
         yield return new(Constants.Claims.UserId, confirmationData.UserId.ToString());
         yield return new(Constants.Claims.ScreenshotId, confirmationData.ScreenshotId);
+        yield return new(Constants.Claims.ConfirmationTokenId, confirmationData.TokenId);
+        yield return new(Constants.Claims.ScreenshotCost, confirmationData.PointsCost.ToString());
         yield return new(Constants.Claims.TokenType, Constants.Claims.TokenTypes.Confirmation.ToString());
     }
 }

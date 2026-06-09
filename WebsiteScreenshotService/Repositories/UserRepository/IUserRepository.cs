@@ -1,4 +1,5 @@
-﻿using WebsiteScreenshotService.Repositories.EF.DbEntities;
+﻿using WebsiteScreenshotService.Entities;
+using WebsiteScreenshotService.Repositories.EF.DbEntities;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 using WebsiteScreenshotService.Repositories.UserRepository.Models;
 using WebsiteScreenshotService.Utils;
@@ -41,4 +42,6 @@ public interface IUserRepository
     public Task<Result<UserEntity>> CreateUserAsync(UserCreateRepositoryModel user);
 
     public Task<ConditionalResult> DoesUserExistWithNickNameAsync(string nickNameHash);
+
+    Task<Result> UpdateUserSubscriptionAsync(SubscriptionPlan plan, Guid userId);
 }

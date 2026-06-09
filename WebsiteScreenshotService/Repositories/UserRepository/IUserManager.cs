@@ -42,4 +42,8 @@ public interface IUserManager
     public Task<Result<User>> CreateUserAsync(UserCreateManagerModel user);
 
     public Task<ConditionalResult> DoesUserExistWithNickNameAsync(string nickNameHash);
+
+    Task<Result> UpdateUserSubscriptionAsync(SubscriptionPlan plan, Guid? userId = null);
+
+    Task<Result<User>> GetUserByNickNameAsync(string nickName);
 }

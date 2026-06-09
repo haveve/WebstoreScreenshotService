@@ -35,6 +35,6 @@ public interface ITokenManager
     Task<Result<List<RefreshToken>>> GetAllActiveRefreshTokensAsync(
         Guid? userId = null);
 
-    Task<Result<List<ApiToken>>> GetAllActiveApiTokensAsync(
+    Task<Result<List<ApiToken>>> GetAllApiTokensAsync(
         Guid? userId = null);
 }

@@ -17,7 +17,7 @@ public class AdminEntity
     public DateTime CreatedAt { get; set; }
 }
 
-public record AdminEncryptedData(string NickName, string Email, TwoFactorModel TwoFactorModel);
+public record AdminEncryptedData(string NickName, string Email, TwoFactorModel? TwoFactorModel);
 
 public record TwoFactorModel(string TotpSecret, IReadOnlyList<RecoveryCode> RecoveryCodes);
 

@@ -234,15 +234,14 @@ public class TokenRepository(ScreenshotDbContext context) : ITokenRepository
         return Result<List<RefreshTokenEntity>>.Success(tokens);
     }
 
-    public async Task<Result<List<ApiTokenEntity>>> GetAllActiveApiTokensAsync(
+    public async Task<Result<List<ApiTokenEntity>>> GetAllApiTokensAsync(
         Guid userId)
     {
         var tokens = await _context.ApiTokens
             .AsNoTracking()
             .Where(x =>
                 x.UserId == userId &&
-                x.TokenMetadata.Revoked == null &&
-                x.Expires > DateTime.UtcNow)
+                x.TokenMetadata.Revoked == null)
             .OrderByDescending(x => x.TokenMetadata.Issued)
             .ToListAsync();
 

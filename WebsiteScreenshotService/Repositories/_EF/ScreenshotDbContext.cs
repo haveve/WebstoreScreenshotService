@@ -37,6 +37,8 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options) 
 
     public DbSet<ApiTokenEntity> ApiTokens => Set<ApiTokenEntity>();
 
+    public DbSet<AdminEntity> Admins => Set<AdminEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureUser(modelBuilder);
@@ -459,23 +461,60 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options) 
             entity.HasIndex(x => x.Expires);
             entity.HasIndex(x => x.UserId);
 
-            entity.Property(x => x.TokenHash).IsRequired();
-            entity.Property(x => x.Name).IsRequired();
+            entity.Property(x => x.TokenHash)
+                   .HasMaxLength(128)
+                   .IsRequired();
+
+            entity.Property(x => x.Name)
+                .IsRequired()
+                .HasMaxLength(50);
+
             entity.Property(x => x.EncryptedData).IsRequired();
 
             entity.OwnsOne(x => x.TokenMetadata, meta =>
             {
-                meta.Property(x => x.Issued);
+                meta.Property(x => x.Issued)
+                   .IsRequired();
 
-                meta.OwnsOne(x => x.IssuedLocation);
+                meta.OwnsOne(x => x.IssuedLocation, loc =>
+                {
+                    loc.Property(x => x.CountryCode)
+                       .HasMaxLength(4);
+
+                    loc.Property(x => x.Country)
+                       .HasMaxLength(50);
+
+                    loc.Property(x => x.City)
+                       .HasMaxLength(100);
+                });
 
                 meta.Property(x => x.LastUsed);
 
-                meta.OwnsOne(x => x.LastUsedLocation);
+                meta.OwnsOne(x => x.LastUsedLocation, loc =>
+                {
+                    loc.Property(x => x.CountryCode)
+                       .HasMaxLength(4);
+
+                    loc.Property(x => x.Country)
+                       .HasMaxLength(50);
+
+                    loc.Property(x => x.City)
+                       .HasMaxLength(100);
+                });
 
                 meta.Property(x => x.Revoked);
 
-                meta.OwnsOne(x => x.RevokeLocation);
+                meta.OwnsOne(x => x.RevokeLocation, loc =>
+                {
+                    loc.Property(x => x.CountryCode)
+                       .HasMaxLength(4);
+
+                    loc.Property(x => x.Country)
+                       .HasMaxLength(50);
+
+                    loc.Property(x => x.City)
+                       .HasMaxLength(100);
+                });
             });
         });
 
@@ -488,18 +527,41 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options) 
             entity.HasIndex(x => x.UserId);
             entity.HasIndex(x => x.Expires);
 
-            entity.Property(x => x.TokenHash).IsRequired();
-            entity.Property(x => x.FamilyId).IsRequired();
+            entity.Property(x => x.TokenHash)
+                  .IsRequired()
+                  .HasMaxLength(128);
+
+            entity.Property(x => x.FamilyId)
+                  .IsRequired()
+                  .HasMaxLength(64);
 
             entity.OwnsOne(x => x.TokenMetadata, meta =>
             {
-                meta.Property(x => x.Issued);
+                meta.OwnsOne(x => x.IssuedLocation, loc =>
+                {
+                    loc.Property(x => x.CountryCode)
+                       .HasMaxLength(4);
 
-                meta.OwnsOne(x => x.IssuedLocation);
+                    loc.Property(x => x.Country)
+                       .HasMaxLength(50);
+
+                    loc.Property(x => x.City)
+                       .HasMaxLength(100);
+                });
 
                 meta.Property(x => x.Revoked);
 
-                meta.OwnsOne(x => x.RevokeLocation);
+                meta.OwnsOne(x => x.RevokeLocation, loc =>
+                {
+                    loc.Property(x => x.CountryCode)
+                       .HasMaxLength(4);
+
+                    loc.Property(x => x.Country)
+                       .HasMaxLength(50);
+
+                    loc.Property(x => x.City)
+                       .HasMaxLength(100);
+                });
             });
         });
     }

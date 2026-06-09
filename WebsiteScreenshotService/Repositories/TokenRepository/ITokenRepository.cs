@@ -35,7 +35,7 @@ public interface ITokenRepository
     Task<Result<List<RefreshTokenEntity>>> GetAllActiveRefreshTokensAsync(
         Guid userId);
 
-    Task<Result<List<ApiTokenEntity>>> GetAllActiveApiTokensAsync(
+    Task<Result<List<ApiTokenEntity>>> GetAllApiTokensAsync(
         Guid userId);
 
     Task<IdResult> GetUserIdByRefreshTokenFamilyIdAsync(

@@ -1,125 +1,347 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.Filters;
-using System.Security.Claims;
-using WebsiteScreenshotService.Controllers.Examples.Indentity;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
 using WebsiteScreenshotService.Entities;
-using WebsiteScreenshotService.Extensions;
 using WebsiteScreenshotService.Model;
+using WebsiteScreenshotService.Repositories.AdminRepository;
+using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
+using WebsiteScreenshotService.Repositories.TokenRepository;
+using WebsiteScreenshotService.Repositories.TokenRepository.Models;
 using WebsiteScreenshotService.Repositories.UserRepository;
-
-namespace WebsiteScreenshotService.Controllers;
+using WebsiteScreenshotService.Services;
+using WebsiteScreenshotService.Services.Security;
 
 [Route("identity/[action]")]
 [ApiController]
-public class IdentityController(IUserManager userManager) : ControllerBase
+public class IdentityController(
+    IUserManager userManager,
+    IAdminManager adminManager,
+    IAuthorizationManager authorizationManager,
+    ITokenManager tokenManager,
+    IEmailService emailService,
+    ILogger<IdentityController> logger,
+    IHashingService hashingService
+) : ControllerBase
 {
-    private readonly IUserManager _userManager = userManager;
+    private static readonly SemaphoreSlim _adminInitLock = new(1, 1);
 
-    /// <summary>
-    /// Retrieves the information of the currently authenticated user.
-    /// </summary>
-    /// <returns>
-    /// A UserModel with user details if the user is authenticated, or a BadRequest if the user does not exist.
-    /// </returns>
-    /// <response code="200">Returns the UserModel or null if used is not authorized or user does not exist.</response>
+    private readonly IUserManager _userManager = userManager;
+    private readonly IAdminManager _adminManager = adminManager;
+    private readonly IAuthorizationManager _authorizationManager = authorizationManager;
+    private readonly ITokenManager _tokenManager = tokenManager;
+    private readonly IEmailService _emailService = emailService;
+    private readonly ILogger<IdentityController> _logger = logger;
+    private readonly IHashingService _hashingService = hashingService;
+
     [HttpGet]
-    [ActionName("getUserInfo")]
-    [Produces("application/json")]
-    [ProducesResponseType<UserModel>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUserInfo()
     {
         var user = await _userManager.GetUser();
 
         if (!user.IsSuccess)
             return BadRequest("User doesn't exist");
-        
-        var userData = user.Value!;
-        return Ok(UserModel.GetModel(userData));
+
+        return Ok(UserModel.GetModel(user.Value!));
     }
 
-    /// <summary>
-    /// Logs in a user using their email and password.
-    /// </summary>
-    /// <param name="login">The login details containing email and password.</param>
-    /// <returns>
-    /// A UserModel with user details if the login is successful, or a BadRequest if the user does not exist.
-    /// </returns>
-    /// <response code="200">Returns the UserModel if login is successful.</response>
-    /// <response code="400">User doesn't exist or invalid credentials or Input data is invalid.</response>
     [HttpPost]
-    [ActionName("login")]
-    [Produces("application/json")]
-    [ProducesResponseType<UserModel>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(LoginResponseExample))]
     public async Task<IActionResult> Login(LoginModel login)
     {
-        var user = await _userManager.GetUserByNickNameAndPasswordAsync(login.NickName, login.Password);
+        var user = await _userManager
+            .GetUserByNickNameAndPasswordAsync(login.NickName, login.Password);
 
         if (!user.IsSuccess)
-            return BadRequest("User doesn't exist");
+            return Unauthorized();
 
-        var userData = user.Value!;
-        await AuthorizeAsync(userData);
+        var userId = user.Value!.Id;
 
-        return Ok(UserModel.GetModel(userData));
+        var accessToken = _authorizationManager.GenerateAccessToken(
+            new AccessData(userId));
+
+        var refreshTokenValue = _authorizationManager.GenerateRefreshToken(
+            new RefreshData(userId));
+
+        if (refreshTokenValue is null)
+            return BadRequest("Cannot authorize");
+
+        var refreshTokenHash = _hashingService.Hash(refreshTokenValue);
+
+        await _tokenManager.CreateRefreshTokenAsync(
+            new CreateRefreshTokenModel(
+                TokenHash: refreshTokenHash,
+                FamilyId: Guid.CreateVersion7().ToString(),
+                Expires: DateTime.UtcNow.AddDays(30),
+                IssuerLocation: GetTokenLocation()
+            ),
+            userId);
+
+        Response.Cookies.Append(
+            "refresh_token",
+            refreshTokenValue,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
+            });
+
+        return Ok(new { AccessToken = accessToken });
     }
 
-    /// <summary>
-    /// Registers a new user with the provided registration details.
-    /// </summary>
-    /// <param name="registerModel">The registration details containing email, password, etc.</param>
-    /// <returns>
-    /// A 200 OK response if registration is successful, or a 400 BadRequest if a user with the same email already exists.
-    /// </returns>
-    /// <response code="200">Successful registration of the user.</response>
-    /// <response code="400">User with that email already exists or Input data is invalid.</response>
     [HttpPost]
-    [ActionName("register")]
-    [Produces("application/json")]
-    [ProducesResponseType<UserModel>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(RegisterResponseExample))]
-    public async Task<IActionResult> Register(RegisterModel registerModel)
+    public async Task<IActionResult> Refresh()
     {
-        var user = await _userManager.CreateUserAsync(registerModel.ToEntity());
+        if (!Request.Cookies.TryGetValue("refresh_token", out var refreshToken))
+            return Unauthorized();
 
-        if (!user.IsSuccess)
-            return BadRequest("User with that email already exist");
+        var refreshHash = _hashingService.Hash(refreshToken);
 
-        var userData = user.Value!;
+        var storedToken = await _tokenManager.GetRefreshTokenByHashAsync(refreshHash);
 
-        await AuthorizeAsync(userData);
+        if (!storedToken.IsSuccess)
+            return Unauthorized();
 
-        return Ok(UserModel.GetModel(userData));
+        var token = storedToken.Value!;
+
+        if (token.Expires < DateTime.UtcNow || token.RevokedReason is not null)
+            return Unauthorized();
+
+        var newAccessToken = _authorizationManager.GenerateAccessToken(
+            new AccessData(token.UserId));
+
+        var newRefreshValue =
+            Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+        var newRefreshHash = _hashingService.Hash(newRefreshValue);
+
+        await _tokenManager.RevokeRefreshTokenAsync(
+            new RevokeRefreshTokenModel(null, token.TokenHash, "Rotated"));
+
+        await _tokenManager.CreateRefreshTokenAsync(
+            new CreateRefreshTokenModel(
+                newRefreshHash,
+                token.FamilyId,
+                DateTime.UtcNow.AddDays(30),
+                token.TokenMetadata.IssuedLocation),
+            token.UserId);
+
+        Response.Cookies.Append(
+            "refresh_token",
+            newRefreshValue,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
+            });
+
+        return Ok(new { AccessToken = newAccessToken });
     }
 
-    /// <summary>
-    /// Logs out the current user by signing them out of the system.
-    /// </summary>
-    /// <returns>
-    /// A 200 OK response indicating successful logout.
-    /// </returns>
-    /// <response code="200">Successful logout.</response>
+    [HttpPost]
+    public async Task<IActionResult> Register(RegisterModel model)
+    {
+        var user = await _userManager.CreateUserAsync(
+            new UserCreateManagerModel(
+                model.NickName,
+                model.Email,
+                model.Password,
+                SubscriptionPlan.GetRegularSubscriptionPlan()));
+
+        if (!user.IsSuccess)
+            return BadRequest(user.ErrorMessage);
+
+        return Ok(UserModel.GetModel(user.Value!));
+    }
+
+    [HttpPost]
     [HttpGet]
-    [ActionName("logout")]
-    [Produces(typeof(void))]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync();
+        if (Request.Cookies.TryGetValue("refresh_token", out var refreshToken))
+        {
+            var hash = _hashingService.Hash(refreshToken);
+
+            await _tokenManager.RevokeRefreshTokenAsync(
+                new RevokeRefreshTokenModel(null, hash, "Logout"));
+        }
+
+        Response.Cookies.Delete("refresh_token");
+
         return Ok();
     }
 
-    private async Task AuthorizeAsync(User user)
+    [HttpPost]
+    public async Task<IActionResult> RequestUserPasswordReset([FromBody] string nickName)
     {
-        var claim = user.GetUserClaims();
+        var user = await _userManager
+            .GetUserByNickNameAsync(nickName);
 
-        var claimsIdentity = new ClaimsIdentity(claim, JwtBearerDefaults.AuthenticationScheme);
-        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+        if (!user.IsSuccess)
+            return BadRequest("User not found");
 
-        await HttpContext.SignInAsync(claimsPrincipal);
+        var token = _authorizationManager.GenerateResetPasswordToken(
+            new ResetPassword(user.Value!.Id));
+
+        await _emailService.SendResetPasswordEmailAsync(new ResetPasswordEmail
+        {
+            To = user.Value.Email,
+            Token = token!
+        });
+
+        return Ok();
     }
+
+    [HttpPost]
+    public async Task<IActionResult> ResetUserPassword(ResetPasswordRequest model)
+    {
+        var validated =
+            await _authorizationManager.ValidateResetPasswordToken(model.Token);
+
+        if (validated is null)
+            return BadRequest("Invalid token");
+
+        var result = await _userManager.UpdateUserPasswordAsync(
+            new UserPasswordUpdateManagerModel(model.NewPassword),
+            validated.UserId);
+
+        return result.IsSuccess ? Ok() : BadRequest(result.ErrorMessage);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> RequestFirstAdmin([FromBody] string email)
+    {
+        await _adminInitLock.WaitAsync();
+
+        try
+        {
+            var exists = await _adminManager.DoesAnyAdminExistAsync();
+
+            if (exists.Value)
+                return BadRequest("Admin already exists");
+
+            var token = _authorizationManager.GenerateRegisterFirstAdminToken();
+
+            await _emailService.SendRegisterFirstAdminEmailAsync(
+                new RegisterFirstAdminEmail
+                {
+                    To = email,
+                    Token = token!
+                });
+
+            return Ok();
+        }
+        finally
+        {
+            _adminInitLock.Release();
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateFirstAdmin(CreateFirstAdminModel model)
+    {
+        var exists = await _adminManager.DoesAnyAdminExistAsync();
+
+        if (exists.Value)
+            return BadRequest("Admin already exists");
+
+        await _adminInitLock.WaitAsync();
+
+        try
+        {
+            exists = await _adminManager.DoesAnyAdminExistAsync();
+
+            if (exists.Value)
+                return BadRequest("Admin already exists");
+
+            await _authorizationManager
+                .ValidateRegisterFirstAdminToken(model.Token);
+
+            var result = await _adminManager.CreateAdminAsync(
+                new AdminCreateManagerModel(
+                    model.Admin.NickName,
+                    model.Admin.Email,
+                    model.Admin.Password));
+
+            return result.IsSuccess ? Ok() : BadRequest(result.ErrorMessage);
+        }
+        catch
+        {
+            return BadRequest("Invalid token");
+        }
+        finally
+        {
+            _adminInitLock.Release();
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateApiKey(ApiKeyRequest model)
+    {
+        var result = await _tokenManager.CreateApiTokenAsync(
+            new CreateApiTokenManagerModel(
+                model.Name,
+                TokenHash: Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)),
+                model.Expires,
+                model.Scopes,
+                model.AllowedIps,
+                model.IssuerLocation));
+
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> RevokeApiKey(ApiKeyRevokeRequest model)
+    {
+        var result = await _tokenManager.RevokeApiTokenAsync(
+            new RevokeApiTokenModel(model.TokenHash, model.Reason));
+
+        return result.IsSuccess ? Ok() : BadRequest(result.ErrorMessage);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetApiKeys()
+    {
+        var userIdResult = await _userManager.GetUser();
+
+        if (!userIdResult.IsSuccess)
+            return Unauthorized();
+
+        var userId = userIdResult.Value!.Id;
+
+        var result = await _tokenManager.GetAllApiTokensAsync(userId);
+
+        if (!result.IsSuccess)
+            return BadRequest(result.ErrorMessage);
+
+        return Ok(result.Value);
+    }
+
+    private static TokenLocation GetTokenLocation()
+        => new("UA", "Ukraine", "Zhytomyr");
 }
 
+public record LoginModel(string NickName, string Password);
+
+public record RegisterModel(string NickName, string Email, string Password);
+
+public record ResetPasswordRequest(string Token, string NewPassword);
+
+public record CreateFirstAdminModel(
+    string Token,
+    AdminCreateModel Admin);
+
+public record AdminCreateModel(
+    string NickName,
+    string Email,
+    string Password);
+
+public record ApiKeyRequest(
+    string Name,
+    ICollection<string> Scopes,
+    ICollection<string> AllowedIps,
+    DateTime Expires,
+    TokenLocation IssuerLocation);
+
+public record ApiKeyRevokeRequest(string TokenHash, string Reason);

@@ -3,14 +3,14 @@ using WebsiteScreenshotService.Model.Validation.Validators;
 
 namespace WebsiteScreenshotService.Services;
 
-public static class ScreenshotPricingCalculator
+public class ScreenshotPricingCalculator: IScreenshotCalculator
 {
     private const decimal BasePoints = 1.0M;
 
     private const int DefaultWidth = 1920;
     private const int DefaultHeight = 1080;
 
-    public static int CalculatePoints(ScreenshotOptionsModel options)
+    public int CalculatePoints(ScreenshotOptionsModel options)
     {
         var pixels = CalculatePixels(options);
 

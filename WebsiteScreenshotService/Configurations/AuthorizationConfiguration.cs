@@ -19,8 +19,10 @@ public class AuthorizationConfiguration
 
 public enum AuthorizationType
 {
-    ConfirmationToken,
-    AuthorizationToken,
-    RefreshToken,
-    ApiToken
+    ConfirmationToken = 0,
+    AuthorizationToken = 1,
+    RefreshToken = 2,
+    ApiToken = 3,
+    ResetPasswordToken = 4,
+    FirstAdminCreationToken = 5
 }

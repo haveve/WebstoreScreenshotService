@@ -187,7 +187,7 @@ public class TokenManager(
             CacheOptions.Token.List);
     }
 
-    public async Task<Result<List<ApiToken>>> GetAllActiveApiTokensAsync(
+    public async Task<Result<List<ApiToken>>> GetAllApiTokensAsync(
         Guid? userId = null)
     {
         userId ??= _userContextAccessor.GetCurrentUser().UserInfo.Id;
@@ -199,7 +199,7 @@ public class TokenManager(
             async () =>
             {
                 var result = await _tokenRepository
-                    .GetAllActiveApiTokensAsync(userId.Value);
+                    .GetAllApiTokensAsync(userId.Value);
 
                 if (!result.IsSuccess)
                     return Result<List<ApiToken>>

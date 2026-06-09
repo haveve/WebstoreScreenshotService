@@ -13,13 +13,21 @@ namespace WebsiteScreenshotService.Services;
 /// <summary>
 /// Provides services for browser operations, including taking screenshots.
 /// </summary>
-public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessageBrokerManager messageBrokerManager, IOptions<MessageBrokerConfigurations> options, IAuthorizationManager authorizationManager, IScreenshotManager screenshotManager, ISubscriptionManager subscriptionManager) : IScreenshotService
+public class ScreenshotService(
+    IUserContextAccessor userContextAccessor,
+    IMessageBrokerManager messageBrokerManager,
+    IOptions<MessageBrokerConfigurations> options,
+    IAuthorizationManager authorizationManager,
+    IScreenshotManager screenshotManager,
+    ISubscriptionManager subscriptionManager,
+    IScreenshotCalculator screenshotCalculator) : IScreenshotService
 {
     private readonly ISubscriptionManager _subscriptionManager = subscriptionManager;
     private readonly IUserContextAccessor _userContextAccessor = userContextAccessor;
     private readonly IMessageBrokerManager _messageBrokerManager = messageBrokerManager;
     private readonly IAuthorizationManager _authorizationManager = authorizationManager;
     private readonly IScreenshotManager _screenshotManager = screenshotManager;
+    private readonly IScreenshotCalculator _screenshotCalculator = screenshotCalculator;
     private readonly QueueConfig _queueConfig = options.Value.Queue;
 
     private readonly Result<Screenshot> defaultErrorMessage = Result<Screenshot>.Error("Failed to send screenshot request. Please, try again later");
@@ -36,26 +44,30 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
         var screenshotPlan = userContext.SubscriptionPlan;
         var screenshotId = MakeScreenshotId();
 
+        var pointsCost = _screenshotCalculator.CalculatePoints(screenshotOptionsModel);
+        var screenshotResult = await _subscriptionManager.ScreenshotWasMadeAsync(new(pointsCost));
+
+        if (!screenshotResult.IsSuccess)
+            return Result<Screenshot>.Error(screenshotResult.ErrorMessage!);
+
         var confirmationToken = _authorizationManager.GenerateConfirmationToken(new ConfirmationData
             (
                 UserId: useInfo.Id,
-                ScreenshotId: screenshotId
+                ScreenshotId: screenshotId,
+                PointsCost: pointsCost,
+                TokenId: Guid.CreateVersion7().ToString("N")
             ));
 
         if (confirmationToken is null)
             return defaultErrorMessage;
-
-        var screenshotResult = await _subscriptionManager.ScreenshotWasMadeAsync();
-
-        if (!screenshotResult.IsSuccess)
-            return Result<Screenshot>.Error(screenshotResult.ErrorMessage!);
 
         var savedScreenshotResult = await _screenshotManager.MakeAsync(new
         (
             Id: screenshotId,
             UserId: useInfo.Id,
             WebsiteUrl: screenshotOptionsModel.Url,
-            Type: screenshotOptionsModel.ScreenshotType
+            Type: screenshotOptionsModel.ScreenshotType,
+            PointsCost: pointsCost
         ));
 
         if (!savedScreenshotResult.IsSuccess)
@@ -80,7 +92,7 @@ public class ScreenshotService(IUserContextAccessor userContextAccessor, IMessag
 
         if (!successfullySent)
         {
-            await _subscriptionManager.RedeemScreenshotAsync(savedScreenshot.Id);
+            await _subscriptionManager.RedeemScreenshotAsync(new(savedScreenshot.Id, pointsCost));
             return defaultErrorMessage;
         }
 

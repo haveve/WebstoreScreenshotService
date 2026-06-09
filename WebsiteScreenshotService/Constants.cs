@@ -10,6 +10,7 @@ public static class Constants
         public const string WebsiteUrl = "websiteUrl";
         public const string TokenType = "tokenType";
         public const string Role = "role";
+        public const string Permissions = "permissions";
 
         public const string ConfirmationTokenId = "confirmationTokenId";
 
@@ -20,6 +21,8 @@ public static class Constants
             Refresh = 2,
             Confirmation = 3,
             Api = 4,
+            ResetPassword = 5,
+            FirstAdminCreation = 6
         }
     }
 }
