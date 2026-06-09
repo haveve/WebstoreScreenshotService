@@ -19,10 +19,7 @@ COPY --from=build /app ./
 
 # 3️ Install all Chromium dependencies for sandboxed new headless
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libnss3 libnspr4 libgtk-3-0 libatk1.0-0 libatk-bridge2.0-0 \
-    libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 libxss1 \
-    fonts-liberation libpango-1.0-0 libpangocairo-1.0-0 libfontconfig1 \
-    libasound2 libcups2 libdbus-1-3 wget lsb-release xdg-utils \
+    ca-certificates wget gnupg \
     && rm -rf /var/lib/apt/lists/*
 
 # 4️ Run Playwright setup as root to download browsers and install any future deps

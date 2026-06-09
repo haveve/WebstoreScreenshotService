@@ -11,6 +11,7 @@ using ScreenshotWorker.Services.ContentInitialization;
 using ScreenshotWorker.Settings;
 using ScreenshotWorker.Utils;
 using Shared.Core.Contracts.ScreeshotModel.Validation;
+using Shared.Core.Services;
 using WebsiteScreenshotService;
 
 var builder = Host.CreateDefaultBuilder(args);
@@ -40,16 +41,23 @@ builder
                services.AddSingleton<IBrowserService, BrowserService>();
 
                services.AddSingleton<IMessageBrokerManager, MessageBrokerManager>();
-               services.AddSingleton<IScreenshotRepository, LocalScreenshotRepository>();
 
                services.AddSingleton<IApplicationLifetimeManager, ApplicationLifetimeManager>();
 
                services.AddOptionsWithValidation<BrowserServiceSettings>(context.Configuration.GetSection("BrowserServiceOptions"));
                services.AddOptionsWithValidation<MessageBrokerSettings>(context.Configuration.GetSection("MessageBrokerSettings"));
                services.AddOptionsWithValidation<ScreenshotServiceSettings>(context.Configuration.GetSection("ScreenshotServiceSettings"));
-
-               services.AddSingleton<IScreenshotRepository, LocalScreenshotRepository>();
-               services.AddOptionsWithValidation<LocalScreenshotStorageSettings>(context.Configuration.GetSection("ScreenshotStorageSettings"));
+               
+               if (context.HostingEnvironment.IsDevelopment())
+               {
+                   services.AddOptionsWithValidation<LocalScreenshotStorageSettings>(context.Configuration.GetSection("ScreenshotStorageSettings"));
+                   services.AddSingleton<IScreenshotRepository, LocalScreenshotRepository>();
+               }
+               else
+               {
+                   services.AddOptionsWithValidation<BlobConfigurations>(context.Configuration.GetSection("Blob"));
+                   services.AddSingleton<IScreenshotRepository, BlobScreenshotRepository>();
+               }
 
                services.RegisterServiceRepositoryHttpClient();
 
