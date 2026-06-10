@@ -56,10 +56,12 @@ public class AuthorizationManager(
         => p.GetClaimValue(name);
 
 
-    private string? GenerateToken(IEnumerable<Claim> claims, AuthorizationType type)
+    private GeneratedTokenData? GenerateToken(IEnumerable<Claim> claims, AuthorizationType type)
     {
         try
         {
+            var expiresOn = DateTime.UtcNow.AddMinutes(_config.ExpiredInMinutes[type]);
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -67,11 +69,16 @@ public class AuthorizationManager(
                 issuer: _config.Issuer,
                 audience: _config.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_config.ExpiredInMinutes[type]),
+                expires: expiresOn,
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
+
+            if (tokenStr is null)
+                return null;
+
+            return new GeneratedTokenData(tokenStr, expiresOn);
         }
         catch (Exception ex)
         {
@@ -122,7 +129,7 @@ public class AuthorizationManager(
         }
     }
 
-    public string? GenerateConfirmationToken(ConfirmationData confirmationData)
+    public GeneratedTokenData? GenerateConfirmationToken(ConfirmationData confirmationData)
     {
         return GenerateToken(
             confirmationData.GetConfirmationTokenClaims(),
@@ -145,7 +152,7 @@ public class AuthorizationManager(
             new ResetPassword(userId.Value));
     }
 
-    public string? GenerateResetPasswordToken(ResetPassword data)
+    public GeneratedTokenData? GenerateResetPasswordToken(ResetPassword data)
     {
         var claims = new[]
         {
@@ -171,7 +178,7 @@ public class AuthorizationManager(
         return Task.CompletedTask;
     }
 
-    public string? GenerateRegisterFirstAdminToken()
+    public GeneratedTokenData? GenerateRegisterFirstAdminToken()
     {
         var claims = new[]
         {
@@ -198,7 +205,7 @@ public class AuthorizationManager(
             new RefreshData(userId.Value));
     }
 
-    public string? GenerateRefreshToken(RefreshData data)
+    public GeneratedTokenData? GenerateRefreshToken(RefreshData data)
     {
         var claims = new[]
         {
@@ -225,7 +232,7 @@ public class AuthorizationManager(
             new AccessData(userId.Value));
     }
 
-    public string? GenerateAccessToken(AccessData data)
+    public GeneratedTokenData? GenerateAccessToken(AccessData data)
     {
         var claims = new[]
         {
@@ -257,7 +264,7 @@ public class AuthorizationManager(
             new ApiData(userId.Value, permissions));
     }
 
-    public string? GenerateApiToken(ApiData data)
+    public GeneratedTokenData? GenerateApiToken(ApiData data)
     {
         var claims = new List<Claim>
         {

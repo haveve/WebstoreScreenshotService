@@ -14,18 +14,20 @@ public interface IAuthorizationManager
 
     public Task<ApiData?> ValidateApiToken(string token);
 
-    public string? GenerateConfirmationToken(ConfirmationData confirmationData);
+    public GeneratedTokenData? GenerateConfirmationToken(ConfirmationData confirmationData);
 
-    public string? GenerateResetPasswordToken(ResetPassword data);
+    public GeneratedTokenData? GenerateResetPasswordToken(ResetPassword data);
 
-    public string? GenerateRegisterFirstAdminToken();
+    public GeneratedTokenData? GenerateRegisterFirstAdminToken();
 
-    public string? GenerateRefreshToken(RefreshData data);
+    public GeneratedTokenData? GenerateRefreshToken(RefreshData data);
 
-    public string? GenerateAccessToken(AccessData data);
+    public GeneratedTokenData? GenerateAccessToken(AccessData data);
 
-    public string? GenerateApiToken(ApiData data);
+    public GeneratedTokenData? GenerateApiToken(ApiData data);
 }
+
+public record GeneratedTokenData(string Token, DateTime ExpiresOn);
 
 public record RefreshData(Guid UserId);
 
