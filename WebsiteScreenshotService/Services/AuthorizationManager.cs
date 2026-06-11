@@ -237,7 +237,8 @@ public class AuthorizationManager(
         var claims = new[]
         {
             C(Constants.Claims.TokenType, Constants.Claims.TokenTypes.Authorization.ToString()),
-            C(Constants.Claims.UserId, data.UserId.ToString())
+            C(Constants.Claims.UserId, data.UserId.ToString()),
+            C(Constants.Claims.Role, UserRoles.User)
         };
 
         return GenerateToken(claims, AuthorizationType.AuthorizationToken);

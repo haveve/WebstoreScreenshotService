@@ -1,36 +1,33 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
+using WebsiteScreenshotService;
 using WebsiteScreenshotService.Entities;
 using WebsiteScreenshotService.Model;
-using WebsiteScreenshotService.Repositories.AdminRepository;
-using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
 using WebsiteScreenshotService.Repositories.TokenRepository;
 using WebsiteScreenshotService.Repositories.TokenRepository.Models;
 using WebsiteScreenshotService.Repositories.UserRepository;
 using WebsiteScreenshotService.Services;
 using WebsiteScreenshotService.Services.Security;
 
+[Authorize]
 [Route("identity/[action]")]
 [ApiController]
 public class IdentityController(
     IUserManager userManager,
-    IAdminManager adminManager,
-    IAuthorizationManager authorizationManager,
     ITokenManager tokenManager,
-    IEmailService emailService,
     ILogger<IdentityController> logger,
-    IHashingService hashingService
+    IHashingService hashingService,
+    IAuthorizationManager authorizationManager,
+    IUserContextAccessor userContextAccessor
 ) : ControllerBase
 {
-    private static readonly SemaphoreSlim _adminInitLock = new(1, 1);
-
     private readonly IUserManager _userManager = userManager;
-    private readonly IAdminManager _adminManager = adminManager;
-    private readonly IAuthorizationManager _authorizationManager = authorizationManager;
     private readonly ITokenManager _tokenManager = tokenManager;
-    private readonly IEmailService _emailService = emailService;
     private readonly ILogger<IdentityController> _logger = logger;
     private readonly IHashingService _hashingService = hashingService;
+    private readonly IAuthorizationManager _authorizationManager = authorizationManager;
+    private readonly IUserContextAccessor _userContextAccessor = userContextAccessor;
 
     [HttpGet]
     public async Task<IActionResult> GetUserInfo()
@@ -44,115 +41,26 @@ public class IdentityController(
     }
 
     [HttpPost]
-    public async Task<IActionResult> Login(LoginModel login)
+    public async Task<IActionResult> CreateApiKey(ApiKeyRequest model)
     {
-        var user = await _userManager
-            .GetUserByNickNameAndPasswordAsync(login.NickName, login.Password);
+        var userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        var apiToken = _authorizationManager.GenerateApiToken(new ApiData(userId, [.. model.Scopes]));
+        
+        if(apiToken is null)
+            return BadRequest("Cannot generate Api token");
 
-        if (!user.IsSuccess)
-            return Unauthorized();
+        var hash = _hashingService.Hash(apiToken.Token);
 
-        var userId = user.Value!.Id;
+        var result = await _tokenManager.CreateApiTokenAsync(
+            new CreateApiTokenManagerModel(
+                model.Name,
+                TokenHash: hash,
+                model.Expires,
+                model.Scopes,
+                model.AllowedIps,
+                GetTokenLocation()));
 
-        var accessToken = _authorizationManager.GenerateAccessToken(
-            new AccessData(userId));
-
-        var refreshTokenValue = _authorizationManager.GenerateRefreshToken(
-            new RefreshData(userId));
-
-        if (refreshTokenValue is null)
-            return BadRequest("Cannot authorize");
-
-        var refreshTokenHash = _hashingService.Hash(refreshTokenValue);
-
-        await _tokenManager.CreateRefreshTokenAsync(
-            new CreateRefreshTokenModel(
-                TokenHash: refreshTokenHash,
-                FamilyId: Guid.CreateVersion7().ToString(),
-                Expires: DateTime.UtcNow.AddDays(30),
-                IssuerLocation: GetTokenLocation()
-            ),
-            userId);
-
-        Response.Cookies.Append(
-            "refresh_token",
-            refreshTokenValue,
-            new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTimeOffset.UtcNow.AddDays(30)
-            });
-
-        return Ok(new { AccessToken = accessToken });
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Refresh()
-    {
-        if (!Request.Cookies.TryGetValue("refresh_token", out var refreshToken))
-            return Unauthorized();
-
-        var refreshHash = _hashingService.Hash(refreshToken);
-
-        var storedToken = await _tokenManager.GetRefreshTokenByHashAsync(refreshHash);
-
-        if (!storedToken.IsSuccess)
-            return Unauthorized();
-
-        var token = storedToken.Value!;
-
-        if (token.Expires < DateTime.UtcNow || token.RevokedReason is not null)
-            return Unauthorized();
-
-        var newAccessToken = _authorizationManager.GenerateAccessToken(
-            new AccessData(token.UserId));
-
-        var newRefreshValue =
-            Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-
-        var newRefreshHash = _hashingService.Hash(newRefreshValue);
-
-        await _tokenManager.RevokeRefreshTokenAsync(
-            new RevokeRefreshTokenModel(null, token.TokenHash, "Rotated"));
-
-        await _tokenManager.CreateRefreshTokenAsync(
-            new CreateRefreshTokenModel(
-                newRefreshHash,
-                token.FamilyId,
-                DateTime.UtcNow.AddDays(30),
-                token.TokenMetadata.IssuedLocation),
-            token.UserId);
-
-        Response.Cookies.Append(
-            "refresh_token",
-            newRefreshValue,
-            new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddDays(30)
-            });
-
-        return Ok(new { AccessToken = newAccessToken });
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Register(RegisterModel model)
-    {
-        var user = await _userManager.CreateUserAsync(
-            new UserCreateManagerModel(
-                model.NickName,
-                model.Email,
-                model.Password,
-                SubscriptionPlan.GetRegularSubscriptionPlan()));
-
-        if (!user.IsSuccess)
-            return BadRequest(user.ErrorMessage);
-
-        return Ok(UserModel.GetModel(user.Value!));
+        return result.IsSuccess ? Ok(apiToken.Token) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPost]
@@ -170,125 +78,6 @@ public class IdentityController(
         Response.Cookies.Delete("refresh_token");
 
         return Ok();
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> RequestUserPasswordReset([FromBody] string nickName)
-    {
-        var user = await _userManager
-            .GetUserByNickNameAsync(nickName);
-
-        if (!user.IsSuccess)
-            return BadRequest("User not found");
-
-        var token = _authorizationManager.GenerateResetPasswordToken(
-            new ResetPassword(user.Value!.Id));
-
-        await _emailService.SendResetPasswordEmailAsync(new ResetPasswordEmail
-        {
-            To = user.Value.Email,
-            Token = token!
-        });
-
-        return Ok();
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> ResetUserPassword(ResetPasswordRequest model)
-    {
-        var validated =
-            await _authorizationManager.ValidateResetPasswordToken(model.Token);
-
-        if (validated is null)
-            return BadRequest("Invalid token");
-
-        var result = await _userManager.UpdateUserPasswordAsync(
-            new UserPasswordUpdateManagerModel(model.NewPassword),
-            validated.UserId);
-
-        return result.IsSuccess ? Ok() : BadRequest(result.ErrorMessage);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> RequestFirstAdmin([FromBody] string email)
-    {
-        await _adminInitLock.WaitAsync();
-
-        try
-        {
-            var exists = await _adminManager.DoesAnyAdminExistAsync();
-
-            if (exists.Value)
-                return BadRequest("Admin already exists");
-
-            var token = _authorizationManager.GenerateRegisterFirstAdminToken();
-
-            await _emailService.SendRegisterFirstAdminEmailAsync(
-                new RegisterFirstAdminEmail
-                {
-                    To = email,
-                    Token = token!
-                });
-
-            return Ok();
-        }
-        finally
-        {
-            _adminInitLock.Release();
-        }
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> CreateFirstAdmin(CreateFirstAdminModel model)
-    {
-        var exists = await _adminManager.DoesAnyAdminExistAsync();
-
-        if (exists.Value)
-            return BadRequest("Admin already exists");
-
-        await _adminInitLock.WaitAsync();
-
-        try
-        {
-            exists = await _adminManager.DoesAnyAdminExistAsync();
-
-            if (exists.Value)
-                return BadRequest("Admin already exists");
-
-            await _authorizationManager
-                .ValidateRegisterFirstAdminToken(model.Token);
-
-            var result = await _adminManager.CreateAdminAsync(
-                new AdminCreateManagerModel(
-                    model.Admin.NickName,
-                    model.Admin.Email,
-                    model.Admin.Password));
-
-            return result.IsSuccess ? Ok() : BadRequest(result.ErrorMessage);
-        }
-        catch
-        {
-            return BadRequest("Invalid token");
-        }
-        finally
-        {
-            _adminInitLock.Release();
-        }
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> CreateApiKey(ApiKeyRequest model)
-    {
-        var result = await _tokenManager.CreateApiTokenAsync(
-            new CreateApiTokenManagerModel(
-                model.Name,
-                TokenHash: Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)),
-                model.Expires,
-                model.Scopes,
-                model.AllowedIps,
-                model.IssuerLocation));
-
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPost]
@@ -341,7 +130,6 @@ public record ApiKeyRequest(
     string Name,
     ICollection<string> Scopes,
     ICollection<string> AllowedIps,
-    DateTime Expires,
-    TokenLocation IssuerLocation);
+    DateTime Expires);
 
 public record ApiKeyRevokeRequest(string TokenHash, string Reason);

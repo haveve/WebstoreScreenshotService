@@ -2,7 +2,6 @@
 using WebsiteScreenshotService.Repositories._EF.DbEntities;
 using WebsiteScreenshotService.Repositories.BasketRepository;
 using WebsiteScreenshotService.Repositories.OrderRepository.Models;
-using WebsiteScreenshotService.Repositories.PaymentRepository;
 using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Repositories.OrderRepository;
@@ -10,16 +9,13 @@ namespace WebsiteScreenshotService.Repositories.OrderRepository;
 public class OrderManager(
     IBasketManager basketManager,
     IOrderRepository orderRepository,
-    IPaymentAttemptRepository paymentAttemptRepository,
-    IUserContextAccessor userContextAccessor,
-    AsyncReadWriteLockManager<Guid> locks
+    IUserContextAccessor userContextAccessor
 ) : IOrderManager
 {
     private readonly IBasketManager _basketManager = basketManager;
     private readonly IOrderRepository _orderRepository = orderRepository;
-    private readonly IPaymentAttemptRepository _paymentAttemptRepository = paymentAttemptRepository;
     private readonly IUserContextAccessor _userContextAccessor = userContextAccessor;
-    private readonly AsyncReadWriteLockManager<Guid> _locks = locks;
+    private readonly AsyncReadWriteLockManager<Guid> _locks = new();
 
     public async Task<OrderEntity> CreateFromBasketAsync()
     {

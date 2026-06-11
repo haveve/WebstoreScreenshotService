@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebsiteScreenshotService.Model;
 using WebsiteScreenshotService.Repositories.CategoryRepository;
 using WebsiteScreenshotService.Repositories.CategoryRepository.Models;
 
 namespace WebsiteScreenshotService.Controllers;
 
-[Authorize(Roles = UserRoles.User, Policy = Policies.User.ManageCategories)]
+[Authorize(Policy = Policies.User.ManageCategories)]
 [ApiController]
 [Route("categories/[action]")]
 public class CategoriesController(ICategoryManager categoryManager) : ControllerBase
@@ -17,7 +18,11 @@ public class CategoriesController(ICategoryManager categoryManager) : Controller
     public async Task<IActionResult> GetCategories()
     {
         var categories = await _categoryManager.GetAllAsync();
-        return Ok(categories);
+
+        if (!categories.IsSuccess)
+            return BadRequest(new ErrorResponse(categories.ErrorMessage!));
+
+        return Ok(categories.Value);
     }
 
     [HttpPost]
@@ -25,7 +30,11 @@ public class CategoriesController(ICategoryManager categoryManager) : Controller
     public async Task<IActionResult> CreateCategory([FromBody] CategoryCreateModel model)
     {
         var category = await _categoryManager.AddAsync(model);
-        return Ok(category);
+
+        if (!category.IsSuccess)
+            return BadRequest(new ErrorResponse(category.ErrorMessage!));
+
+        return Ok(category.Value);
     }
 
     [HttpDelete]
@@ -33,6 +42,10 @@ public class CategoriesController(ICategoryManager categoryManager) : Controller
     public async Task<IActionResult> DeleteCategory([FromQuery] Guid id)
     {
         var category = await _categoryManager.RemoveAsync(id);
-        return Ok(category);
+        
+        if (!category.IsSuccess)
+            return BadRequest(new ErrorResponse(category.ErrorMessage!));
+
+        return Ok();
     }
 }

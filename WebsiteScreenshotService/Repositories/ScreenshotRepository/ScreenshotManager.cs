@@ -83,7 +83,7 @@ public class ScreenshotManager(
             return Result.Success;
         }
 
-        return Result.Error($"deletion process was aborted because more than {maxAttempts} products weren't found in the database");
+        return Result.Error($"deletion process was aborted because more than {maxAttempts} first products weren't found in the database");
     }
 
     public async Task<Result<Screenshot>> MakeAsync(ScreenshotCreateModel screenshot)

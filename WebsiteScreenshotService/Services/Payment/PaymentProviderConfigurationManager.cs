@@ -10,13 +10,16 @@ public class PaymentProviderConfigurationManager
     {
         var section = config.GetSection("Payment:Processing");
 
-        _config = section.GetSection("Config").Get<Configurations>()
+        var data = section.GetSection("Config").Get<Dictionary<string, string>>()
             ?? throw new InvalidOperationException(
                 "Missing Payment:Processing:Config configuration section");
 
-        _sensitive = section.GetSection("SensetiveConfig").Get<SensitiveConfigurations>()
+        var dataSest = section.GetSection("SensetiveConfig").Get<Dictionary<string, string>>()
             ?? throw new InvalidOperationException(
                 "Missing Payment:Processing:SensetiveConfig configuration section");
+
+        _config = new(data);
+        _sensitive = new(dataSest);
     }
 
     public Configurations GetConfigurations() => _config;

@@ -99,7 +99,11 @@ public class UserManager(
 
         var entity = await _userRepository.CreateUserAsync(userRepositoryModel);
 
-        return FormatUserResult(entity);
+        if(!entity.IsSuccess)
+            return Result<User>.Error(entity.ErrorMessage!);
+
+        var createUser = new User(userId, user.NickName, user.Email, IsDisactivated: false, user.SubscriptionPlan);
+        return Result<User>.Success(createUser);
     }
 
     public async Task<Result> UpdateUserPasswordAsync(UserPasswordUpdateManagerModel model, Guid? userId = null)
@@ -166,7 +170,14 @@ public class UserManager(
         if (!_hashingService.Verify(password, entity.Value!.Salt, entity.Value!.PasswordHash))
             return Result<User>.Error("User does not exist");
 
-        return FormatUserResult(entity);
+        var entityValue = entity.Value;
+
+        return Result<User>.Success(new(
+            entityValue.Id,
+            "",
+            "",
+            entityValue.IsDisactivated,
+            new(entityValue.SubscriptionPlan.Type, entityValue.SubscriptionPlan.Points)));
     }
 
     public async Task<Result<User>> GetUserByNickNameAsync(string nickName)

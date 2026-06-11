@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WebsiteScreenshotService.Controllers;
 
-[Authorize(Roles = UserRoles.User)]
+[Authorize]
 [ApiController]
 [Route("subscription/[action]")]
 public class SubscriptionController : ControllerBase

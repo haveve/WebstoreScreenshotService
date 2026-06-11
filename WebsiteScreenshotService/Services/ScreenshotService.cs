@@ -79,7 +79,7 @@ public class ScreenshotService(
         {
             ScreenshotId = savedScreenshot.Id,
             ScreenshotOptionsModel = screenshotOptionsModel,
-            ConfirmationToken = confirmationToken,
+            ConfirmationToken = confirmationToken.Token,
             UserInformation = new UserInformation
             {
                 UserId = useInfo.Id,

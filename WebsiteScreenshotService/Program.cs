@@ -12,8 +12,11 @@ using WebsiteScreenshotService.Mappers.EntityMappers.impl;
 using WebsiteScreenshotService.Model.Validation;
 using WebsiteScreenshotService.Model.Validation.Validators;
 using WebsiteScreenshotService.Repositories.AdminRepository;
+using WebsiteScreenshotService.Repositories.BasketRepository;
 using WebsiteScreenshotService.Repositories.CategoryRepository;
 using WebsiteScreenshotService.Repositories.EF;
+using WebsiteScreenshotService.Repositories.OrderRepository;
+using WebsiteScreenshotService.Repositories.PaymentRepository;
 using WebsiteScreenshotService.Repositories.ProductRepository;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository;
 using WebsiteScreenshotService.Repositories.ScreenshotRepository.Search;
@@ -74,17 +77,17 @@ builder.Services.AddSingleton<IValidatorRegistry>(sp =>
 builder.Services.Configure<KestrelServerOptions>(builder.Configuration.GetSection("Server"));
 builder.Services.AddOptionsWithValidation<MessageBrokerConfigurations>(builder.Configuration.GetSection("MessageBroker"));
 builder.Services.AddOptionsWithValidation<AuthorizationConfiguration>(builder.Configuration.GetSection("Authorization"));
-builder.Services.AddOptionsWithValidation<EncryptionConfigurations>(builder.Configuration.GetSection("MessageBroker"));
+builder.Services.AddOptionsWithValidation<EncryptionConfigurations>(builder.Configuration.GetSection("Encryption"));
 builder.Services.AddOptionsWithValidation<HashingConfigurations>(builder.Configuration.GetSection("Hashing"));
 builder.Services.AddOptionsWithValidation<EmailConfigurations>(builder.Configuration.GetSection("Email"));
 builder.Services.AddOptionsWithValidation<FrontendConfigurations>(builder.Configuration.GetSection("FrontendSettings"));
 builder.Services.AddOptionsWithValidation<InitializeAdminConfiguration>(builder.Configuration.GetSection("InitializeAdmin"));
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddOptionsWithValidation<ScreenshotStorageConfigurations>(builder.Configuration.GetSection("ScreenshotStorageSettings"));
-}
-else
+//if (builder.Environment.IsDevelopment())
+//{
+//    builder.Services.AddOptionsWithValidation<ScreenshotStorageConfigurations>(builder.Configuration.GetSection("ScreenshotStorageSettings"));
+//}
+//else
 {
     builder.Services.AddOptionsWithValidation<BlobConfigurations>(builder.Configuration.GetSection("Blob"));
 }
@@ -113,8 +116,8 @@ builder.Services.AddMessageBrokerMassTransit();
 builder.Services.AddSingleton<IPaymentProvider, StripePaymentProvider>();
 builder.Services.AddSingleton<IPaymentProviderDataProcessor, StripePaymentProviderDataProcessor>();
 
-if (builder.Environment.IsDevelopment())
-    builder.Services.AddSwaggerServices();
+//if (builder.Environment.IsDevelopment())
+//    builder.Services.AddSwaggerServices();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IUserContextAccessor, UserContextAccessor>();
@@ -130,9 +133,9 @@ builder.Services.AddScoped<IUserManager, UserManager>();
 
 builder.Services.AddScoped<IUserCryptographicDataManager, UserCryptographicDataManager>();
 
-builder.Services.AddSingleton<IScreenshotService, ScreenshotService>();
+builder.Services.AddScoped<IScreenshotService, ScreenshotService>();
 
-builder.Services.AddSingleton<IAuthorizationManager, AuthorizationManager>();
+builder.Services.AddScoped<IAuthorizationManager, AuthorizationManager>();
 
 builder.Services.AddScoped<IMessageBrokerChannelManager, MassTransitChannelManager>();
 builder.Services.AddScoped<IMessageBrokerManager, MessageBrokerManager>();
@@ -155,11 +158,20 @@ builder.Services.AddScoped<IAdminManager, AdminManager>();
 builder.Services.AddScoped<IProductManager, ProductManager>();
 builder.Services.AddScoped<IProductPriceManager, ProductPriceManager>();
 
+builder.Services.AddScoped<IPaymentAttemptRepository, PaymentAttemptRepository>();
+
+builder.Services.AddScoped<IBasketRepository, BasketRepository>();
+builder.Services.AddScoped<IBasketManager, BasketManager>();
+
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderManager, OrderManager>();
+
 builder.Services.AddScoped<ICheckoutManager, CheckoutManager>();
 
-if (builder.Environment.IsDevelopment())
-    builder.Services.AddSingleton<IScreenshotStorageManager, ScreenshotStorageManager>();
-else
+
+//if (builder.Environment.IsDevelopment())
+//    builder.Services.AddSingleton<IScreenshotStorageManager, ScreenshotStorageManager>();
+//else
     builder.Services.AddSingleton<IScreenshotStorageManager, BlobScreenshotStorageManager>();
 
 builder.Services.AddSingleton<IEmailService, AzureEmailService>();
@@ -172,19 +184,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddJwtAuthorization();
 
 builder.Services.AddSingleton<ExceptionHandlingMiddleware>();
-builder.Services.AddSingleton<UserContextInitializeMiddleware>();
+builder.Services.AddScoped<UserContextInitializeMiddleware>();
+builder.Services.AddScoped<UserSpecificServicesInitializeMiddleware>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
 
 app.MapGrpcService<GrpcScreenshotService>();
 
-app.UseCors(builder => builder.WithOrigins(app.Configuration.GetValue<string>("FrontendSettings:FrontUrl")!)
+app.UseCors(builder => builder.WithOrigins(app.Configuration.GetValue<string>("FrontendSettings:BaseUrl")!)
                  .AllowAnyHeader()
                  .WithMethods(["POST", "GET"])
                  .AllowCredentials());

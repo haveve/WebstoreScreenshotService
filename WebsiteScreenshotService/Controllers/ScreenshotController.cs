@@ -13,7 +13,7 @@ using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Controllers;
 
-[Authorize(Roles = UserRoles.User)]
+[Authorize]
 [ApiController]
 [Route("screenshots/[action]")]
 public class ScreenshotController(

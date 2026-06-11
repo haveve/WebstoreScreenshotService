@@ -1,4 +1,6 @@
-﻿namespace WebsiteScreenshotService.Services.Payment;
+﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace WebsiteScreenshotService.Services.Payment;
 
 public class PaymentProviderCallbackConfigurationManager
     : IPaymentProviderCallbackConfigurationManager
@@ -10,13 +12,16 @@ public class PaymentProviderCallbackConfigurationManager
     {
         var section = config.GetSection("Payment:Callback");
 
-        _config = section.GetSection("Config").Get<Configurations>()
+        var data = section.GetSection("Config").Get<Dictionary<string, string>>()
             ?? throw new InvalidOperationException(
                 "Missing Payment:Callback:Config configuration section");
 
-        _sensitive = section.GetSection("SensetiveConfig").Get<SensitiveConfigurations>()
+        var dataSest = section.GetSection("SensetiveConfig").Get<Dictionary<string, string>>()
             ?? throw new InvalidOperationException(
                 "Missing Payment:Callback:SensetiveConfig configuration section");
+
+        _config = new(data);
+        _sensitive = new(dataSest);
     }
 
     public Configurations GetConfigurations()

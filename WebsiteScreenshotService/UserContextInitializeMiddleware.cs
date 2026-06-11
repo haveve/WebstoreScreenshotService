@@ -30,15 +30,19 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
         if (userContext is null)
             return;
 
-        await InitializeSubscription(userContext.UserInfo.Id);
+        await InitializeSubscription(userContext);
         context.SetUserContext(userContext);
 
         await next(context);
     }
 
-    private async Task InitializeSubscription(Guid userId)
+    private async Task InitializeSubscription(UserContext userContext)
     {
+        var userId = userContext.UserInfo.Id;
         var subscription = await _subscriptionRepository.GetActiveByUserIdAsync(userId);
+
+        if (subscription is null || userContext.SubscriptionPlan.Type == subscription.Type)
+            return;
 
         var subscriptionPlan = subscription?.Type switch
         {

@@ -5,7 +5,7 @@ namespace WebsiteScreenshotService.Mappers;
 
 public abstract class EncryptedMapper(IUserContextAccessor userContextAccessor)
 {
-    protected readonly IUserEncryptionService encryptionService = userContextAccessor.GetUserSpecificServices().EncryptionService;
+    protected IUserEncryptionService encryptionService => userContextAccessor.GetUserSpecificServices().EncryptionService;
 
     protected string EncryptAsJson<T>(T value, UserEncryptionContext encryptionContext) where T : class
         => encryptionService.Encrypt(JsonSerializer.Serialize(value), encryptionContext);

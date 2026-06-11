@@ -2,9 +2,9 @@
 
 namespace WebsiteScreenshotService.Services.Messaging;
 
-public class MassTransitChannelManager(IPublishEndpoint publishEndpoint) : IMessageBrokerChannelManager
+public class MassTransitChannelManager(ISendEndpointProvider publishEndpoint) : IMessageBrokerChannelManager
 {
-    private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+    private readonly ISendEndpointProvider _publishEndpoint = publishEndpoint;
 
     public Task<IBrokerChannel> GetChannelAsync(CancellationToken cancellationToken = default)
     {

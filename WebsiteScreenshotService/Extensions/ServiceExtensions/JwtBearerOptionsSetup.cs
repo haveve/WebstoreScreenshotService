@@ -62,7 +62,10 @@ public class JwtBearerOptionsSetup(IOptions<AuthorizationConfiguration> config) 
                     return Task.CompletedTask;
                 }
 
-                context.Token = token["api_v1_".Length..];
+                context.Token = token.StartsWith("api_v1_")
+                    ? token["api_v1_".Length..]
+                    : token;
+
                 context.HttpContext.SetRawAuthToken(token);
 
                 return Task.CompletedTask;

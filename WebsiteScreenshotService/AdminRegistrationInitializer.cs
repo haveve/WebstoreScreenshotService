@@ -33,7 +33,7 @@ public sealed class AdminRegistrationInitializer(IServiceScopeFactory scopeFacto
             new RegisterFirstAdminEmail
             {
                 To = configuration.Value.Email,
-                Token = token
+                Token = token.Token
             },
             cancellationToken);
     }

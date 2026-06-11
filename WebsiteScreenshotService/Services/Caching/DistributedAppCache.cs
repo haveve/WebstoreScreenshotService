@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 using WebsiteScreenshotService.Services.Synchronization;
 using WebsiteScreenshotService.Utils;
@@ -9,6 +10,10 @@ public class CacheManager(IDistributedCache cache) : ICacheManager
 {
     private readonly IDistributedCache _cache = cache;
     private readonly AsyncKeyedLocker<string> _locker = new();
+    private static readonly JsonSerializerOptions Options = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     private static string Key(CacheKey key) => key.Build();
 
@@ -16,9 +21,17 @@ public class CacheManager(IDistributedCache cache) : ICacheManager
     {
         var data = await _cache.GetAsync(Key(key));
 
-        return data is null
-            ? null
-            : JsonSerializer.Deserialize<T>(data);
+        if (data is null)
+            return null;
+
+        try
+        {
+            return JsonSerializer.Deserialize<T>(data, Options);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     public async Task SetAsync<T>(
@@ -34,7 +47,7 @@ public class CacheManager(IDistributedCache cache) : ICacheManager
         if (options?.SlidingExpiration is not null)
             entry.SlidingExpiration = options.SlidingExpiration;
 
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(value);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(value, Options);
 
         await _cache.SetAsync(Key(key), bytes, entry);
     }

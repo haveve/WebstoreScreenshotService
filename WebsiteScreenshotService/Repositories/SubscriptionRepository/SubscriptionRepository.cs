@@ -103,17 +103,16 @@ public class SubscriptionRepository(ScreenshotDbContext context, IScreenshotMana
 
     public async Task<Result> ScreenshotWasMadeAsync(MakeScreenshotModel model, Guid userId)
     {
-        var subscription = await _context.Users
+        var user = await _context.Users
             .Where(u => u.Id == userId)
-            .Select(u => u.SubscriptionPlan)
             .FirstOrDefaultAsync();
 
-        if (subscription is null)
+        if (user is null)
             return Result.Error("User does not exist");
 
-        if (subscription.Points >= model.PointsCost)
+        if (user.SubscriptionPlan.Points >= model.PointsCost)
         {
-            subscription.Points -= model.PointsCost;
+            user.SubscriptionPlan.Points -= model.PointsCost;
             await _context.SaveChangesAsync();
         }
 
