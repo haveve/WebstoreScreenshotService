@@ -52,12 +52,10 @@ function getRandomCategories() {
 }
 
 const imagePool = [
-    "https://content2.rozetka.com.ua/goods/images/big/594364394.jpg",
-    "https://content2.rozetka.com.ua/goods/images/big/594348666.jpg",
-    "https://content2.rozetka.com.ua/goods/images/big/594348310.jpg",
-    "https://content.rozetka.com.ua/goods/images/big/594345324.jpg",
-    "https://content2.rozetka.com.ua/goods/images/big/594345429.jpg",
-    "https://ztu.edu.ua/img/mainpage/header/photo8.jpg"
+    "http://localhost:5172/mock/test1.png",
+    "http://localhost:5172/mock/test2.png",
+    "http://localhost:5172/mock/test3.png",
+    "http://localhost:5172/mock/test4.png"
 ];
 
 export const mockScreenshots: Screenshot[] =

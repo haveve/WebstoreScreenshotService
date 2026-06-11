@@ -1,18 +1,33 @@
-import { configureStore, Tuple } from "@reduxjs/toolkit";
-import { createEpicMiddleware } from "redux-observable";
+import { configureStore, Tuple, combineReducers } from "@reduxjs/toolkit";
+import { combineEpics, createEpicMiddleware } from "redux-observable";
 import rootEpic from "./epic";
-import reducer, { State } from "./reducer";
+import reducer from "./reducer";
+import basketReducer from './basket/reducer'
+import basketEpic from './basket/epic';
+import transactionsReducer from './transactions/reducer'
+import transactionsEpic from './transactions/epic'
+import orderReducer from './order/reducer'
+import orderEpic from './order/epic'
 import { useSelector } from "react-redux";
 
-const epicMiddleware = createEpicMiddleware();
+const combinedEpics = combineEpics(rootEpic, basketEpic, transactionsEpic, orderEpic);
 
+const combinedReducers = combineReducers({
+    basic: reducer,
+    basket: basketReducer,
+    transactions: transactionsReducer,
+    orders: orderReducer
+});
+
+const epicMiddleware = createEpicMiddleware();
 const store = configureStore({
-    reducer,
+    reducer: combinedReducers,
     middleware: () => new Tuple(epicMiddleware)
 });
 
-epicMiddleware.run(rootEpic);
+epicMiddleware.run(combinedEpics);
 
-export const useAppSelector = useSelector.withTypes<State>()
+export type RootState = ReturnType<typeof store.getState>;
+export const useAppSelector = useSelector.withTypes<RootState>()
 
 export default store;

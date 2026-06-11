@@ -175,7 +175,7 @@ type ChangeTab = (_: any, newValue: Modes, setFieldValue: (name: string, value: 
 const ScreenshotForm = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const screenshotData = useAppSelector(state => state.screenshot);
+    const screenshotData = useAppSelector(state => state.basic.screenshot);
     const [qualityTab, setQualityTab] = useState<Modes>(Modes.Medium);
 
     const screenshot = screenshotData?.screenshot;
@@ -192,8 +192,7 @@ const ScreenshotForm = () => {
             .subscribe(_ => dispatch(getScreenshotAction(screenshot.id)))
 
         return () => subscriber.unsubscribe();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [screenshotData?.lastChangedDate])
+    }, [screenshotData?.lastChangedDate]);
 
     const initialValues = useMemo<ScreenshotFormValues>(() => ({
         url: '',
@@ -224,7 +223,7 @@ const ScreenshotForm = () => {
     }), []);
 
     const validationSchema = useMemo(() => Yup.object().shape({
-        url: Yup.string().required('URL is required').url('Invalid URL').max(2048),
+        url: Yup.string().required('URL обовʼязковий').url('Невірний URL').max(2048),
         clip: Yup.object().shape({
             width: Yup.number().min(1).max(5000).required(),
             height: Yup.number().min(1).max(7000).required()
@@ -248,8 +247,14 @@ const ScreenshotForm = () => {
 
     return (
         <Container maxWidth="xl">
-            <Typography variant="h4" align="center" gutterBottom>{t('MainPage.screenshotService')}</Typography>
-            <Typography variant="body1" align="center" gutterBottom>{t('MainPage.captureManageScreenshots')}</Typography>
+            <Typography variant="h4" align="center" gutterBottom>
+                {t('MainPage.screenshotService')}
+            </Typography>
+
+            <Typography variant="body1" align="center" gutterBottom>
+                {t('MainPage.captureManageScreenshots')}
+            </Typography>
+
             <Form
                 initialValues={initialValues}
                 validationSchema={validationSchema}
@@ -259,9 +264,15 @@ const ScreenshotForm = () => {
                     dispatch(getMakeScreenshotAction(payload));
                 }}
             >
-                {(formContext) => <FormContent formContext={formContext} qualityTab={qualityTab} handleTabChange={handleTabChange} />}
-            </Form >
-        </Container >
+                {(formContext) =>
+                    <FormContent
+                        formContext={formContext}
+                        qualityTab={qualityTab}
+                        handleTabChange={handleTabChange}
+                    />
+                }
+            </Form>
+        </Container>
     );
 };
 
@@ -276,143 +287,167 @@ const FormContent = memo(({ formContext: { values, setFieldValue }, qualityTab, 
         () => formatFormValues(values, qualityTab),
         [values, qualityTab]
     );
+
     const { t } = useTranslation();
 
     const isFastMode = qualityTab === Modes.Fast;
     const isElementSet = !!values.elementSelector;
 
-    const serverError = useAppSelector(state => state.error);
-    const screenshotData = useAppSelector(state => state.screenshot);
+    const serverError = useAppSelector(state => state.basic.error);
+    const screenshotData = useAppSelector(state => state.basic.screenshot);
 
     const screenshot = screenshotData?.screenshot;
 
     const error = !serverError && screenshot?.state === ScreenshotState.Failed
-        ? t('Errors.ScreenshotFailedStatus')
+        ? 'Не вдалося створити скріншот'
         : serverError;
 
-    return <>
-        {/* Quality Tabs */}
-        <Box sx={{ mb: 3 }}>
-            <Tabs value={qualityTab} onChange={(e, val) => handleTabChange(e, val, setFieldValue)} centered>
-                <Tab value={Modes.Slow} icon={<TurtleIcon />} label="Slow / High Quality" />
-                <Tab value={Modes.Medium} icon={<RabbitIcon />} label="Medium Quality" />
-                <Tab value={Modes.Fast} icon={<FlashIcon />} label="Fast / Low Quality" />
-            </Tabs>
-        </Box>
-        <Grid
-            container
-            spacing={3}
-            alignItems="stretch"
-            wrap="nowrap"
-        >
-            <Grid
-                order={-1}
-                size={{ xs: 12, md: 3 }}
-                sx={{
-                    minWidth: { md: 320 },
-                    maxWidth: { md: 400 },
-                    flexShrink: 0
-                }}
-            >
-                <CostCalculation options={payload} />
-            </Grid>
-            <Grid
-                order={1}
-                size={{ xs: 12, md: 3 }}
-                sx={{
-                    minWidth: { md: 320 },
-                    maxWidth: { md: 400 },
-                    flexShrink: 0
-                }}
-            >
-                <Box sx={{ height: "100%" }}>
-                    <JsonPreview values={payload} />
-                </Box>
-            </Grid>
+    return (
+        <>
+            {/* Quality Tabs */}
+            <Box sx={{ mb: 3 }}>
+                <Tabs value={qualityTab} onChange={(e, val) => handleTabChange(e, val, setFieldValue)} centered>
+                    <Tab value={Modes.Slow} icon={<TurtleIcon />} label="Повільний / Висока якість" />
+                    <Tab value={Modes.Medium} icon={<RabbitIcon />} label="Середня якість" />
+                    <Tab value={Modes.Fast} icon={<FlashIcon />} label="Швидкий / Низька якість" />
+                </Tabs>
+            </Box>
 
-            <Grid
-                size={{ xs: 12, md: 8 }}
-                sx={{
-                    flexGrow: 1,
-                    overflow: "auto"
-                }}
-            >
-                <Stack spacing={2} paddingLeft={5}>
-                    {isElementSet && <Alert severity="warning" variant="standard">
-                        You selected an element-based screenshot. Only the specified element will be captured. Please ensure the element exists on the page and is within specified area Width(px)×Height(px). If you want to capture the entire page instead, remove the selector.
-                    </Alert>}
-                    <TextFieldWrapper name="url" label="URL" fullWidth slotProps={{ htmlInput: { maxLength: 2048 } }} />
-                    <SelectFieldWrapper
-                        name="screenshotType"
-                        label="Screenshot Type"
-                        options={[{ value: ScreenshotType.Png, label: 'PNG' }, { value: ScreenshotType.Jpeg, label: 'JPEG' }]}
-                    />
+            <Grid container spacing={3} alignItems="stretch" wrap="nowrap">
+                <Grid order={-1} size={{ xs: 12, md: 3 }} sx={{ minWidth: { md: 320 }, maxWidth: { md: 400 }, flexShrink: 0 }}>
+                    <CostCalculation options={payload} />
+                </Grid>
 
-                    {/* Clip or Element Selection */}
-                    <Typography variant="subtitle1">Select either Clip or Element</Typography>
-                    <SelectFieldWrapper
-                        name="preset"
-                        label="Screen Preset"
-                        options={Object.keys(clipModels).map(label => ({ value: label, label }))}
-                        onChange={e => { setFieldValue('preset', e.target.value); setFieldValue('clip', clipModels[e.target.value as string]); }}
-                    />
-                    <FormControlLabel
-                        control={<Switch
-                            checked={values.useFullHeight}
-                            onChange={e => setFieldValue('useFullHeight', e.target.checked)}
-                            disabled={!!values.elementSelector || isFastMode}
-                            name="useFullHeight"
-                        />}
-                        label="Full height will capture entire page."
-                    />
+                <Grid order={1} size={{ xs: 12, md: 3 }} sx={{ minWidth: { md: 320 }, maxWidth: { md: 400 }, flexShrink: 0 }}>
+                    <Box sx={{ height: "100%" }}>
+                        <JsonPreview values={payload} />
+                    </Box>
+                </Grid>
 
-                    <Stack direction="row" spacing={2}>
-                        <TextFieldWrapper name="clip.width" label="Width (px)" type="number" />
-                        <TextFieldWrapper name="clip.height" label="Height (px)" type="number" disabled={values.useFullHeight} />
-                    </Stack>
+                <Grid size={{ xs: 12, md: 8 }} sx={{ flexGrow: 1, overflow: "auto", pt: 2 }}>
+                    <Stack spacing={2} paddingLeft={5}>
 
-                    <TextFieldWrapper
-                        name="elementSelector"
-                        label="Or Element Selector"
-                        placeholder="Element should be in range of 5000x7000 px"
-                        fullWidth
-                        onChange={e => {
-                            if (e.target.value)
-                                setFieldValue('useFullHeight', false);
+                        {isElementSet && (
+                            <Alert severity="warning">
+                                Ви обрали скріншот по елементу. Буде захоплено лише вказаний елемент. Переконайтесь, що елемент існує на сторінці та знаходиться в межах розміру Width(px)×Height(px). Якщо хочете зробити повний скріншот — видаліть селектор.
+                            </Alert>
+                        )}
 
-                            setFieldValue('elementSelector', e.target.value)
-                        }}
-                        slotProps={{ htmlInput: { maxLength: 200 } }}
-                    />
+                        <TextFieldWrapper name="url" label="URL" fullWidth slotProps={{ htmlInput: { maxLength: 2048 } }} />
 
-                    {/* Modal Section */}
-                    <ModalSection modalEnabled={values.modalEnabled} />
+                        <SelectFieldWrapper
+                            name="screenshotType"
+                            label="Тип скріншоту"
+                            options={[
+                                { value: ScreenshotType.Png, label: 'PNG' },
+                                { value: ScreenshotType.Jpeg, label: 'JPEG' }
+                            ]}
+                        />
 
-                    {/* Highlight Word Section */}
-                    <HighlightWordSection highlightEnabled={values.highlightEnabled} />
+                        <Typography variant="subtitle1">Оберіть Clip або Element</Typography>
 
-                    {/* Advanced Configuration Section */}
-                    <AdvancedSection advancedEnabled={values.advancedEnabled} />
+                        <SelectFieldWrapper
+                            name="preset"
+                            label="Пресет екрану"
+                            options={Object.keys(clipModels).map(label => ({ value: label, label }))}
+                            onChange={e => {
+                                setFieldValue('preset', e.target.value);
+                                setFieldValue('clip', clipModels[e.target.value as string]);
+                            }}
+                        />
 
-                    {error && <Typography color="error">{error}</Typography>}
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={values.useFullHeight}
+                                    onChange={e => setFieldValue('useFullHeight', e.target.checked)}
+                                    disabled={!!values.elementSelector || isFastMode}
+                                    name="useFullHeight"
+                                />
+                            }
+                            label="Повна висота (захоплює всю сторінку)"
+                        />
 
-                    {screenshot?.state === ScreenshotState.Successful && <>
                         <Stack direction="row" spacing={2}>
-                            <Button type="submit" variant="contained" color="primary">Get Screenshot</Button>
-                            <Button variant="contained" color="success" onClick={() => { const link = document.createElement('a'); link.download = `screenshot.${values.screenshotType.toLowerCase()}`; link.href = screenshot.url; link.click(); }}>
-                                Download Screenshot
-                            </Button>
+                            <TextFieldWrapper name="clip.width" label="Ширина (px)" type="number" />
+                            <TextFieldWrapper name="clip.height" label="Висота (px)" type="number" disabled={values.useFullHeight} />
                         </Stack>
-                        <Box textAlign="center" mt={4}>
-                            <Typography variant="h6">Screenshot:</Typography>
-                            <Box component="img" src={screenshot.url} alt="Screenshot" sx={{ maxWidth: '100%', cursor: 'pointer', mt: 1 }} onClick={() => window.open(screenshot.url, '_blank')} />
-                        </Box>
-                    </>}
-                </Stack>
-            </Grid>
 
-        </Grid>
-    </>
+                        <TextFieldWrapper
+                            name="elementSelector"
+                            label="Або CSS селектор елемента"
+                            placeholder="Елемент має бути в межах 5000x7000 px"
+                            fullWidth
+                            onChange={e => {
+                                if (e.target.value)
+                                    setFieldValue('useFullHeight', false);
+
+                                setFieldValue('elementSelector', e.target.value);
+                            }}
+                            slotProps={{ htmlInput: { maxLength: 200 } }}
+                        />
+
+                        {/* Modal Section */}
+                        <ModalSection modalEnabled={values.modalEnabled} />
+
+                        {/* Highlight Word Section */}
+                        <HighlightWordSection highlightEnabled={values.highlightEnabled} />
+
+                        {/* Advanced Configuration */}
+                        <AdvancedSection advancedEnabled={values.advancedEnabled} />
+
+                        {error && <Typography color="error">{error}</Typography>}
+
+                        <Button type="submit" variant="contained" color="primary">
+                            {t('MainPage.getScreenshot')}
+                        </Button>
+
+                        {screenshot?.state === ScreenshotState.Successful && (
+                            <>
+                                <Stack direction="row" spacing={2}>
+                                    <Button
+                                        variant="contained"
+                                        color="success"
+                                        onClick={async () => {
+                                            const response = await fetch(screenshot.url, { mode: "cors" });
+                                            const blob = await response.blob();
+                                            const blobUrl = window.URL.createObjectURL(blob);
+
+                                            const link = document.createElement("a");
+                                            link.href = blobUrl;
+
+                                            const extension = values.screenshotType?.toLowerCase() ?? "png";
+                                            link.download = `screenshot-${screenshot.id}.${extension}`;
+
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+
+                                            window.URL.revokeObjectURL(blobUrl);
+                                        }}
+                                    >
+                                        Завантажити скріншот
+                                    </Button>
+                                </Stack>
+
+                                <Box textAlign="center" mt={4}>
+                                    <Typography variant="h6">Скріншот:</Typography>
+
+                                    <Box
+                                        component="img"
+                                        src={screenshot.url}
+                                        alt="Скріншот"
+                                        sx={{ maxWidth: '100%', cursor: 'pointer', mt: 1 }}
+                                        onClick={() => window.open(screenshot.url, '_blank')}
+                                    />
+                                </Box>
+                            </>
+                        )}
+                    </Stack>
+                </Grid>
+            </Grid>
+        </>
+    );
 });
 
 export default ScreenshotForm;

@@ -20,44 +20,46 @@ export type FilterForm = {
 const ScreenshotFiltersForm = ({ formik, categories, onSubmit }: Props) => {
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // 🔍 debounce query
     useEffect(() => {
-        debounceRef.current && clearTimeout(debounceRef.current)
+        debounceRef.current && clearTimeout(debounceRef.current);
 
         debounceRef.current = setTimeout(() => {
             onSubmit();
         }, 200);
 
         return () => {
-            debounceRef.current && clearTimeout(debounceRef.current)
-        }
+            debounceRef.current && clearTimeout(debounceRef.current);
+        };
     }, [formik.values.query]);
 
-    // ⚡ instant filters
     useEffect(() => {
-        if (!formik.values.query)
-            return;
+        if (!formik.values.query) return;
 
-        debounceRef.current && clearTimeout(debounceRef.current)
+        debounceRef.current && clearTimeout(debounceRef.current);
         onSubmit();
     }, [formik.values.searchScope]);
 
     useEffect(() => {
-        debounceRef.current && clearTimeout(debounceRef.current)
+        debounceRef.current && clearTimeout(debounceRef.current);
         onSubmit();
     }, [formik.values.categoryIds]);
 
     return (
         <Grid container spacing={2} mb={2}>
-            <Grid size={{ xs: 12, md: 8 }} >
+            <Grid size={{ xs: 12, md: 8 }}>
                 <Box display="flex" flexWrap="wrap" gap={2}>
-                    <TextField name="query" label="Search" slotProps={{ htmlInput: { maxLength: 150 } }} />
+                    <TextField
+                        name="query"
+                        label="Пошук"
+                        slotProps={{ htmlInput: { maxLength: 150 } }}
+                    />
+
                     <SelectField
                         name="searchScope"
-                        label="Scope"
+                        label="Область пошуку"
                         options={[
-                            { label: "Title & Description", value: SearchScope.All },
-                            { label: "Title", value: SearchScope.Title },
+                            { label: "Заголовок і опис", value: SearchScope.All },
+                            { label: "Заголовок", value: SearchScope.Title },
                         ]}
                         fullWidth
                     />

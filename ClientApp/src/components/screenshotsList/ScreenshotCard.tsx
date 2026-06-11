@@ -45,11 +45,11 @@ export const ScreenshotCard = ({ s }: { s: Screenshot }) => {
                 </Box>
 
                 <Typography variant="h6" mt={2}>
-                    {s.title ?? "No title"}
+                    {s.title ?? "Без заголовка"}
                 </Typography>
 
                 <Typography variant="body2" color="text.secondary">
-                    {s.description ?? "No description"}
+                    {s.description ?? "Без опису"}
                 </Typography>
 
                 <Box display="flex" flexWrap="wrap" mt={1} gap={1}>

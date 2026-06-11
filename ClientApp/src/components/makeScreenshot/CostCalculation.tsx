@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
     Card,
     CardContent,
@@ -8,10 +8,20 @@ import {
     Chip,
     LinearProgress,
     Box,
+    Button,
 } from "@mui/material";
 import { ScreenshotOptionsModel, ScreenshotQualityMode } from "../../behavior/types";
+import { useTranslation } from "react-i18next";
 
-export function calculateScreenshotPrice(options: ScreenshotOptionsModel) {
+const MinPoints = 1;
+const MaxPoints = 20;
+
+type CalculationResult = {
+    points: number;
+    pixels: number
+}
+
+export function calculateScreenshotPrice(options: ScreenshotOptionsModel): CalculationResult {
     const pixels = calculatePixels(options);
 
     const sizeMultiplier = pixels / (1920 * 1080);
@@ -30,14 +40,12 @@ export function calculateScreenshotPrice(options: ScreenshotOptionsModel) {
         total += options.modalModel.hideSelectors.length * 0.2;
     }
 
-    total = Math.max(total, 1);
-    total = Math.min(total, 20);
+    total = Math.max(total, MinPoints);
+    total = Math.min(total, MaxPoints);
 
     return {
         points: Math.ceil(total),
-        raw: total,
         pixels,
-        sizeMultiplier,
     };
 }
 
@@ -91,21 +99,10 @@ function getAdvancedCost(adv?: any) {
     return Math.max(cost, 0);
 }
 
-export function useScreenshotPricing(options: ScreenshotOptionsModel) {
-    return useMemo(() => {
-        const result = calculateScreenshotPrice(options);
-
-        return {
-            ...result,
-            usd: (result.points * 0.01).toFixed(3),
-        };
-    }, [options]);
-}
-
 export function CostCalculation({ options }: { options: ScreenshotOptionsModel }) {
-    const pricing = useScreenshotPricing(options);
-
-    const progress = Math.min((pricing.points / 20) * 100, 100);
+    const { t } = useTranslation();
+    const [pricing, setPricing] = useState(calculateScreenshotPrice(options));
+    const progress = Math.min((pricing.points / MaxPoints) * 100, 100);
 
     return (
         <Card sx={{ borderRadius: 3, p: 1, maxWidth: 420 }}>
@@ -113,11 +110,11 @@ export function CostCalculation({ options }: { options: ScreenshotOptionsModel }
 
                 {/* HEADER */}
                 <Typography variant="h6" fontWeight={600}>
-                    Screenshot Cost
+                    Вартість скріншота
                 </Typography>
 
                 <Typography variant="body2" color="text.secondary">
-                    Live estimation based on configuration
+                    Оцінка в реальному часі на основі конфігурації
                 </Typography>
 
                 <Divider sx={{ my: 2 }} />
@@ -128,8 +125,8 @@ export function CostCalculation({ options }: { options: ScreenshotOptionsModel }
                         {pricing.points}
                     </Typography>
 
-                    <Typography variant="body2" color="text.secondary">
-                        points (~${pricing.usd})
+                    <Typography variant="subtitle1" fontWeight={700}>
+                        Бали
                     </Typography>
 
                     <LinearProgress
@@ -143,23 +140,22 @@ export function CostCalculation({ options }: { options: ScreenshotOptionsModel }
 
                 {/* DETAILS */}
                 <Stack spacing={1}>
-
                     <Chip
-                        label={`Pixels: ${pricing.pixels.toLocaleString()}`}
+                        label={`Пікселі: ${pricing.pixels.toLocaleString()}`}
                         size="small"
                     />
-
-                    <Chip
-                        label={`Size multiplier: x${pricing.sizeMultiplier.toFixed(2)}`}
-                        size="small"
-                    />
-
-                    <Chip
-                        label={`Raw cost: ${pricing.raw.toFixed(2)}`}
-                        size="small"
-                    />
-
                 </Stack>
+
+                <Box textAlign="center">
+                    <Button
+                        color="primary"
+                        variant="outlined"
+                        sx={{ mt: 2, width: "100%" }}
+                        onClick={_ => setPricing(calculateScreenshotPrice(options))}
+                    >
+                        {t('CalculatePricing')}
+                    </Button>
+                </Box>
 
             </CardContent>
         </Card>

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { useAppSelector } from "../behavior/rootReducer";
+import { useAppSelector } from "../../behavior/rootReducer";
 import { useTranslation } from "react-i18next";
 import { Box, Container, Toolbar, Typography, Button, AppBar } from "@mui/material";
-import cookieStore from '../behavior/cookie/store';
-import CookieBar from "./Cookiebar";
+import cookieStore from '../../behavior/cookie/store';
+import CookieBar from "../Cookiebar";
 
 const Footer = () => {
-    const user = useAppSelector(state => state.user);
+    const user = useAppSelector(state => state.basic.user);
     const { t } = useTranslation();
     const cookieConsent = cookieStore.getCookieConsent();
     const [isVisible, setIsVisible] = useState(cookieConsent === null);

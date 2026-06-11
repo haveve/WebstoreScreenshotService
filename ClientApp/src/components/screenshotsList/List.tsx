@@ -27,19 +27,21 @@ type FilterForm = {
 
 const ScreenshotsPage = () => {
     const dispatch = useDispatch();
-    const { screenshots, categories, loaded } = useAppSelector(s => s);
+    const { screenshots, categories, loaded } = useAppSelector(s => s.basic);
     const navigate = useNavigate();
+
     const handleClick = (s: Screenshot) => {
         dispatch(setScreenshot({ data: s, error: null }));
         navigate(`/screenshot/${s.id}`);
     };
 
-    const nextAmountOfItems = screenshots?.pageSize ?? DEFAULT_PAGE_SIZE
+    const nextAmountOfItems = screenshots?.pageSize ?? DEFAULT_PAGE_SIZE;
+
     useEffect(() => {
         dispatch(getCategoriesAction());
         dispatch(getScreenshotsAction());
 
-        return () => void dispatch(setScreenshots({ data: null, error: null }))
+        return () => void dispatch(setScreenshots({ data: null, error: null }));
     }, []);
 
     const initialValues = useMemo((): FilterForm => {
@@ -48,13 +50,13 @@ const ScreenshotsPage = () => {
             searchScope: queryPaging.searchScope,
             categoryIds: queryPaging.categoryIds ?? [],
             query: queryPaging.query ?? ''
-        }
+        };
     }, []);
 
     return (
         <Box p={3}>
             <Typography variant="h4" mb={2}>
-                Screenshots
+                Скріншоти
             </Typography>
 
             <Form<FilterForm>

@@ -1,6 +1,89 @@
-import { ajax, AjaxConfig } from "rxjs/ajax";
+import { ajax, AjaxConfig, AjaxResponse } from "rxjs/ajax";
 import { trimStartCharacter } from "../utils/string";
-import { catchError, map } from "rxjs";
+import { catchError, finalize, map, Observable, of, shareReplay, switchMap } from "rxjs";
+
+let accessToken: string | null = null;
+let expires: Date | null = null;
+
+export const setAccessToken = (
+    token: string | null,
+    exp: Date
+) => {
+    accessToken = token;
+    expires = exp;
+};
+
+const TOKEN_REFRESH_BUFFER_MS = 2 * 60 * 1000;
+
+let refreshInFlight$: Observable<void> | null = null;
+
+function isTokenExpiring(): boolean {
+    if (!accessToken || !expires)
+        return true;
+
+    return expires.getTime() - TOKEN_REFRESH_BUFFER_MS <= Date.now();
+}
+
+function refreshToken(): Observable<void> {
+    if (refreshInFlight$)
+        return refreshInFlight$;
+
+    refreshInFlight$ = ajax<{
+        accessToken: string;
+        expires: string;
+    }>({
+        url: "/authorization/refresh",
+        method: "POST",
+        withCredentials: true,
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).pipe(
+        map(r => {
+            setAccessToken(
+                r.response.accessToken,
+                new Date(r.response.expires)
+            );
+        }),
+        finalize(() => {
+            refreshInFlight$ = null;
+        }),
+        shareReplay(1)
+    );
+
+    return refreshInFlight$;
+}
+
+function ensureValidToken(): Observable<void> {
+    if (!isTokenExpiring())
+        return of(void 0);
+
+    return refreshToken();
+}
+
+function executeRequest<T>(
+    request: AjaxConfig,
+    requiresAuth: boolean
+): Observable<AjaxResponse<T>> {
+
+    const runRequest = () => {
+        request.headers = {
+            ...request.headers,
+            ...(accessToken
+                ? { Authorization: `Bearer ${accessToken}` }
+                : {})
+        };
+
+        return ajax<T>(request);
+    };
+
+    if (!requiresAuth)
+        return runRequest();
+
+    return ensureValidToken().pipe(
+        switchMap(() => runRequest())
+    );
+}
 
 const enum Methods {
     GET = "GET",
@@ -27,7 +110,10 @@ export function AjaxObservable<T>(data: any, requestUrl: string, method: Methods
         request.url = `${requestUrl}${quryParams}`;
     }
 
-    return ajax<T>(request)
+    return executeRequest<T>(
+        request,
+        withCredentials
+    );
 }
 
 type ScreenshotApiObservableResponse<T> = {
@@ -37,7 +123,7 @@ type ScreenshotApiObservableResponse<T> = {
 }
 
 export function ScreenshotApiObservable<T>(data: any, path: string, method: Methods = Methods.GET, withCredentials = false, responseType: XMLHttpRequestResponseType = "json") {
-    return AjaxObservable<T>(data, `${process.env.REACT_APP_BACK_URL}/${trimStartCharacter(path, "/")}`, method, withCredentials, responseType)
+    return AjaxObservable<T>(data, `/${trimStartCharacter(path, "/")}`, method, withCredentials, responseType)
         .pipe(map(response => {
             var result: ScreenshotApiObservableResponse<T | null> = {
                 error: null,

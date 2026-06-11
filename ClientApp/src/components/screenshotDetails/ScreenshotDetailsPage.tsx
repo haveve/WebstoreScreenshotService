@@ -21,8 +21,8 @@ const ScreenshotDetailsPage = () => {
     const { id } = useParams();
     const dispatch = useDispatch();
 
-    const screenshot = useAppSelector((state) => state.screenshot?.screenshot);
-    const loaded = useAppSelector((state) => state.loaded);
+    const screenshot = useAppSelector((state) => state.basic.screenshot?.screenshot);
+    const loaded = useAppSelector((state) => state.basic.loaded);
 
     const loading = !loaded || !screenshot || screenshot.id !== id;
 
@@ -33,13 +33,15 @@ const ScreenshotDetailsPage = () => {
     useEffect(() => {
         if (id && screenshot?.id !== id)
             dispatch(getScreenshotAction(id));
-    }, [id, screenshot?.id])
+    }, [id, screenshot?.id]);
 
-    const imagePlaceholder = <Skeleton
-        variant="rectangular"
-        height={400}
-        animation="wave"
-    />;
+    const imagePlaceholder = (
+        <Skeleton
+            variant="rectangular"
+            height={400}
+            animation="wave"
+        />
+    );
 
     if (loading) {
         return (
@@ -88,9 +90,10 @@ const ScreenshotDetailsPage = () => {
                 {isSuccess(screenshot.state) &&
                     <LazyImage
                         src={screenshot.url}
-                        alt={screenshot.title ?? "Screenshot"}
+                        alt={screenshot.title ?? "Знімок екрана"}
                         height={400}
                     />}
+
                 {isFailed(screenshot.state) &&
                     <Box
                         height={400}
@@ -103,10 +106,13 @@ const ScreenshotDetailsPage = () => {
                         }}
                     >
                         <Typography variant="h6">
-                            Failed to load screenshot
+                            Не вдалося завантажити знімок екрана
                         </Typography>
-                    </Box>}
+                    </Box>
+                }
+
                 {isLoading(screenshot.state) && imagePlaceholder}
+
                 <CardContent>
 
                     <Box mt={2}>
@@ -116,37 +122,42 @@ const ScreenshotDetailsPage = () => {
                     </Box>
 
                     <Typography variant="h5">
-                        {screenshot.title ?? "No title"}
+                        {screenshot.title ?? "Без назви"}
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary">
-                        {screenshot.description ?? "No description"}
+                        {screenshot.description ?? "Опис відсутній"}
                     </Typography>
 
                     <Stack direction="row" mt={2}>
-                        <Chip label={screenshot.state} color={getStateColor(screenshot.state)} size="small" />
+                        <Chip
+                            label={screenshot.state}
+                            color={getStateColor(screenshot.state)}
+                            size="small"
+                        />
                     </Stack>
 
                     <Stack direction="row" mt={1}>
-                        <Chip label={screenshot.type} size="small" variant="outlined" />
+                        <Chip
+                            label={screenshot.type}
+                            size="small"
+                            variant="outlined"
+                        />
                     </Stack>
 
                     <Box display="flex" flexWrap="wrap" mt={1} gap={1}>
-                        {screenshot.categories.map((cat) => {
-                            return (
-                                <Chip
-                                    key={cat.id}
-                                    label={cat.name}
-                                    size="small"
-                                    sx={{
-                                        backgroundColor: cat.color,
-                                        color: "#ffffff"
-                                    }}
-                                />
-                            );
-                        })}
+                        {screenshot.categories.map((cat) => (
+                            <Chip
+                                key={cat.id}
+                                label={cat.name}
+                                size="small"
+                                sx={{
+                                    backgroundColor: cat.color,
+                                    color: "#ffffff"
+                                }}
+                            />
+                        ))}
                     </Box>
-
 
                     <Box mt={2}>
                         <Typography variant="caption">

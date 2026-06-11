@@ -21,13 +21,23 @@ const HighlightWordSection = ({
         <>
             <SwitchField
                 name='highlightEnabled'
-                label="Enable Highlight Word"
+                label="Увімкнути підсвічування слова"
             />
+
             {highlightEnabled && (
                 <Stack spacing={2} sx={{ ml: 2 }}>
-                    <TextFieldWrapper slotProps={{ htmlInput: { maxLength: 200 } }}
-                        name={`${highlightWordName}.word`} label="Word to Highlight" fullWidth />
-                    <ColorPicker name={`${highlightWordName}.color`} label="Highlight Color" placeholder="#FFFF00" fullWidth />
+                    <TextFieldWrapper
+                        slotProps={{ htmlInput: { maxLength: 200 } }}
+                        name={`${highlightWordName}.word`}
+                        label="Слово для підсвічування"
+                        fullWidth
+                    />
+                    <ColorPicker
+                        name={`${highlightWordName}.color`}
+                        label="Колір підсвічування"
+                        placeholder="#FFFF00"
+                        fullWidth
+                    />
                 </Stack>
             )}
         </>

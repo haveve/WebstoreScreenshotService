@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { useAppSelector } from "../behavior/rootReducer";
-import { getLogoutAction } from "../behavior/epic";
-import cookieStore from "../behavior/cookie/store";
-import { LinearProgress } from "@mui/material";
+import { useAppSelector } from "../../behavior/rootReducer";
+import { getLogoutAction } from "../../behavior/epic";
+import cookieStore from "../../behavior/cookie/store";
+import { LinearProgress, Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import LanguageSelector from "./LanguageSelector";
-import { useThemeMode } from "./ThemeSettings";
+import LanguageSelector from "../LanguageSelector";
+import { useThemeMode } from "../ThemeSettings";
 import {
     AppBar,
     Toolbar,
@@ -24,7 +24,16 @@ import {
     ListItemText,
     Divider,
 } from "@mui/material";
-import { Menu as MenuIcon, Brightness4 as DarkModeIcon, Brightness7 as LightModeIcon } from "@mui/icons-material";
+import {
+    Menu as MenuIcon,
+    Brightness4 as DarkModeIcon,
+    Brightness7 as LightModeIcon,
+    ManageAccounts as AccountIcon,
+    ShoppingCart as ShoppingBasketIcon
+} from "@mui/icons-material";
+import { getPlanDescription, getPointsDescription } from "../componentHelpers";
+import { BasketModal } from "./BasketPopover";
+import { toggleBasket } from "../../behavior/basket/reducer";
 
 type NavItem = {
     label: string;
@@ -34,25 +43,26 @@ type NavItem = {
 
 const Navigation = () => {
     const dispatch = useDispatch();
-    const user = useAppSelector((state) => state.user);
-    const loaded = useAppSelector((state) => state.loaded);
+    const user = useAppSelector((state) => state.basic.user);
+    const loaded = useAppSelector((state) => state.basic.loaded);
     const cookieConsent = cookieStore.getCookieConsent();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const { t } = useTranslation();
     const { mode, toggleTheme } = useThemeMode();
+    const navigate = useNavigate();
 
     const handleLogout = () => dispatch(getLogoutAction());
 
     const navItems: NavItem[] = [
         { label: t("Navigation.home"), path: "/" },
         { label: t("Navigation.privacyPolicy"), path: "/privacy-policy" },
+        { label: "Documentation", path: "/api-doc"}
     ];
 
     const userItems: NavItem[] = user
         ? [
             { label: t("Navigation.makeScreenshot"), path: "/make-screenshot" },
-            { label: t("Navigation.myAccount"), path: "/my-account" },
-            { label: "Screenshots", path: '/screenshots' },
+            { label: t("Navigation.screenshots"), path: '/screenshots' },
             { label: t("Navigation.logout"), action: handleLogout },
         ]
         : [
@@ -61,11 +71,64 @@ const Navigation = () => {
         ];
 
     const allItems = [...navItems, ...userItems];
+    const functionalComponents = <>
+        <LanguageSelector />
+        <IconButton onClick={toggleTheme} color="inherit" aria-label="toggle theme">
+            {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+        </IconButton>
+        {user && (<>
+            <Tooltip
+                arrow
+                placement="bottom"
+                slotProps={{
+                    tooltip: {
+                        sx: (theme) => ({
+                            backgroundColor: theme.palette.background.paper,
+                            color: theme.palette.text.primary,
+                            border: `1px solid ${theme.palette.divider}`,
+                            boxShadow: theme.shadows[4],
+                            padding: theme.spacing(1.5, 2),
+                            maxWidth: 320,
+                        }),
+                    },
+                    arrow: {
+                        sx: (theme) => ({
+                            color: theme.palette.background.paper,
+                        }),
+                    },
+                }}
+                title={
+                    <Box>
+                        <Typography variant="body2">
+                            <strong>{t("MyAccount.points")}</strong> {getPointsDescription(user.subscriptionPlan.points)}
+                        </Typography>
+                        <Typography variant="body2">
+                            <strong>{t("MyAccount.plan")}</strong> {getPlanDescription(user.subscriptionPlan.type, t)}
+                        </Typography>
+                    </Box>
+                }
+            >
+                <IconButton
+                    onClick={() => navigate("/my-account")}
+                    color="inherit"
+                >
+                    <AccountIcon />
+                </IconButton>
+            </Tooltip>
+            <IconButton
+                onClick={() => dispatch(toggleBasket())}
+                color="inherit"
+            >
+                <ShoppingBasketIcon />
+            </IconButton>
+            <BasketModal />
+        </>)}
+    </>
 
     return (
         <>
             <AppBar position="sticky" color="primary">
-                <Container maxWidth="lg">
+                <Container maxWidth="xl">
                     <Toolbar sx={{ justifyContent: "space-between" }}>
                         {/* Logo and Title */}
                         <Typography
@@ -96,10 +159,7 @@ const Navigation = () => {
                                     </Button>
                                 )
                             )}
-                            <LanguageSelector />
-                            <IconButton onClick={toggleTheme} color="inherit" aria-label="toggle theme">
-                                {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-                            </IconButton>
+                            {functionalComponents}
                         </Box>
 
                         {/* Mobile Burger Menu */}
@@ -114,7 +174,7 @@ const Navigation = () => {
 
             {/* Mobile Drawer */}
             <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-                <Box sx={{ width: 250 }} role="presentation" onClick={() => setDrawerOpen(false)}>
+                <Box sx={{ width: "auto" }} role="presentation" onClick={() => setDrawerOpen(false)}>
                     <List>
                         {allItems.map((item, index) => (
                             <ListItem key={index} disablePadding>
@@ -130,10 +190,7 @@ const Navigation = () => {
                     </List>
                     <Divider />
                     <Box sx={{ p: 2 }}>
-                        <LanguageSelector />
-                        <IconButton onClick={toggleTheme} color="inherit" aria-label="toggle theme">
-                            {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-                        </IconButton>
+                        {functionalComponents}
                     </Box>
                 </Box>
             </Drawer>

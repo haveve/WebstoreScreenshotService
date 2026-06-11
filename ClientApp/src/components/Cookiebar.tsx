@@ -13,7 +13,7 @@ type Props = {
 
 const CookieBar = ({ showCookieBar, setVisibility }: Props) => {
     const { t } = useTranslation();
-    const user = useAppSelector(state => state.user);
+    const user = useAppSelector(state => state.basic.user);
     const dispatch = useDispatch();
 
     const handleChoice = (choice: boolean) => {

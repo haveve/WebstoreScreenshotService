@@ -1,6 +1,6 @@
 import { Paging, SearchScope } from "../types";
 
-export const DEFAULT_PAGE_SIZE = 20;
+export const DEFAULT_PAGE_SIZE = 6;
 
 export const MAX_PAGE_COUNT = 10_000;
 export const MAX_PAGE_SIZE = 200;

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Category, PagedResult, Screenshot, UserModel } from "./types";
+import { Category, PagedResult, Screenshot, SubscriptionType, UserModel } from "./types";
 
 type ScreenshotState = {
     screenshot: Screenshot | null,
@@ -49,6 +49,13 @@ export const store = createSlice({
             state.error = action.payload.error;
             state.loaded = true;
         },
+        cancelSubscription: (state, action: PayloadAction<ActionModel<undefined>>) => {
+            if (state.user?.subscriptionPlan)
+                state.user.subscriptionPlan.type = SubscriptionType.Regular;
+
+            state.error = action.payload.error;
+            state.loaded = true;
+        },
         setScreenshot: (state, action: PayloadAction<ActionModel<ScreenshotState['screenshot']>>) => {
             state.screenshot = { screenshot: action.payload.data, lastChangedDate: new Date().toISOString() };
             state.error = action.payload.error;
@@ -93,6 +100,7 @@ export const store = createSlice({
 });
 
 export const {
+    cancelSubscription,
     setUser,
     setScreenshot,
     setScreenshots,

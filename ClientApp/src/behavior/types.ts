@@ -1,29 +1,36 @@
 export enum SubscriptionType {
     Regular = 1,
+    Pro = 2,
+    Advanced = 3,
+}
+
+export enum Duration {
+  Monthly = 0,
+  Yearly = 1
 }
 
 export type SubscriptionPlan = {
     type: SubscriptionType;
-    screenshotLeft: number;
+    duration: Duration;
+    points: number;
 }
 
 export type UserModel = {
-    name: string;
-    surname: string;
+    nickName: string;
+    isDisactivated: boolean;
     email: string;
     subscriptionPlan: SubscriptionPlan;
 }
 
 export type LoginModel = {
-    email: string;
+    nickName: string;
     password: string;
 }
 
 export type RegisterModel = {
     email: string;
     password: string;
-    name: string;
-    surname: string;
+    nickName: string;
 }
 
 // Enums

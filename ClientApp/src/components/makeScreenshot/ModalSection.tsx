@@ -21,25 +21,35 @@ const ModalSection = ({
         <>
             <SwitchField
                 name='modalEnabled'
-                label="Enable Modal Settings"
+                label="Увімкнути налаштування модального вікна"
             />
+
             {modalEnabled && (
                 <Stack spacing={2} sx={{ ml: 2 }}>
                     <SwitchField
                         name={`${modelName}.dismissDialogs`}
-                        label="Dismiss Dialogs"
+                        label="Закривати діалоги"
                     />
+
                     <SwitchField
                         name={`${modelName}.hidePopups`}
-                        label="Hide Popups"
+                        label="Приховувати спливаючі вікна"
                     />
+
                     <ArrayFieldWrapper<string>
                         name={`${modelName}.hideSelectors`}
-                        label="Hide Selectors"
+                        label="Селектори для приховування"
                         emptyValue=""
-                        maxLength={15}>
+                        maxLength={15}
+                    >
                         {({ index, parentName }) => (
-                            <TextFieldWrapper slotProps={{ htmlInput: { maxLength: 200 } }} key={index} name={`${parentName}[${index}]`} label={`Selector ${index + 1}`} fullWidth />
+                            <TextFieldWrapper
+                                slotProps={{ htmlInput: { maxLength: 200 } }}
+                                key={index}
+                                name={`${parentName}[${index}]`}
+                                label={`Селектор ${index + 1}`}
+                                fullWidth
+                            />
                         )}
                     </ArrayFieldWrapper>
                 </Stack>

@@ -37,7 +37,7 @@ const JsonPreview = ({ values }: JsonPreviewProps) => {
       }}
     >
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Typography variant="subtitle1">Request JSON</Typography>
+        <Typography variant="subtitle1">Запит у форматі JSON</Typography>
         <Tooltip
           title={"Copied!"}
           open={open}

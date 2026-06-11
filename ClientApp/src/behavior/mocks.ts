@@ -1,11 +1,12 @@
-import { SubscriptionType, UserModel } from "./types";
+import { Duration, SubscriptionType, UserModel } from "./types";
 
 export const mockUser: UserModel = {
-    name: 'John',
-    surname: 'Doe',
-    email: 'john.doe@example.com',
+    nickName: 'super-user',
+    isDisactivated: false,
+    email: 'ipz224_pis@student.ztu.edu.ua',
     subscriptionPlan: {
-        type: SubscriptionType.Regular,
-        screenshotLeft: 25,
+        type: SubscriptionType.Advanced,
+        duration: Duration.Yearly,
+        points: 50_000,
     },
 };
