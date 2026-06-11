@@ -9,6 +9,7 @@ public static class CustomJsonSerializer
     private readonly static JsonSerializerOptions _options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
     };
 
     public static T? Deserialize<T>(ReadOnlySpan<byte> utf8Json)

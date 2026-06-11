@@ -26,7 +26,8 @@ public sealed class ApplicationLifetimeManager(IMessageBrokerManager messageBrok
             if (_started)
                 return;
 
-            var exitCode = Microsoft.Playwright.Program.Main(["install", "chromium", "--with-deps"]);
+            var exitCode = Microsoft.Playwright.Program.Main(["install", "chromium"]);
+            //"--with-deps"
 
             if (exitCode != 0)
                 throw new Exception($"Playwright exited with code {exitCode}");
@@ -53,7 +54,7 @@ public sealed class ApplicationLifetimeManager(IMessageBrokerManager messageBrok
             if (_started)
                 return;
 
-            EnsureBrowserInstalled();
+            //EnsureBrowserInstalled();
             await _browserPool.InitializeAsync();
             await _messageBrokerManager.InitializeAsync();
         }

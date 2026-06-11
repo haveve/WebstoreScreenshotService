@@ -48,12 +48,12 @@ builder
                services.AddOptionsWithValidation<MessageBrokerSettings>(context.Configuration.GetSection("MessageBrokerSettings"));
                services.AddOptionsWithValidation<ScreenshotServiceSettings>(context.Configuration.GetSection("ScreenshotServiceSettings"));
                
-               if (context.HostingEnvironment.IsDevelopment())
-               {
-                   services.AddOptionsWithValidation<LocalScreenshotStorageSettings>(context.Configuration.GetSection("ScreenshotStorageSettings"));
-                   services.AddSingleton<IScreenshotRepository, LocalScreenshotRepository>();
-               }
-               else
+               //if (context.HostingEnvironment.IsDevelopment())
+               //{
+               //    services.AddOptionsWithValidation<LocalScreenshotStorageSettings>(context.Configuration.GetSection("ScreenshotStorageSettings"));
+               //    services.AddSingleton<IScreenshotRepository, LocalScreenshotRepository>();
+               //}
+               //else
                {
                    services.AddOptionsWithValidation<BlobConfigurations>(context.Configuration.GetSection("Blob"));
                    services.AddSingleton<IScreenshotRepository, BlobScreenshotRepository>();

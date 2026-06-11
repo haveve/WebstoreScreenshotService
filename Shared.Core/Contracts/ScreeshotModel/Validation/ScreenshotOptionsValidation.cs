@@ -40,8 +40,6 @@ public sealed class ScreenshotOptionsValidator : Validator<ScreenshotOptionsMode
                 $"Invalid ScreenshotType. Allowed values: {string.Join(", ", Enum.GetNames<ScreenshotType>())}");
 
         RuleFor(nameof(ScreenshotOptionsModel.ContentLoadingOptions), x => x.ContentLoadingOptions)
-            .Must(v => v != ContentLoadingOptions.None,
-                "At least one ContentLoadingOption must be selected.")
             .Must(v =>
             {
                 var allowed =

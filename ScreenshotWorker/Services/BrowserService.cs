@@ -217,28 +217,40 @@ public class BrowserService(IContentInitializationManager contentInitializationM
         if (options.HighlightWord is null)
             return;
 
-        await page.EvaluateAsync(@"(model) => {
-            const walker = document.createTreeWalker(
-                document.body,
-                NodeFilter.SHOW_TEXT
-            );
+        await page.EvaluateAsync(@"
+            (model) => {
+                const escapeRegExp = (s) =>
+                    s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-            const nodes = [];
+                const word = model.Word;
+                const color = model.Color;
 
-            while (walker.nextNode()) {
-                if (walker.currentNode.nodeValue.includes(model.word))
-                    nodes.push(walker.currentNode);
-            }
+                const regex = new RegExp(escapeRegExp(word), 'gi');
 
-            nodes.forEach(node => {
-                const span = document.createElement('span');
-                span.innerHTML = node.nodeValue.replace(
-                    new RegExp(model.word, 'gi'),
-                    m => `<mark style='background:${model.color}'>${m}</mark>`
+                const walker = document.createTreeWalker(
+                    document.body,
+                    NodeFilter.SHOW_TEXT
                 );
-                node.replaceWith(span);
-            });
-        }", options.HighlightWord);
+
+                const nodes = [];
+
+                while (walker.nextNode()) {
+                    if (walker.currentNode.nodeValue.toLowerCase().includes(word.toLowerCase()))
+                        nodes.push(walker.currentNode);
+                }
+
+                nodes.forEach(node => {
+                    const span = document.createElement('span');
+
+                    span.innerHTML = node.nodeValue.replace(
+                        regex,
+                        m => `<mark style='background:${color}'>${m}</mark>`
+                    );
+
+                    node.replaceWith(span);
+                });
+            }
+            ", options.HighlightWord);
     }
 
     private static async Task ConfigureTrafficInterceptor(IPage page, ScreenshotOptionsModel options)

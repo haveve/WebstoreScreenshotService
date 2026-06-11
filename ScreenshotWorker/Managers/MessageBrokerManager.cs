@@ -9,6 +9,7 @@ using ScreenshotWorker.Services;
 using ScreenshotWorker.Settings;
 using Shared.Core.Contracts.ScreeshotModel;
 using Shared.Core.Contracts.ScreeshotModel.Validation;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Json;
 
@@ -25,6 +26,12 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowser
 
     private static readonly string[] valueCannotBeParsedErrors = ["_root: object wasn't parsed correctly"];
 
+    class RabbitMqRequest
+    {
+        [Required]
+        public MakeScreenshotModel Message { get; set; } = null!;
+    }
+
     public async Task InitializeAsync()
     {
         var channel = await ConfigureAsync();
@@ -36,7 +43,7 @@ public class MessageBrokerManager(ILogger<MessageBrokerManager> logger, IBrowser
             string? confirmationToken = null;
             try
             {
-                var parsedValue = CustomJsonSerializer.Deserialize<MakeScreenshotModel>(ea.Body.Span);
+                var parsedValue = CustomJsonSerializer.Deserialize<RabbitMqRequest>(ea.Body.Span)?.Message;
 
                 var validationResult = parsedValue is not null
                     ? _makeScreenshotModelValidator.Validate(parsedValue)

@@ -27,9 +27,7 @@ public class BlobStorageService
         string fileName,
         string contentType)
     {
-        using var memoryStream = new MemoryStream();
-        memoryStream.Read(fileStream);
-
+        using var memoryStream = new MemoryStream(fileStream);
         var blob = _container.GetBlobClient(fileName);
         await blob.UploadAsync(memoryStream, new BlobHttpHeaders
         {

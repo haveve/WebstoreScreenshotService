@@ -12,7 +12,7 @@ public class BlobScreenshotRepository(IOptions<BlobConfigurations> options) : IS
     {
         var (screenshotId, userId, screenshotData, contentType) = saveScreenshotModel;
 
-        var fileName = $"{userId}/{screenshotId}/{ToImageExtension(contentType)}";
+        var fileName = $"{userId}/{screenshotId}{ToImageExtension(contentType)}";
         await _blobStorageService.UploadAsync(screenshotData, fileName, GetContentType(contentType));
         return true;
     }
