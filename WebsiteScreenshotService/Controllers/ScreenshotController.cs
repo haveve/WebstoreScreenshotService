@@ -13,7 +13,7 @@ using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Controllers;
 
-[Authorize(Roles = UserRoles.User)]
+[Authorize]
 [ApiController]
 [Route("screenshots/[action]")]
 public class ScreenshotController(
@@ -125,6 +125,7 @@ public class ScreenshotController(
     }
 
     [HttpPost]
+    [Authorize(Roles = UserRoles.User)]
     [ActionName("updateScreenshot")]
     public async Task<IActionResult> UpdateScreenshot([FromBody] ControllerScreenshotUpdateModel model)
     {
