@@ -125,6 +125,7 @@ type ScreenshotApiObservableResponse<T> = {
 export function ScreenshotApiObservable<T>(data: any, path: string, method: Methods = Methods.GET, withCredentials = false, responseType: XMLHttpRequestResponseType = "json") {
     return AjaxObservable<T>(data, `/${trimStartCharacter(path, "/")}`, method, withCredentials, responseType)
         .pipe(map(response => {
+            debugger;
             var result: ScreenshotApiObservableResponse<T | null> = {
                 error: null,
                 response: response.response,

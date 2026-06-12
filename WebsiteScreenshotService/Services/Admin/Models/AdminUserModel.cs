@@ -1,10 +1,12 @@
 ﻿namespace WebsiteScreenshotService.Services.Admin.Models;
 
-public record AdminUserModel(
+public sealed record AdminUserModel(
     Guid Id,
     string NickName,
     string Email,
-    bool IsDisabled,
+    bool IsDisactivated,
     DateTime CreatedAt,
     string SubscriptionType,
-    long Points);
+    long SubscriptionPoints,
+    List<AdminUserRefundedPaymentModel> RefundedPayments
+);

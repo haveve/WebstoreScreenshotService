@@ -1,6 +1,4 @@
-﻿namespace WebsiteScreenshotService.Services.Admin;
-
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -11,7 +9,10 @@ using WebsiteScreenshotService.Repositories.EF;
 using WebsiteScreenshotService.Repositories.UserRepository;
 using WebsiteScreenshotService.Services.Admin.Models;
 using WebsiteScreenshotService.Services.Payment;
+using WebsiteScreenshotService.Services.Security;
 using WebsiteScreenshotService.Utils;
+
+namespace WebsiteScreenshotService.Services.Admin;
 
 public sealed class AdminService(
     ScreenshotDbContext db,
@@ -19,7 +20,8 @@ public sealed class AdminService(
     IUserEntityMapper userEntityMapper,
     IOptions<BlobConfigurations> blobConfigurations,
     IBusControl bus,
-    IPaymentProvider paymentProvider)
+    IPaymentProvider paymentProvider,
+    IHashingService hashingService)
     : IAdminService
 {
     private readonly ScreenshotDbContext _db = db;
@@ -28,75 +30,86 @@ public sealed class AdminService(
     private readonly BlobConfigurations _blobConfigurations = blobConfigurations.Value;
     private readonly IPaymentProvider _paymentProvider = paymentProvider;
     private readonly IBusControl _bus = bus;
+    private readonly IHashingService _hashingService = hashingService;
 
-    public async Task<Result<AdminStatisticsModel>> GetStatisticsAsync()
+    public async Task<Result<AdminPagedResult<AdminUserModel>>> GetUsersAsync(AdminUserQuery query)
     {
-        var totalUsers = await _db.Users.CountAsync();
+        var fromDate = DateTime.UtcNow.AddMonths(-6);
 
-        var disabledUsers = await _db.Users
-            .CountAsync(x => x.IsDisactivated);
+        var nickHash = !string.IsNullOrWhiteSpace(query.NickName)
+            ? _hashingService.Hash(query.NickName)
+            : null;
 
-        var totalScreenshots = await _db.Screenshots.CountAsync();
+        var usersQuery = _db.Users
+            .AsNoTracking();
 
-        var activeSubscriptions = await _db.Subscriptions
-            .CountAsync(x => x.IsActive);
+        if (query.IsDisabled.HasValue)
+            usersQuery = usersQuery.Where(u => u.IsDisactivated == query.IsDisabled.Value);
 
-        var revenue = await _db.PaymentAttempts
-            .Where(x => x.Status == PaymentAttemptStatus.Succeeded)
-            .SumAsync(x => (decimal?)x.Amount) ?? 0m;
+        if (nickHash is not null)
+            usersQuery = usersQuery.Where(u => u.NickNameHash == nickHash);
 
-        var errorLogs = await _db.Set<LogEntity>()
-            .CountAsync(x => x.Severity == Severity.Error);
+        var queryWithRefunds =
+            from u in usersQuery
+            join p in _db.PaymentAttempts.AsNoTracking()
+                .Where(p =>
+                    p.Status == PaymentAttemptStatus.Refunded &&
+                    p.IsPrimary &&
+                    p.Refunded >= fromDate)
+            on u.Id equals p.UserId into refunds
 
-        var criticalLogs = await _db.Set<LogEntity>()
-            .CountAsync(x => x.Severity == Severity.Critical);
+            select new
+            {
+                User = u,
+                RefundCount = refunds.Count()
+            };
 
-        return Result<AdminStatisticsModel>.Success(
-            new(
-                totalUsers,
-                disabledUsers,
-                totalScreenshots,
-                activeSubscriptions,
-                revenue,
-                errorLogs,
-                criticalLogs));
-    }
+        if (query.RefundCount.HasValue)
+        {
+            queryWithRefunds = queryWithRefunds
+                .Where(x => x.RefundCount == query.RefundCount.Value);
+        }
 
-    public async Task<Result<AdminPagedResult<AdminUserModel>>> GetUsersAsync(
-        int skip,
-        int take)
-    {
-        var total = await _db.Users.CountAsync();
+        var total = await queryWithRefunds.CountAsync();
 
-        var users = await _db.Users
-            .AsNoTracking()
-            .OrderByDescending(x => x.CreatedAt)
-            .Skip(skip)
-            .Take(take)
+        var users = await queryWithRefunds
+            .OrderByDescending(x => x.User.CreatedAt)
+            .Skip(query.Skip)
+            .Take(query.Take)
+            .Select(x => new
+            {
+                x.User,
+                x.RefundCount,
+            })
             .ToListAsync();
 
-        var result = users
-            .Select(x =>
-            {
-                var data = _userEntityMapper.Decrypt(x.EncryptedData);
+        var result = new List<AdminUserModel>();
 
-                return new AdminUserModel(
-                    x.Id,
-                    data.NickName,
-                    data.Email,
-                    x.IsDisactivated,
-                    x.CreatedAt,
-                    x.SubscriptionPlan.Type.ToString(),
-                    x.SubscriptionPlan.Points);
-            })
-            .ToList();
+        foreach (var x in users)
+        {
+            var u = x.User;
+            var data = _userEntityMapper.Decrypt(u.EncryptedData);
+
+            result.Add(new AdminUserModel(
+                u.Id,
+                data.NickName,
+                data.Email,
+                u.IsDisactivated,
+                u.CreatedAt,
+                u.SubscriptionPlan.Type.ToString(),
+                u.SubscriptionPlan.Points,
+                []
+            ));
+        }
 
         return Result<AdminPagedResult<AdminUserModel>>
             .Success(new(result, total));
     }
 
-    public async Task<Result<AdminUserModel>> GetUserAsync(Guid userId)
+    public async Task<Result<AdminUserModel>> GetUserDetailsAsync(Guid userId)
     {
+        var fromDate = DateTime.UtcNow.AddMonths(-6);
+
         var user = await _db.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == userId);
@@ -106,15 +119,152 @@ public sealed class AdminService(
 
         var data = _userEntityMapper.Decrypt(user.EncryptedData);
 
-        return Result<AdminUserModel>.Success(
-            new(
-                user.Id,
-                data.NickName,
-                data.Email,
-                user.IsDisactivated,
-                user.CreatedAt,
-                user.SubscriptionPlan.Type.ToString(),
-                user.SubscriptionPlan.Points));
+        var refunds = await _db.PaymentAttempts
+            .AsNoTracking()
+            .Where(x =>
+                x.UserId == userId &&
+                x.Status == PaymentAttemptStatus.Refunded &&
+                x.IsPrimary &&
+                x.Refunded >= fromDate)
+            .OrderByDescending(x => x.Refunded)
+            .Select(x => new AdminUserRefundedPaymentModel(
+                x.Id,
+                x.OrderId,
+                x.Amount,
+                x.Status,
+                x.Provider,
+                x.Refunded))
+            .ToListAsync();
+
+        var result = new AdminUserModel(
+            user.Id,
+            data.NickName,
+            data.Email,
+            user.IsDisactivated,
+            user.CreatedAt,
+            user.SubscriptionPlan.Type.ToString(),
+            user.SubscriptionPlan.Points,
+            refunds
+        );
+
+        return Result<AdminUserModel>.Success(result);
+    }
+
+    public async Task<Result<AdminStatisticsModel>> GetStatisticsAsync(AdminStatisticsQuery query)
+    {
+        var fromDate = query.From ?? DateTime.UtcNow.AddMonths(-1);
+        var toDate = query.To ?? DateTime.UtcNow;
+        var now = DateTime.UtcNow;
+
+        var totalUsersTask = _db.Users.CountAsync();
+
+        var activeSubscriptionsTask = _db.Subscriptions
+            .CountAsync(x =>
+                x.IsActive &&
+                x.CurrentPeriodEnd > now);
+
+        var paymentsQuery = _db.PaymentAttempts
+            .AsNoTracking()
+            .Where(x =>
+                x.Status == PaymentAttemptStatus.Succeeded &&
+                x.CreatedAt >= fromDate &&
+                x.CreatedAt <= toDate);
+
+        var revenueTask = paymentsQuery.SumAsync(x => x.Amount);
+
+        var monthlyRevenueTask = paymentsQuery
+            .GroupBy(x => new { x.CreatedAt.Year, x.CreatedAt.Month })
+            .Select(g => g.Sum(x => x.Amount))
+            .ToListAsync();
+
+        var usersByTypeTask = _db.Users
+            .AsNoTracking()
+            .GroupBy(u => u.SubscriptionPlan.Type)
+            .Select(g => new
+            {
+                Type = g.Key,
+                Users = g.Count()
+            })
+            .ToListAsync();
+
+        var revenueByTypeTask =
+            (from p in _db.PaymentAttempts.AsNoTracking()
+             join u in _db.Users.AsNoTracking()
+                 on p.UserId equals u.Id
+             where p.Status == PaymentAttemptStatus.Succeeded
+                   && p.CreatedAt >= fromDate
+                   && p.CreatedAt <= toDate
+             group p by u.SubscriptionPlan.Type
+             into g
+             select new
+             {
+                 Type = g.Key,
+                 Revenue = g.Sum(x => x.Amount)
+             }).ToListAsync();
+
+        var mrrByTypeTask = _db.Subscriptions
+            .AsNoTracking()
+            .Where(x =>
+                x.IsActive &&
+                x.CurrentPeriodEnd > now)
+            .GroupBy(x => x.Type)
+            .Select(g => new
+            {
+                Type = g.Key,
+                Mrr = g.Sum(s =>
+                    s.SubscriptionPeriod == SubscriptionPeriod.Monthly
+                        ? s.Amount
+                        : s.Amount / 12m)
+            })
+            .ToListAsync();
+
+        await Task.WhenAll(
+            totalUsersTask,
+            activeSubscriptionsTask,
+            revenueTask,
+            monthlyRevenueTask,
+            usersByTypeTask,
+            revenueByTypeTask,
+            mrrByTypeTask
+        );
+
+        var usersByType = usersByTypeTask.Result;
+        var revenueByType = revenueByTypeTask.Result;
+        var mrrByType = mrrByTypeTask.Result;
+
+        var monthlyRevenue = monthlyRevenueTask.Result;
+
+        var avgMonthlyRevenue = monthlyRevenue.Count == 0
+            ? 0m
+            : monthlyRevenue.Average();
+
+        var byType = usersByType
+            .Select(u =>
+            {
+                var revenue = revenueByType
+                    .FirstOrDefault(r => r.Type == u.Type)?.Revenue ?? 0m;
+
+                var mrr = mrrByType
+                    .FirstOrDefault(m => m.Type == u.Type)?.Mrr ?? 0m;
+
+                return new AdminSubscriptionStatisticsModel(
+                    u.Type.ToString(),
+                    u.Users,
+                    revenue,
+                    mrr
+                );
+            })
+            .ToList();
+
+        return Result<AdminStatisticsModel>.Success(
+            new AdminStatisticsModel(
+                TotalUsers: await totalUsersTask,
+                ActiveSubscriptions: await activeSubscriptionsTask,
+                TotalRevenue: await revenueTask,
+                Mrr: mrrByType.Sum(x => x.Mrr),
+                byType
+            )
+        );
     }
 
     public Task<Result> EnableUserAsync(Guid userId)
@@ -123,23 +273,58 @@ public sealed class AdminService(
     public Task<Result> DisableUserAsync(Guid userId)
         => _userManager.DisableUserAsync(userId);
 
-    public async Task<Result<AdminPagedResult<AdminLogModel>>> GetLogsAsync(
-        int skip,
-        int take,
-        Severity? severity = null)
+    public async Task<Result<AdminPagedResult<AdminLogModel>>> GetLogsAsync(AdminLogQuery query)
     {
-        var query = _db.Logs
+        var logsQuery = _db.Logs
             .AsNoTracking();
 
-        if (severity.HasValue)
-            query = query.Where(x => x.Severity == severity.Value);
 
-        var total = await query.CountAsync();
+        if (query.Severity.HasValue)
+            logsQuery = logsQuery.Where(x => x.Severity == query.Severity.Value);
 
-        var logs = await query
+        if (!string.IsNullOrWhiteSpace(query.Message))
+        {
+            logsQuery = logsQuery.Where(x =>
+                EF.Functions.ILike(x.Message, $"%{query.Message}%"));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.TraceId))
+        {
+            logsQuery = logsQuery.Where(x =>
+                x.PropertiesJson != null &&
+                EF.Functions.ILike(x.PropertiesJson, $"%\"traceId\":\"{query.TraceId}\"%"));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Machine))
+        {
+            logsQuery = logsQuery.Where(x =>
+                x.PropertiesJson != null &&
+                EF.Functions.ILike(x.PropertiesJson, $"%\"machine\":\"{query.Machine}\"%"));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Environment))
+        {
+            logsQuery = logsQuery.Where(x =>
+                x.PropertiesJson != null &&
+                EF.Functions.ILike(x.PropertiesJson, $"%\"environment\":\"{query.Environment}\"%"));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.JsonField) &&
+            !string.IsNullOrWhiteSpace(query.JsonValue))
+        {
+            var field = query.JsonField;
+            var value = query.JsonValue;
+
+            logsQuery = logsQuery.Where(x =>
+                x.PropertiesJson != null &&
+                EF.Functions.ILike(x.PropertiesJson, $"%\"{field}\":\"{value}\"%"));
+        }
+        var total = await logsQuery.CountAsync();
+
+        var logs = await logsQuery
             .OrderByDescending(x => x.Created)
-            .Skip(skip)
-            .Take(take)
+            .Skip(query.Skip)
+            .Take(query.Take)
             .Select(x => new AdminLogModel(
                 x.Id,
                 x.Message,

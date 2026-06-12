@@ -17,6 +17,9 @@ import {
     Button,
     useTheme,
 } from "@mui/material";
+import { setMaintanenceMode } from "../../behavior/reducer";
+import { useAppSelector } from "../../behavior/rootReducer";
+import { useDispatch } from "react-redux";
 
 type HealthStatus = "healthy" | "degraded" | "down" | "loading";
 
@@ -192,8 +195,8 @@ const renderNode = (node: ServiceNode, level = 0) => {
                                             depStatus === "down"
                                                 ? theme.palette.error.main
                                                 : depStatus === "degraded"
-                                                ? theme.palette.warning.main
-                                                : theme.palette.grey[500],
+                                                    ? theme.palette.warning.main
+                                                    : theme.palette.grey[500],
                                         color: "#fff",
                                     }}
                                 />
@@ -228,10 +231,10 @@ const renderNode = (node: ServiceNode, level = 0) => {
 /* ---------------- MAIN ---------------- */
 
 export default function HealthDependencyTree() {
+    const maintenanceMode = useAppSelector(state => state.basic.maintanenceModeOn);
+    const dispatch = useDispatch();
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<ServiceNode | null>(null);
-
-    const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [pendingValue, setPendingValue] = useState<boolean | null>(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -255,7 +258,7 @@ export default function HealthDependencyTree() {
     };
 
     const confirmChange = () => {
-        setMaintenanceMode(!!pendingValue);
+        dispatch(setMaintanenceMode(!!pendingValue));
         setConfirmOpen(false);
         setPendingValue(null);
     };

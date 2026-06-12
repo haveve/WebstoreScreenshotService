@@ -44,7 +44,7 @@ public class IdentityController(
     public async Task<IActionResult> CreateApiKey(ApiKeyRequest model)
     {
         var userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
-        var apiToken = _authorizationManager.GenerateApiToken(new ApiData(userId, [.. model.Scopes]));
+        var apiToken = _authorizationManager.GenerateApiToken(new ApiData(userId, [.. model.Scopes], model.Expires));
         
         if(apiToken is null)
             return BadRequest("Cannot generate Api token");
@@ -60,7 +60,7 @@ public class IdentityController(
                 model.AllowedIps,
                 GetTokenLocation()));
 
-        return result.IsSuccess ? Ok(apiToken.Token) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(apiToken) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPost]

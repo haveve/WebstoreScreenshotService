@@ -15,6 +15,8 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import { firstValueFrom } from "rxjs";
+import { PostScreenshotApiObservable } from "../../behavior/api";
 
 /* ---------------- SCOPES ---------------- */
 
@@ -60,7 +62,7 @@ export const generateToken = () => {
 const getMockLocation = () => ({
     countryCode: "UA",
     country: "Україна",
-    city: "Київ",
+    city: "Житомир",
 });
 
 /* ---------------- VALIDATION ---------------- */
@@ -155,30 +157,54 @@ export default function ApiTokenManager() {
 
     /* ---------------- CREATE ---------------- */
 
-    const createToken = () => {
-        const raw = generateToken();
-        const location = getMockLocation();
+    const createToken = async () => {
+        try {
+            const request = {
+                name,
+                scopes,
+                allowedIps: ipList,
+                expires: new Date(
+                    Date.now() + 365 * 24 * 60 * 60 * 1000
+                ).toISOString(),
+            };
 
-        const newToken: ApiToken = {
-            id: String(Date.now()),
-            name,
-            scopes,
-            allowedIps: ipList,
-            revoked: false,
-            createdAt: now(),
-            tokenMetadata: {
-                issued: now(),
-                issuedLocation: location,
-            },
-        };
+            const token = await firstValueFrom(
+                PostScreenshotApiObservable<any>(
+                    request,
+                    "identity/createApiKey",
+                    true
+                )
+            );
+            debugger;
 
-        setTokens((prev) => [newToken, ...prev]);
-        setCreatedToken(raw);
+            const location = getMockLocation();
 
-        setOpenCreate(false);
-        setName("");
-        setScopes([]);
-        setIpList([]);
+            const newToken: ApiToken = {
+                id: crypto.randomUUID(),
+                name,
+                scopes,
+                allowedIps: ipList,
+                revoked: false,
+                createdAt: now(),
+                tokenMetadata: {
+                    issued: now(),
+                    issuedLocation: location,
+                },
+            };
+
+            setTokens(prev => [newToken, ...prev]);
+
+            setCreatedToken(token.response.token);
+
+            setOpenCreate(false);
+            setName("");
+            setScopes([]);
+            setIpList([]);
+        }
+        catch (error) {
+            console.error(error);
+            alert("Не вдалося створити токен");
+        }
     };
 
     /* ---------------- REVOKE ---------------- */

@@ -21,11 +21,13 @@ import Navigation from "./Navigation";
 import Footer from "./Footer";
 import { Box } from "@mui/material";
 import ApiDocumentationPage from "../Documentation";
+import MaintenancePage from "../admin/MaintanenceModePage";
 // import { MatchLocateToLanguage } from '../localization';
 // import { useTranslation } from "react-i18next";
 
 function AppRoutes() {
     const user = useAppSelector(state => state.basic.user);
+    const maintenanceMode = useAppSelector(state => state.basic.maintanenceModeOn);
     const dispatch = useDispatch();
     // const location = useLocation();
     // const { i18n } = useTranslation();
@@ -55,7 +57,8 @@ function AppRoutes() {
         <Navigation />
         <Box component="main" sx={{ flex: 1 }}>
             <Routes>
-                <Route path="my-account" element={<PrivateRoute element={<AccountLayout />} toPath="/login" validate={isAuth} />}>
+                {maintenanceMode && <Route path="*" element={<MaintenancePage />} />}
+                {!maintenanceMode && <><Route path="my-account" element={<PrivateRoute element={<AccountLayout />} toPath="/login" validate={isAuth} />}>
                     <Route
                         index
                         element={<MyAccount />}
@@ -77,14 +80,15 @@ function AppRoutes() {
                         element={<OrderDetailsPage />}
                     />
                 </Route>
-                <Route path="api-doc" element={<ApiDocumentationPage />} />
-                <Route path="privacy-policy" element={<TermsAndConditions />} />
-                <Route path="/" element={<MainPage />} />
-                <Route path="make-screenshot" element={<PrivateRoute element={<MakeScreenshotPage />} toPath="/login" validate={isAuth} />} />
-                <Route path="screenshots" element={<PrivateRoute element={<ScreenshotsList />} toPath="/login" validate={isAuth} />} />
-                <Route path="screenshot/:id" element={<PrivateRoute element={<ScreenshotDetailsPage />} toPath="/login" validate={isAuth} />} />
-                <Route path="login" element={<PrivateRoute element={<LoginPage />} toPath="/" validate={isUnauth} />} />
-                <Route path="register" element={<PrivateRoute element={<RegisterPage />} toPath="/" validate={isUnauth} />} />
+                    <Route path="api-doc" element={<ApiDocumentationPage />} />
+                    <Route path="privacy-policy" element={<TermsAndConditions />} />
+                    <Route path="/" element={<MainPage />} />
+                    <Route path="make-screenshot" element={<PrivateRoute element={<MakeScreenshotPage />} toPath="/login" validate={isAuth} />} />
+                    <Route path="screenshots" element={<PrivateRoute element={<ScreenshotsList />} toPath="/login" validate={isAuth} />} />
+                    <Route path="screenshot/:id" element={<PrivateRoute element={<ScreenshotDetailsPage />} toPath="/login" validate={isAuth} />} />
+                    <Route path="login" element={<PrivateRoute element={<LoginPage />} toPath="/" validate={isUnauth} />} />
+                    <Route path="register" element={<PrivateRoute element={<RegisterPage />} toPath="/" validate={isUnauth} />} />
+                </>}
             </Routes>
         </Box>
         <Footer />

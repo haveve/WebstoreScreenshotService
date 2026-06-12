@@ -18,6 +18,7 @@ type CategoryState = {
 };
 
 export type State = {
+    maintanenceModeOn: boolean,
     user: UserModel | null | undefined;
     screenshot: ScreenshotState | null;
     screenshots: ScreenshotListState | null;
@@ -27,6 +28,7 @@ export type State = {
 }
 
 const initialState: State = {
+    maintanenceModeOn: false,
     user: undefined,
     screenshot: null,
     screenshots: null,
@@ -78,7 +80,9 @@ export const store = createSlice({
             } : null;
 
         },
-
+        setMaintanenceMode: (state, action: PayloadAction<boolean>) => {
+            state.maintanenceModeOn = action.payload;
+        },
         setCategories: (
             state,
             action: PayloadAction<ActionModel<Category[] | null>>
@@ -104,7 +108,8 @@ export const {
     setUser,
     setScreenshot,
     setScreenshots,
-    setCategories
+    setCategories,
+    setMaintanenceMode,
 } = store.actions;
 
 export default store.reducer;

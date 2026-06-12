@@ -62,6 +62,11 @@ const Footer = () => {
       path: "/admin/my-account",
       icon: <AccountIcon fontSize="small" />,
     },
+    {
+      label: "Головна сторінку користувача",
+      path: "/",
+      icon: <CookieIcon fontSize="small" />,
+    },
   ];
 
   return (

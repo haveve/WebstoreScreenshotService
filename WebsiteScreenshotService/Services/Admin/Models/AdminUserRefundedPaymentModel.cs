@@ -2,14 +2,10 @@
 
 namespace WebsiteScreenshotService.Services.Admin.Models;
 
-public record AdminPaymentAttemptModel(
-    Guid Id,
+public sealed record AdminUserRefundedPaymentModel(
+    Guid PaymentAttemptId,
     Guid OrderId,
-    Guid UserId,
     decimal Amount,
-    string Provider,
-    string? ProviderPaymentId,
     PaymentAttemptStatus Status,
-    bool IsPrimary,
-    DateTime CreatedAt,
-    DateTime Refunded);
+    string Provider,
+    DateTime RefundedAt);

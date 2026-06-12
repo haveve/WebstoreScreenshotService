@@ -92,9 +92,7 @@ export default function UsersAdminPanel() {
 
   const filtered = useMemo(() => {
     return users.filter((u) => {
-      const matchesSearch =
-        u.email.toLowerCase().includes(search.toLowerCase()) ||
-        u.name.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch = !search || u.name == search;
 
       if (!matchesSearch) return false;
 
@@ -140,7 +138,7 @@ export default function UsersAdminPanel() {
       {/* SEARCH */}
       <TextField
         fullWidth
-        placeholder="Пошук за email або ім’ям..."
+        placeholder="Пошук за ім’ям..."
         value={search}
         onChange={(e) => {
           setSearch(e.target.value);
