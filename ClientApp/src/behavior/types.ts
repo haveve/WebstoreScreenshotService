@@ -1,7 +1,7 @@
 export enum SubscriptionType {
-    Regular = 1,
-    Pro = 2,
-    Advanced = 3,
+    Regular = "Regular",
+    Pro = "Pro",
+    Advanced = "Advanced",
 }
 
 export enum Duration {

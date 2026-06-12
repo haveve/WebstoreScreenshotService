@@ -63,7 +63,7 @@ export const store = createSlice({
         },
         setScreenshots: (
             state,
-            action: PayloadAction<ActionModel<PagedResult<Screenshot> & { page: number, pageSize: number } | null>>
+            action: PayloadAction<ActionModel<(PagedResult<Screenshot> & { page: number, pageSize: number }) | null>>
         ) => {
             state.loaded = true;
 

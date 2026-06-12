@@ -10,7 +10,7 @@ using WebsiteScreenshotService.Repositories.UserRepository;
 using WebsiteScreenshotService.Services;
 using WebsiteScreenshotService.Services.Security;
 
-[Authorize]
+[Authorize(Roles = UserRoles.User)]
 [Route("identity/[action]")]
 [ApiController]
 public class IdentityController(

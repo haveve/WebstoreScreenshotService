@@ -7,4 +7,4 @@ public sealed record Paging(
     int PageSize,
     string? Query,
     SearchScope SearchScope,
-    IReadOnlyCollection<Guid>? CategoryIds);
+    Guid[]? CategoryIds);

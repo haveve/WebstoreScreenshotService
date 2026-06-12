@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     Box,
     Grid,
@@ -18,6 +18,7 @@ import { ScreenshotCard } from "./ScreenshotCard";
 import { setScreenshot, setScreenshots } from "../../behavior/reducer";
 import { DEFAULT_PAGE_SIZE, formatQueryPaging } from "../../behavior/utils/search";
 import { useNavigate } from "react-router-dom";
+import { CategoryCreateButton } from "./CreateCategory";
 
 type FilterForm = {
     query: string;
@@ -29,6 +30,16 @@ const ScreenshotsPage = () => {
     const dispatch = useDispatch();
     const { screenshots, categories, loaded } = useAppSelector(s => s.basic);
     const navigate = useNavigate();
+
+    const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+
+    const handleOpenCategoryDialog = () => {
+        setCategoryDialogOpen(true);
+    };
+
+    const handleCloseCategoryDialog = () => {
+        setCategoryDialogOpen(false);
+    };
 
     const handleClick = (s: Screenshot) => {
         dispatch(setScreenshot({ data: s, error: null }));
@@ -55,9 +66,18 @@ const ScreenshotsPage = () => {
 
     return (
         <Box p={3}>
-            <Typography variant="h4" mb={2}>
-                Скріншоти
-            </Typography>
+            <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={2}
+            >
+                <Typography variant="h4">
+                    Скріншоти
+                </Typography>
+
+                <CategoryCreateButton />
+            </Box>
 
             <Form<FilterForm>
                 initialValues={initialValues}
@@ -138,9 +158,7 @@ const ScreenshotsPage = () => {
                                 <Grid container spacing={2}>
                                     {screenshots?.items.map((s) => (
                                         <Grid key={s.id} size={{ xs: 12, md: 4 }}>
-                                            <div onClick={() => handleClick(s)} style={{ cursor: 'pointer' }}>
-                                                <ScreenshotCard s={s} />
-                                            </div>
+                                            <ScreenshotCard s={s} navigateOnDetails={() => handleClick(s)} />
                                         </Grid>
                                     ))}
                                 </Grid>

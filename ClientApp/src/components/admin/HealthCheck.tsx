@@ -45,8 +45,8 @@ const mockTree: ServiceNode = {
         {
             id: "rabbitmq",
             name: "RabbitMQ Message Broker",
-            status: "degraded",
-            message: "Виявлено затримку черги",
+            status: "healthy",
+            message: "Черга працює справно",
             children: [
                 {
                     id: "q-regular",
@@ -57,8 +57,8 @@ const mockTree: ServiceNode = {
                 {
                     id: "q-pro",
                     name: "Pro Queue",
-                    status: "degraded",
-                    message: "Затримка обробки ~2-3с",
+                    status: "healthy",
+                    message: "Стабільна пропускна здатність",
                 },
                 {
                     id: "q-advanced",

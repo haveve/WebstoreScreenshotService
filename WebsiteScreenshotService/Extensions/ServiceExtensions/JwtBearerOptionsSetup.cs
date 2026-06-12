@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using WebsiteScreenshotService.Configurations;
-
 using TokenTypes = WebsiteScreenshotService.Constants.Claims.TokenTypes;
 
 namespace WebsiteScreenshotService.Extensions.ServiceExtensions;
@@ -17,7 +17,7 @@ public class JwtBearerOptionsSetup(IOptions<AuthorizationConfiguration> config) 
         if (name != JwtBearerDefaults.AuthenticationScheme)
             return;
 
-        //options.MapInboundClaims = false;
+        options.MapInboundClaims = false;
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -25,7 +25,7 @@ public class JwtBearerOptionsSetup(IOptions<AuthorizationConfiguration> config) 
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-
+            
             ValidIssuer = _config.Issuer,
             ValidAudience = _config.Audience,
 
@@ -33,7 +33,7 @@ public class JwtBearerOptionsSetup(IOptions<AuthorizationConfiguration> config) 
                 Encoding.UTF8.GetBytes(_config.Secret)),
 
             ClockSkew = TimeSpan.FromMinutes(1),
-            RoleClaimType = Constants.Claims.Role
+            RoleClaimType = Constants.Claims.Role,
         };
 
         options.Events = new JwtBearerEvents
@@ -75,7 +75,7 @@ public class JwtBearerOptionsSetup(IOptions<AuthorizationConfiguration> config) 
             {
                 var typeClaim = context.Principal?.GetTokenType();
 
-                if (typeClaim != TokenTypes.Authorization && typeClaim != TokenTypes.Api)     
+                if (typeClaim != TokenTypes.Authorization && typeClaim != TokenTypes.Api)
                     context.Fail("Invalid token type");
 
                 return Task.CompletedTask;

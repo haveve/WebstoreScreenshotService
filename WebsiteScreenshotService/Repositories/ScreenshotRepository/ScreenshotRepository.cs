@@ -18,6 +18,7 @@ public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearch
     {
         var entity = await _context.Screenshots
             .AsNoTracking()
+            .Include(s => s.Categories)
             .FirstOrDefaultAsync(s => s.Id == screenshotId);
 
         if (entity is null)
@@ -47,6 +48,7 @@ public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearch
     {
         var query = _context.Screenshots
             .AsNoTracking()
+            .Include(s => s.Categories)
             .Where(s => s.UserId == userId);
 
         if (paging is not null)
@@ -123,6 +125,7 @@ public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearch
     public async Task<Result<ScreenshotEntity>> UpdateAsync(ScreenshotUpdateModel update)
     {
         var entity = await _context.Screenshots
+            .Include(s => s.Categories)
             .FirstOrDefaultAsync(s => s.Id == update.Id);
 
         if (entity is null)
@@ -131,7 +134,19 @@ public class ScreenshotRepository(ScreenshotDbContext context, IScreenshotSearch
         entity.Title = update.Title ?? entity.Title;
         entity.Description = update.Description ?? entity.Description;
 
-        _context.Screenshots.Update(entity);
+        if (update.Categories is not null)
+        {
+            var categories = await _context.Categories
+                .AsNoTracking()
+                .Where(c => update.Categories.Contains(c.Id))
+                .ToListAsync();
+
+            entity.Categories.Clear();
+
+            foreach (var category in categories)
+                entity.Categories.Add(category);
+        }
+
         await _context.SaveChangesAsync();
 
         return Result<ScreenshotEntity>.Success(entity);

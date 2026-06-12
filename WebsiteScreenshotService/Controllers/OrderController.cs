@@ -9,7 +9,7 @@ using WebsiteScreenshotService.Services.Checkout;
 
 namespace WebsiteScreenshotService.Controllers;
 
-[Authorize]
+[Authorize(Roles = UserRoles.User)]
 [ApiController]
 [Route("order/[action]")]
 public class OrderController : ControllerBase

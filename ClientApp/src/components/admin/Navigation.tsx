@@ -64,27 +64,27 @@ const Navigation = () => {
   const navItems: NavItem[] = [
     {
       label: "Панель керування",
-      path: "/sales-statistics",
+      path: "/admin/sales-statistics",
       icon: <DashboardIcon fontSize="small" />,
     },
     {
       label: "Перевірка стану системи",
-      path: "/health-check",
+      path: "/admin/health-check",
       icon: <HealthIcon fontSize="small" />,
     },
     {
       label: "Журнали",
-      path: "/logs",
+      path: "/admin/logs",
       icon: <LogsIcon fontSize="small" />,
     },
     {
       label: "Користувачі",
-      path: "/user-management",
+      path: "/admin/user-management",
       icon: <UsersIcon fontSize="small" />,
     },
     {
       label: "Мій акаунт",
-      path: "/my-account",
+      path: "/admin/my-account",
       icon: <AccountIcon fontSize="small" />,
     },
   ];
@@ -147,7 +147,7 @@ const Navigation = () => {
             <Typography
               variant="h6"
               component={RouterLink}
-              to="/sales-statistics"
+              to="/admin/sales-statistics"
               sx={{
                 textDecoration: "none",
                 color: "inherit",

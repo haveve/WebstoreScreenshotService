@@ -1,6 +1,4 @@
-﻿using WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
-
-namespace WebsiteScreenshotService.Services.Caching.Services;
+﻿namespace WebsiteScreenshotService.Services.Caching.Services;
 
 public interface IScreenshotCacheService
 {

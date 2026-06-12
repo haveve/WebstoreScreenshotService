@@ -22,7 +22,7 @@ const App = () => {
 
             {/* Основний контент */}
             <Routes>
-              {/*<Route path="/*" element={<AppRoutes />} />*/}
+              <Route path="/admin/*" element={<AdminAppRoutes />} />
               <Route path="/*" element={<AppRoutes />} />
             </Routes>
 

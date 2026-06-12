@@ -77,8 +77,8 @@ const ScreenshotFiltersForm = ({ formik, categories, onSubmit }: Props) => {
                                 label={cat.name}
                                 onClick={() => {
                                     const next = selected
-                                        ? formik.values.categoryIds.filter(id => id !== cat.id)
-                                        : [...formik.values.categoryIds, cat.id];
+                                        ? []
+                                        : [cat.id];
 
                                     formik.setFieldValue("categoryIds", next);
                                 }}

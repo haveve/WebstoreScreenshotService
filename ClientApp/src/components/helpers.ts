@@ -16,7 +16,7 @@ export const getStateColor = (state: ScreenshotState) => {
         return "success";
 
     if (isFailed(state))
-        return "success";
+        return "error";
 
     return "warning";
 };

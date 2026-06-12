@@ -149,7 +149,7 @@ public class ScreenshotManager(
     }
 
     private async Task InvalidateListCacheAsync(Guid userId)
-        => await _screenshotCache.InvalidateUserAsync(userId);
+        => await _screenshotCache.InvalidateAsync();
 
     private static bool ShouldCacheList(ScreenshotPaging? paging)
     {

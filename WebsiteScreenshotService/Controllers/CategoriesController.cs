@@ -6,7 +6,7 @@ using WebsiteScreenshotService.Repositories.CategoryRepository.Models;
 
 namespace WebsiteScreenshotService.Controllers;
 
-[Authorize(Policy = Policies.User.ManageCategories)]
+[Authorize(Roles = UserRoles.User, Policy = Policies.User.ManageCategories)]
 [ApiController]
 [Route("categories/[action]")]
 public class CategoriesController(ICategoryManager categoryManager) : ControllerBase
@@ -37,15 +37,15 @@ public class CategoriesController(ICategoryManager categoryManager) : Controller
         return Ok(category.Value);
     }
 
-    [HttpDelete]
-    [ActionName("deleteCategory")]
-    public async Task<IActionResult> DeleteCategory([FromQuery] Guid id)
+    [HttpPost]
+    [ActionName("updateCategory")]
+    public async Task<IActionResult> ChangeCategory([FromBody] CategoryUpdateModel model)
     {
-        var category = await _categoryManager.RemoveAsync(id);
-        
+        var category = await _categoryManager.UpdateAsync(model);
+
         if (!category.IsSuccess)
             return BadRequest(new ErrorResponse(category.ErrorMessage!));
 
-        return Ok();
+        return Ok(category.Value);
     }
 }

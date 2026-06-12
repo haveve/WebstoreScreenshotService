@@ -22,6 +22,6 @@ public sealed class PagingValidator : Validator<Paging>
                 $"Invalid SearchScope value.");
 
         RuleFor(nameof(Paging.CategoryIds), x => x.CategoryIds)
-            .Must(v => v is null || v.Count <= 100, "CategoryIds cannot contain more than 100 items.");
+            .Must(v => v is null || v.Length <= 100, "CategoryIds cannot contain more than 100 items.");
     }
 }

@@ -1,13 +1,11 @@
 import { Epic, ofType, combineEpics } from "redux-observable";
-import { map, exhaustMap, switchMap, from, of, delay } from "rxjs";
+import { map, exhaustMap, switchMap, from, of, delay, mergeMap } from "rxjs";
 import { PayloadAction, createAction } from "@reduxjs/toolkit";
 import { GetScreenshotApiObservable, PostScreenshotApiObservable, setAccessToken } from "./api";
 import { Category, LoginModel, Paging, RegisterModel, Screenshot, ScreenshotOptionsModel, ScreenshotState, UserModel } from "./types";
 import { cancelSubscription, setCategories, setScreenshot, setScreenshots, setUser } from "./reducer";
-import { mockUser } from "./mocks";
 import { formatQueryPaging, setPagingQuery } from "./utils/search";
-import { mockCategories } from "./mocks/screenshots";
-import { mockSearchScreenshots } from "./mocks/search";
+
 
 type LoginResponse = {
     accessToken: string,
@@ -29,6 +27,11 @@ export const loginEpic: Epic<PayloadAction<LoginModel, "login">, any> = (action$
     })
 );
 
+type ListResult = {
+    items: Screenshot[],
+    totalCount: number
+}
+
 export const getScreenshotsAction = createAction<Paging | undefined>("getScreenshots");
 export const getScreenshotsEpic: Epic<
     PayloadAction<Paging | undefined, "getScreenshots">,
@@ -39,23 +42,75 @@ export const getScreenshotsEpic: Epic<
             map((a) => {
                 var paging = a.payload ?? formatQueryPaging();
                 setPagingQuery(paging);
+
+                if (!paging.categoryIds?.length)
+                    delete paging.categoryIds;
+
                 return paging;
             }),
             switchMap((paging) =>
-                from(mockSearchScreenshots(paging))
-                    .pipe(
-                        map((data) =>
-                            setScreenshots({ data: { ...data, page: paging.page, pageSize: paging.pageSize }, error: null })
-                        )
+                GetScreenshotApiObservable<ListResult>(
+                    "/screenshots/getScreenshots",
+                    true,
+                    { ...paging }
+                ).pipe(
+                    map(({ response: data, error }) =>
+                        setScreenshots({ data: data ? { items: data.items, total: data.totalCount, page: paging.page, pageSize: paging.pageSize } : null, error })
                     )
+                )
             )
         );
+
+type UpdateScreenshot = {
+    id: string;
+    title?: string;
+    description?: string;
+    categories?: string[];
+};
+
+export const updateScreenshotAction = createAction<UpdateScreenshot>("updateScreenshot");
+export const updateScreenshotEpic: Epic = (action$) =>
+    action$.pipe(
+        ofType("updateScreenshot"),
+        exhaustMap(({ payload }) =>
+            PostScreenshotApiObservable<Screenshot>(
+                payload,
+                "/screenshots/updateScreenshot",
+                true
+            ).pipe(
+                mergeMap(({ response, error }) => [
+                    getScreenshotsAction()
+                ])
+            )
+        )
+    );
+
+type CreateCategory = {
+    name: string;
+    color: string;
+}
+
+export const createCategoryAction = createAction<CreateCategory>("createCategory");
+export const createCategoryEpic: Epic = (action$) =>
+    action$.pipe(
+        ofType("createCategory"),
+        exhaustMap(({ payload }) =>
+            PostScreenshotApiObservable<Category>(
+                payload,
+                "/categories/createCategory",
+                true
+            ).pipe(
+                mergeMap(({ response, error }) => [
+                    getCategoriesAction()
+                ])
+            )
+        )
+    );
 
 export const getCategoriesAction = createAction("getCategories");
 export const getCategoriesEpic: Epic = (action$) =>
     action$.pipe(
         ofType("getCategories"),
-        map(_ => setCategories({ data: mockCategories, error: null })),
         exhaustMap(() =>
             GetScreenshotApiObservable<Category[]>(
                 "/categories/getCategories",
@@ -143,7 +198,7 @@ export const receiveUserEpic: Epic<PayloadAction<void, "getUser">, any> = (actio
 );
 
 const rootEpic: Epic = (action$, store$, dependencies) =>
-    combineEpics<any>(loginEpic, registerEpic, logoutEpic, makeScreenshotEpic, getScreenshotEpic, receiveUserEpic, getScreenshotsEpic, getCategoriesEpic)
+    combineEpics<any>(loginEpic, registerEpic, logoutEpic, updateScreenshotEpic, makeScreenshotEpic, createCategoryEpic, getScreenshotEpic, receiveUserEpic, getScreenshotsEpic, getCategoriesEpic)
         (action$, store$, dependencies);
 
 export default rootEpic;

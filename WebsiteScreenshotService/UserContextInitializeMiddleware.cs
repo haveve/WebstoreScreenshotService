@@ -47,7 +47,7 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
         var subscriptionPlan = subscription?.Type switch
         {
             SubscriptionType.Pro => SubscriptionPlan.GetProSubscriptionPlan(),
-            SubscriptionType.Advanced => SubscriptionPlan.GetProSubscriptionPlan(),
+            SubscriptionType.Advanced => SubscriptionPlan.GetAdvancedSubscriptionPlan(),
             _ => SubscriptionPlan.GetRegularSubscriptionPlan()
         };
 

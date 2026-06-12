@@ -8,6 +8,7 @@ public record UserContext(UserInfo UserInfo, SubscriptionPlan SubscriptionPlan);
 public class UserRoles
 {
     public const string User = "User";
+    public const string Admin = "Admin";
 }
 
 public enum UserRole
@@ -55,5 +56,7 @@ public static class Policies
         public const string MakeScreenshots = "MakeScreenshots";
 
         public const string ManageCategories = "ManageCategories";
+
+        public const string FullAccess = "FullAccess";
     }
 }

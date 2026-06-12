@@ -73,7 +73,7 @@ public class CacheManager(IDistributedCache cache) : ICacheManager
             var value = await factory();
 
             if (value.IsSuccess)
-                await SetAsync(key, value, options);
+                await SetAsync(key, value.Value!, options);
 
             return value;
         }

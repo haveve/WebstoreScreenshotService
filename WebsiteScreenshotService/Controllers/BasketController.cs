@@ -7,7 +7,7 @@ using WebsiteScreenshotService.Repositories.ProductRepository;
 
 namespace WebsiteScreenshotService.Controllers;
 
-[Authorize]
+[Authorize(Roles = UserRoles.User)]
 [ApiController]
 [Route("basket/[action]")]
 public class BasketController : ControllerBase

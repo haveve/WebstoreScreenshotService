@@ -13,7 +13,7 @@ using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService.Controllers;
 
-[Authorize]
+[Authorize(Roles = UserRoles.User)]
 [ApiController]
 [Route("screenshots/[action]")]
 public class ScreenshotController(
@@ -123,4 +123,23 @@ public class ScreenshotController(
         var screenshot = new ScreenshotModel(storedScreenshot, _screenshotStorageManager.GetScreenshotUrl(storedScreenshot, useInfo.Id));
         return Ok(screenshot);
     }
+
+    [HttpPost]
+    [ActionName("updateScreenshot")]
+    public async Task<IActionResult> UpdateScreenshot([FromBody] ControllerScreenshotUpdateModel model)
+    {
+        var userContext = _userContextAccessor.GetCurrentUser();
+        var updateModel = new ScreenshotUpdateModel(model.Id, userContext.UserInfo.Id, model.Title, model.Description, model.Categories);
+        var storedScreenshotResult = await _screenshotManager.UpdateAsync(updateModel);
+
+        if (!storedScreenshotResult.IsSuccess)
+            return BadRequest(new ErrorResponse(storedScreenshotResult.ErrorMessage!));
+
+        var useInfo = userContext.UserInfo;
+        var storedScreenshot = storedScreenshotResult.Value!;
+        var screenshot = new ScreenshotModel(storedScreenshot, _screenshotStorageManager.GetScreenshotUrl(storedScreenshot, useInfo.Id));
+        return Ok(screenshot);
+    }
 }
+
+public record ControllerScreenshotUpdateModel(string Id, string? Title = null, string? Description = null, Guid[]? Categories = null);
