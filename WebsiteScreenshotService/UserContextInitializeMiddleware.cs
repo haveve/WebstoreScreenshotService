@@ -3,6 +3,7 @@ using WebsiteScreenshotService.Extensions;
 using WebsiteScreenshotService.Repositories.Subscription;
 using WebsiteScreenshotService.Repositories.TokenRepository;
 using WebsiteScreenshotService.Repositories.UserRepository;
+using WebsiteScreenshotService.Services.Security;
 using WebsiteScreenshotService.Utils;
 
 namespace WebsiteScreenshotService;
@@ -10,13 +11,15 @@ namespace WebsiteScreenshotService;
 public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddleware> logger,
     IUserManager userManager,
     ITokenManager tokenManager,
-    ISubscriptionRepository subscriptionRepository) : IMiddleware
+    ISubscriptionRepository subscriptionRepository,
+    IHashingService hashingService) : IMiddleware
 {
     private readonly ILogger<UserContextInitializeMiddleware> _logger = logger;
     private readonly ITokenManager _tokenManager = tokenManager;
     private readonly ISubscriptionRepository _subscriptionRepository = subscriptionRepository;
     private readonly IUserManager _userManager = userManager;
-
+    private readonly IHashingService _hashingService = hashingService;
+    
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         if (context.User is not { Identity.IsAuthenticated: true })
@@ -103,10 +106,9 @@ public class UserContextInitializeMiddleware(ILogger<UserContextInitializeMiddle
         if (authType != Constants.Claims.TokenTypes.Api)
             return Result<TokenVerificationResult>.Success(TokenVerificationResult.NotApiTokenResult);
 
-        var userSpecificServices = httpContext.GetUserSpecificServices()!;
         var token = httpContext.GetRawAuthToken()!;
 
-        var hash = userSpecificServices.HashingService.Hash(token);
+        var hash = _hashingService.Hash(token);
         var storedToken = await _tokenManager.GetApiTokenByHashAsync(hash);
 
         if (!storedToken.IsSuccess)

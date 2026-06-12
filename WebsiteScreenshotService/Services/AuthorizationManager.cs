@@ -56,11 +56,13 @@ public class AuthorizationManager(
         => p.GetClaimValue(name);
 
 
-    private GeneratedTokenData? GenerateToken(IEnumerable<Claim> claims, AuthorizationType type)
+    private GeneratedTokenData? GenerateToken(IEnumerable<Claim> claims, AuthorizationType type, DateTime? expires = null)
     {
         try
         {
-            var expiresOn = DateTime.UtcNow.AddMinutes(_config.ExpiredInMinutes[type]);
+            var expiresOn = expires.HasValue
+                ? expires.Value
+                : DateTime.UtcNow.AddMinutes(_config.ExpiredInMinutes[type]);
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -262,7 +264,7 @@ public class AuthorizationManager(
             return Task.FromResult<ApiData?>(null);
 
         return Task.FromResult<ApiData?>(
-            new ApiData(userId.Value, permissions));
+            new ApiData(userId.Value, permissions, null));
     }
 
     public GeneratedTokenData? GenerateApiToken(ApiData data)
@@ -276,6 +278,13 @@ public class AuthorizationManager(
         claims.AddRange(data.Permissions.Select(p =>
             C(Constants.Claims.Permissions, p)));
 
-        return GenerateToken(claims, AuthorizationType.ApiToken);
+        var generatedToken = GenerateToken(claims, AuthorizationType.ApiToken, data.ExpiresOn);
+
+        if (generatedToken is null)
+            return generatedToken;
+
+        var apiToken = $"api_v1_{generatedToken.Token}";
+
+        return new(apiToken, generatedToken.ExpiresOn);
     }
 }

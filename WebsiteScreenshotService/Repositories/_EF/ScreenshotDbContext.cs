@@ -39,6 +39,8 @@ public class ScreenshotDbContext(DbContextOptions<ScreenshotDbContext> options) 
 
     public DbSet<AdminEntity> Admins => Set<AdminEntity>();
 
+    public DbSet<LogEntity> Logs => Set<LogEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureUser(modelBuilder);

@@ -6,6 +6,8 @@ public interface IPaymentProvider
 {
     public string ProviderName { get; }
 
+    Task<bool> TestAsync();
+
     Task<StartPaymentResult> StartPayment(StartPaymentRequest request);
 
     Task<RefundResult> Refund(RefundRequest request);

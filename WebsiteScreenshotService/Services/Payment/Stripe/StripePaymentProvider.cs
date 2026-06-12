@@ -129,6 +129,24 @@ public class StripePaymentProvider(IHttpClientFactory httpClientFactory, IPaymen
             throw new TransactionProcessingException("PaymentTransactionId is required");
     }
 
+    public async Task<bool> TestAsync()
+    {
+        try
+        {
+            using var request = CreateRequest(
+                HttpMethod.Get,
+                "account");
+
+            using var response = await Http.SendAsync(request);
+
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public async Task<StartPaymentResult> StartPayment(StartPaymentRequest request)
     {
         Validate(request);

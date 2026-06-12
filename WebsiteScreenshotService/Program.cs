@@ -25,6 +25,7 @@ using WebsiteScreenshotService.Repositories.Subscription;
 using WebsiteScreenshotService.Repositories.TokenRepository;
 using WebsiteScreenshotService.Repositories.UserRepository;
 using WebsiteScreenshotService.Services;
+using WebsiteScreenshotService.Services.Admin;
 using WebsiteScreenshotService.Services.Caching;
 using WebsiteScreenshotService.Services.Caching.Services;
 using WebsiteScreenshotService.Services.Caching.Services.impl;
@@ -168,11 +169,12 @@ builder.Services.AddScoped<IOrderManager, OrderManager>();
 
 builder.Services.AddScoped<ICheckoutManager, CheckoutManager>();
 
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 //if (builder.Environment.IsDevelopment())
 //    builder.Services.AddSingleton<IScreenshotStorageManager, ScreenshotStorageManager>();
 //else
-    builder.Services.AddSingleton<IScreenshotStorageManager, BlobScreenshotStorageManager>();
+builder.Services.AddSingleton<IScreenshotStorageManager, BlobScreenshotStorageManager>();
 
 builder.Services.AddSingleton<IEmailService, AzureEmailService>();
 
@@ -183,6 +185,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddJwtAuthorization();
 
+builder.Services.AddScoped<MaintenanceModeMiddleware>();
 builder.Services.AddSingleton<ExceptionHandlingMiddleware>();
 builder.Services.AddScoped<UserContextInitializeMiddleware>();
 builder.Services.AddScoped<UserSpecificServicesInitializeMiddleware>();
@@ -205,6 +208,7 @@ app.UseCors(builder => builder.WithOrigins(app.Configuration.GetValue<string>("F
 app.UseHttpsRedirection();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<MaintenanceModeMiddleware>();
 
 app.UsePaymentCallback();
 

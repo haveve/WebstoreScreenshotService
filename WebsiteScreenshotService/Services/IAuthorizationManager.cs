@@ -33,7 +33,7 @@ public record RefreshData(Guid UserId);
 
 public record AccessData(Guid UserId);
 
-public record ApiData(Guid UserId, string[] Permissions);
+public record ApiData(Guid UserId, string[] Permissions, DateTime? ExpiresOn);
 
 public record ResetPassword(Guid UserId);
 
