@@ -1,6 +1,6 @@
 ﻿using Swashbuckle.AspNetCore.Filters;
 using System.Text.Json;
-using WebsiteScreenshotService.ServiceExtensions;
+using WebsiteScreenshotService.Extensions.ServiceExtensions;
 
 namespace WebsiteScreenshotService.Controllers.Examples.Indentity;
 

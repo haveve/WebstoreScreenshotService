@@ -1,123 +1,135 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using WebsiteScreenshotService.Repositories;
-using Microsoft.AspNetCore.Authentication;
-using WebsiteScreenshotService.Model;
-using WebsiteScreenshotService.Extensions;
+using System.Security.Cryptography;
+using WebsiteScreenshotService;
 using WebsiteScreenshotService.Entities;
-using Swashbuckle.AspNetCore.Filters;
-using WebsiteScreenshotService.Controllers.Examples.Indentity;
+using WebsiteScreenshotService.Model;
+using WebsiteScreenshotService.Repositories.TokenRepository;
+using WebsiteScreenshotService.Repositories.TokenRepository.Models;
+using WebsiteScreenshotService.Repositories.UserRepository;
+using WebsiteScreenshotService.Services;
+using WebsiteScreenshotService.Services.Security;
 
-namespace WebsiteScreenshotService.Controllers;
-
-[Route("[controller]/[action]")]
+[Authorize(Roles = UserRoles.User)]
+[Route("identity/[action]")]
 [ApiController]
-public class IdentityController(IUserRepository UserRepository) : ControllerBase
+public class IdentityController(
+    IUserManager userManager,
+    ITokenManager tokenManager,
+    ILogger<IdentityController> logger,
+    IHashingService hashingService,
+    IAuthorizationManager authorizationManager,
+    IUserContextAccessor userContextAccessor
+) : ControllerBase
 {
-    private readonly IUserRepository _userRepository = UserRepository;
+    private readonly IUserManager _userManager = userManager;
+    private readonly ITokenManager _tokenManager = tokenManager;
+    private readonly ILogger<IdentityController> _logger = logger;
+    private readonly IHashingService _hashingService = hashingService;
+    private readonly IAuthorizationManager _authorizationManager = authorizationManager;
+    private readonly IUserContextAccessor _userContextAccessor = userContextAccessor;
 
-    /// <summary>
-    /// Retrieves the information of the currently authenticated user.
-    /// </summary>
-    /// <returns>
-    /// A UserModel with user details if the user is authenticated, or a BadRequest if the user does not exist.
-    /// </returns>
-    /// <response code="200">Returns the UserModel or null if used is not authorized or user does not exist.</response>
     [HttpGet]
-    [Produces("application/json")]
-    [ProducesResponseType<UserModel>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUserInfo()
     {
-        var userId = User.GetUserId();
+        var user = await _userManager.GetUser();
 
-        if (!userId.HasValue)
-            return Ok();
-
-        var user = await _userRepository.GetUserById(userId.Value);
-        var userModel = (UserModel?)null;
-
-        if (user != null)
-            userModel = UserModel.GetModel(user);
-
-        return Ok(userModel);
-    }
-
-    /// <summary>
-    /// Logs in a user using their email and password.
-    /// </summary>
-    /// <param name="login">The login details containing email and password.</param>
-    /// <returns>
-    /// A UserModel with user details if the login is successful, or a BadRequest if the user does not exist.
-    /// </returns>
-    /// <response code="200">Returns the UserModel if login is successful.</response>
-    /// <response code="400">User doesn't exist or invalid credentials or Input data is invalid.</response>
-    [HttpPost]
-    [Produces("application/json")]
-    [ProducesResponseType<UserModel>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(LoginResponseExample))]
-    public async Task<IActionResult> Login(LoginModel login)
-    {
-        var user = await _userRepository.GetUserByEmailAndPasswordAsync(login.Email, login.Password);
-
-        if (user == null)
+        if (!user.IsSuccess)
             return BadRequest("User doesn't exist");
 
-        await AuthorizeAsync(user);
-
-        return Ok(UserModel.GetModel(user));
+        return Ok(UserModel.GetModel(user.Value!));
     }
 
-    /// <summary>
-    /// Registers a new user with the provided registration details.
-    /// </summary>
-    /// <param name="registerModel">The registration details containing email, password, etc.</param>
-    /// <returns>
-    /// A 200 OK response if registration is successful, or a 400 BadRequest if a user with the same email already exists.
-    /// </returns>
-    /// <response code="200">Successful registration of the user.</response>
-    /// <response code="400">User with that email already exists or Input data is invalid.</response>
     [HttpPost]
-    [Produces("application/json")]
-    [ProducesResponseType<UserModel>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(RegisterResponseExample))]
-    public async Task<IActionResult> Register(RegisterModel registerModel)
+    public async Task<IActionResult> CreateApiKey(ApiKeyRequest model)
     {
-        var user = await _userRepository.CreateUser(registerModel.ToEntity());
+        var userId = _userContextAccessor.GetCurrentUser().UserInfo.Id;
+        var apiToken = _authorizationManager.GenerateApiToken(new ApiData(userId, [.. model.Scopes], model.Expires));
+        
+        if(apiToken is null)
+            return BadRequest("Cannot generate Api token");
 
-        if (user == null)
-            return BadRequest("User with that email already exist");
+        var hash = _hashingService.Hash(apiToken.Token);
 
-        await AuthorizeAsync(user);
+        var result = await _tokenManager.CreateApiTokenAsync(
+            new CreateApiTokenManagerModel(
+                model.Name,
+                TokenHash: hash,
+                model.Expires,
+                model.Scopes,
+                model.AllowedIps,
+                GetTokenLocation()));
 
-        return Ok(UserModel.GetModel(user));
+        return result.IsSuccess ? Ok(apiToken) : BadRequest(result.ErrorMessage);
     }
 
-    /// <summary>
-    /// Logs out the current user by signing them out of the system.
-    /// </summary>
-    /// <returns>
-    /// A 200 OK response indicating successful logout.
-    /// </returns>
-    /// <response code="200">Successful logout.</response>
+    [HttpPost]
     [HttpGet]
-    [Produces(typeof(void))]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync();
+        if (Request.Cookies.TryGetValue("refresh_token", out var refreshToken))
+        {
+            var hash = _hashingService.Hash(refreshToken);
+
+            await _tokenManager.RevokeRefreshTokenAsync(
+                new RevokeRefreshTokenModel(null, hash, "Logout"));
+        }
+
+        Response.Cookies.Delete("refresh_token");
+
         return Ok();
     }
 
-    private async Task AuthorizeAsync(User user)
+    [HttpPost]
+    public async Task<IActionResult> RevokeApiKey(ApiKeyRevokeRequest model)
     {
-        var claim = user.GetUserClaims();
+        var result = await _tokenManager.RevokeApiTokenAsync(
+            new RevokeApiTokenModel(model.TokenHash, model.Reason));
 
-        var claimsIdentity = new ClaimsIdentity(claim, CookieAuthenticationDefaults.AuthenticationScheme);
-        var claimsPricipal = new ClaimsPrincipal(claimsIdentity);
-
-        await HttpContext.SignInAsync(claimsPricipal);
+        return result.IsSuccess ? Ok() : BadRequest(result.ErrorMessage);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetApiKeys()
+    {
+        var userIdResult = await _userManager.GetUser();
+
+        if (!userIdResult.IsSuccess)
+            return Unauthorized();
+
+        var userId = userIdResult.Value!.Id;
+
+        var result = await _tokenManager.GetAllApiTokensAsync(userId);
+
+        if (!result.IsSuccess)
+            return BadRequest(result.ErrorMessage);
+
+        return Ok(result.Value);
+    }
+
+    private static TokenLocation GetTokenLocation()
+        => new("UA", "Ukraine", "Zhytomyr");
 }
 
+public record LoginModel(string NickName, string Password);
+
+public record RegisterModel(string NickName, string Email, string Password);
+
+public record ResetPasswordRequest(string Token, string NewPassword);
+
+public record CreateFirstAdminModel(
+    string Token,
+    AdminCreateModel Admin);
+
+public record AdminCreateModel(
+    string NickName,
+    string Email,
+    string Password);
+
+public record ApiKeyRequest(
+    string Name,
+    ICollection<string> Scopes,
+    ICollection<string> AllowedIps,
+    DateTime Expires);
+
+public record ApiKeyRevokeRequest(string TokenHash, string Reason);

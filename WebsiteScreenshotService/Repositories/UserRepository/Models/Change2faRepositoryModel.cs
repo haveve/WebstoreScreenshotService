@@ -1,0 +1,3 @@
+﻿namespace WebsiteScreenshotService.Repositories.UserRepository.Models;
+
+public record Change2faRepositoryModel(string EncryptedData);

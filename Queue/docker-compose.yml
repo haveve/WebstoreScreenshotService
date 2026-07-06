@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  demo-message-broker:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: demo-broker
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - messaging
+
+networks: 
+    messaging:
+      driver: bridge

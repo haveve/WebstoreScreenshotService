@@ -1,0 +1,35 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# solution-level MSBuild files
+COPY Directory.Build.props ./
+COPY Directory.Packages.props ./
+
+# copy full solution (IMPORTANT for ProjectReference)
+COPY Shared.Core/ Shared.Core/
+COPY ScreenshotWorker/ ScreenshotWorker/
+
+WORKDIR /src/ScreenshotWorker
+
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+WORKDIR /app
+
+COPY --from=build /app ./
+
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+RUN mkdir -p /ms-playwright
+
+RUN dotnet ScreenshotWorker.dll setup
+
+RUN useradd -m workeruser && \
+    chown -R workeruser:workeruser /app /ms-playwright
+
+USER workeruser
+
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+ENTRYPOINT ["dotnet", "ScreenshotWorker.dll", "start"]

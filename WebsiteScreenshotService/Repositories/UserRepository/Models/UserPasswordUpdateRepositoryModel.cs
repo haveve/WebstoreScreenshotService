@@ -1,0 +1,3 @@
+﻿namespace WebsiteScreenshotService.Repositories.ScreenshotRepository.Models;
+
+public record UserPasswordUpdateRepositoryModel(string PasswordHash);

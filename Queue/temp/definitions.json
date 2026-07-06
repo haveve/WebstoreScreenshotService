@@ -1,0 +1,84 @@
+{
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "users": [
+    {
+      "name": "admin",
+      "password_hash": "bFi4aMZzXYlGiKaG6EyiufWq90+Z2Ncb9U7qBgZ0DoY=",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "browser-service-exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "Regular",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "Pro",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "Advanced",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "browser-service-exchange",
+      "vhost": "/",
+      "destination": "Regular",
+      "destination_type": "queue",
+      "routing_key": "Regular",
+      "arguments": {}
+    },
+    {
+      "source": "browser-service-exchange",
+      "vhost": "/",
+      "destination": "Pro",
+      "destination_type": "queue",
+      "routing_key": "Pro",
+      "arguments": {}
+    },
+    {
+      "source": "browser-service-exchange",
+      "vhost": "/",
+      "destination": "Advanced",
+      "destination_type": "queue",
+      "routing_key": "Advanced",
+      "arguments": {}
+    }
+  ]
+}

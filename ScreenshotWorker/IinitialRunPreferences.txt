@@ -1,0 +1,54 @@
+# 1️ Build stage
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy project files and restore dependencies
+COPY *.csproj ./
+RUN dotnet restore
+
+# Copy the rest of the source and publish
+COPY . ./
+RUN dotnet publish -c Release -o /app
+
+# 2️ Runtime stage
+FROM mcr.microsoft.com/dotnet/runtime:10.0
+WORKDIR /app
+
+# Copy published app
+COPY --from=build /app ./
+
+# 3️ Install all Chromium dependencies for sandboxed new headless
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates wget gnupg \
+    && rm -rf /var/lib/apt/lists/*
+
+# 4️ Run Playwright setup as root to download browsers and install any future deps
+RUN dotnet ScreenshotWorker.dll setup
+
+# 5️ Create non-root user for running sandboxed Chromium
+RUN useradd -m workeruser
+USER workeruser
+
+# 6️ Entrypoint to start worker
+ENTRYPOINT ["dotnet", "ScreenshotWorker.dll", "start"]
+
+then
+
+docker build -t screenshot-worker:latest .
+
+then
+
+docker run -d \
+  --name screenshot-service \
+  --network messaging \
+  --add-host=host.docker.internal:host-gateway \
+  --memory=3g \
+  --cpus=2 \
+  --shm-size=2g \
+  -e MessageBrokerSettings__Queue__Name=Regular \
+  -e MessageBrokerSettings__Connection__HostName=rabbitmq \
+  -e MessageBrokerSettings__Connection__Port=5672 \
+  -e ScreenshotServiceSettings__Url=http://host.docker.internal:7295 \
+  your-screenshot-image:latest
+
+## to support 10 simultaneous browsers
